@@ -1,14 +1,51 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { Pool } from "pg";
 import { schema } from "../schemas";
 
 export type { SQL } from "drizzle-orm";
 export { and, count, desc, eq } from "drizzle-orm";
 
-const db = drizzle(
-	process.env.DATABASE_URL ||
-		"postgresql://postgres:postgres@localhost:5432/rensa",
-	{ schema, casing: "snake_case" }
-);
+const databaseUrl =
+	process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/rensa";
+
+function getMigrationsFolder(): string {
+	const candidates = [
+		path.join(process.cwd(), "drizzle"),
+		path.join(process.cwd(), "apps", "web", "drizzle"),
+	];
+
+	for (const candidate of candidates) {
+		if (existsSync(candidate)) {
+			return candidate;
+		}
+	}
+
+	throw new Error(
+		`Web migration folder not found. Checked: ${candidates.join(", ")}`
+	);
+}
+
+const appPool = new Pool({ connectionString: databaseUrl });
+const db = drizzle(appPool, { schema, casing: "snake_case" });
+
+const migrationPool = new Pool({ connectionString: databaseUrl });
+const migrationDb = drizzle(migrationPool, { casing: "snake_case" });
+const migrationPromise = migrate(migrationDb, {
+	migrationsFolder: getMigrationsFolder(),
+})
+	.then(() => {
+		console.log("Web database migrations applied");
+	})
+	.finally(async () => {
+		await migrationPool.end();
+	});
+
+const originalQuery = appPool.query.bind(appPool);
+appPool.query = ((...args: Parameters<typeof originalQuery>) =>
+	migrationPromise.then(() => originalQuery(...args))) as typeof appPool.query;
 
 export default db;

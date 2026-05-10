@@ -59,7 +59,7 @@ RUN npm ci --omit=dev
 
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
-COPY apps/web/drizzle ./drizzle
+COPY --from=build /app/drizzle ./drizzle
 
 EXPOSE 3000
 CMD ["npm", "start"]
