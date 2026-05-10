@@ -8,25 +8,44 @@ function createLazyRatelimit(opts: {
 	prefix: string;
 }) {
 	let instance: Ratelimit | null = null;
+	let warned = false;
 
 	return {
-		limit: (
+		limit: async (
 			...args: Parameters<Ratelimit["limit"]>
-		): ReturnType<Ratelimit["limit"]> => {
-			if (!instance) {
-				const redis = getRedis();
-				instance = new Ratelimit({
-					redis,
-					limiter: opts.limiter,
-					prefix: opts.prefix,
-				});
-			}
+		): Promise<Awaited<ReturnType<Ratelimit["limit"]>>> => {
+			try {
+				if (!instance) {
+					const redis = getRedis();
+					instance = new Ratelimit({
+						redis,
+						limiter: opts.limiter,
+						prefix: opts.prefix,
+					});
+				}
 
-			return (
-				instance.limit as (
-					...a: Parameters<Ratelimit["limit"]>
-				) => ReturnType<Ratelimit["limit"]>
-			)(...args);
+				return await (
+					instance.limit as (
+						...a: Parameters<Ratelimit["limit"]>
+					) => ReturnType<Ratelimit["limit"]>
+				)(...args);
+			} catch (error) {
+				if (!warned) {
+					console.error(
+						`Rate limit disabled for ${opts.prefix}:`,
+						error instanceof Error ? error.message : error
+					);
+					warned = true;
+				}
+
+				return {
+					limit: Number.MAX_SAFE_INTEGER,
+					pending: Promise.resolve(),
+					remaining: Number.MAX_SAFE_INTEGER,
+					reset: Math.floor(Date.now() / 1000) + 60,
+					success: true,
+				} as Awaited<ReturnType<Ratelimit["limit"]>>;
+			}
 		},
 	} as unknown as Ratelimit;
 }

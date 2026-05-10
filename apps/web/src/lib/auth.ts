@@ -118,6 +118,17 @@ export const authOptions: NextAuthOptions = {
 			}
 			return session;
 		},
+		redirect({ url, baseUrl }) {
+			const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || baseUrl;
+			const appOrigin = new URL(appBaseUrl).origin;
+			const target = new URL(url, appOrigin);
+
+			if (target.origin !== appOrigin) {
+				return `${appOrigin}${target.pathname}${target.search}${target.hash}`;
+			}
+
+			return target.toString();
+		},
 	},
 	pages: {
 		signIn: "/login",

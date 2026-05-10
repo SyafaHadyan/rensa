@@ -2,15 +2,29 @@ import axios from "axios";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const expressBaseUrl =
+	process.env.EXPRESS_BASE_URL ||
+	(isProduction ? "http://rensa-express:3003" : "http://localhost:3003");
+
+const elysiaBaseUrl =
+	process.env.ELYSIA_BASE_URL ||
+	(isProduction ? "http://rensa-elysia:3002" : "http://localhost:3002");
+
+const fastApiBaseUrl =
+	process.env.FAST_API_BASE_URL ||
+	(isProduction ? "http://rensa-fastapi:3001" : "http://localhost:3001");
+
 const expressApi = axios.create({
-	baseURL: process.env.EXPRESS_BASE_URL,
+	baseURL: expressBaseUrl,
 	withCredentials: true,
 	headers: {
 		"Content-Type": "application/json",
 	},
 });
 const elysiaApi = axios.create({
-	baseURL: process.env.ELYSIA_BASE_URL,
+	baseURL: elysiaBaseUrl,
 	withCredentials: true,
 	headers: {
 		"Content-Type": "application/json",
@@ -18,7 +32,7 @@ const elysiaApi = axios.create({
 });
 
 const fastApi = axios.create({
-	baseURL: process.env.FAST_API_BASE_URL,
+	baseURL: fastApiBaseUrl,
 	withCredentials: true,
 	headers: {
 		"Content-Type": "application/json",
