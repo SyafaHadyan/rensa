@@ -41,5 +41,5 @@ jobs:
           push: true
           tags: |
             labmgm/rensa-notification:${{ inputs.tag }}
-            labmgm/rensa-notification:${{ inputs.tag }}-${{ steps.meta.outputs.ts }
+            labmgm/rensa-notification:${{ inputs.tag }}-${{ steps.meta.outputs.ts }}
             labmgm/rensa-notification:${{ inputs.tag }}-${{ steps.meta.outputs.sha }}
