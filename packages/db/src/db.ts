@@ -29,23 +29,21 @@ function getMigrationsFolder(): string {
 	);
 }
 
+{
+	const migrationPool = new Pool({ connectionString: databaseUrl });
+	try {
+		const migrationDb = drizzle(migrationPool, { casing: "snake_case" });
+		await migrate(migrationDb, {
+			migrationsFolder: getMigrationsFolder(),
+			migrationsTable: "__drizzle_migrations_web",
+		});
+		console.log("Web database migrations applied");
+	} finally {
+		await migrationPool.end();
+	}
+}
+
 const appPool = new Pool({ connectionString: databaseUrl });
 const db = drizzle(appPool, { schema, casing: "snake_case" });
-
-const migrationPool = new Pool({ connectionString: databaseUrl });
-const migrationDb = drizzle(migrationPool, { casing: "snake_case" });
-const migrationPromise = migrate(migrationDb, {
-	migrationsFolder: getMigrationsFolder(),
-})
-	.then(() => {
-		console.log("Web database migrations applied");
-	})
-	.finally(async () => {
-		await migrationPool.end();
-	});
-
-const originalQuery = appPool.query.bind(appPool);
-appPool.query = ((...args: Parameters<typeof originalQuery>) =>
-	migrationPromise.then(() => originalQuery(...args))) as typeof appPool.query;
 
 export default db;
