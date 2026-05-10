@@ -9,6 +9,7 @@ RUN bun install
 FROM base AS build
 ENV NODE_ENV=production
 COPY src ./src
+COPY drizzle ./drizzle
 
 RUN bun build \
   --compile \
@@ -24,6 +25,7 @@ RUN bun build \
 FROM base AS dev
 ENV NODE_ENV=development
 COPY src ./src
+COPY drizzle ./drizzle
 
 EXPOSE 3002
 CMD ["bun", "run", "src/index.ts"]
@@ -35,6 +37,7 @@ ENV NODE_ENV=production
 
 COPY --from=build /app/server ./server
 COPY --from=build /app/healthcheck ./healthcheck
+COPY --from=build /app/drizzle ./drizzle
 
 EXPOSE 3002
 CMD ["./server"]
