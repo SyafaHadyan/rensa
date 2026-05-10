@@ -59,6 +59,8 @@ RUN npm ci --omit=dev
 
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
+COPY --from=build /app/drizzle ./drizzle
+COPY --from=build /app/scripts ./scripts
 
 EXPOSE 3000
 CMD ["npm", "start"]

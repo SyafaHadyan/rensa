@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "node ./scripts/start-next-with-migrations.mjs dev --turbo",
     "build": "next build",
-    "start": "next start -H 0.0.0.0 -p 3000",
+    "start": "node ./scripts/start-next-with-migrations.mjs start -H 0.0.0.0 -p 3000",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
   },

@@ -24,6 +24,7 @@ This service uses PostgreSQL through Drizzle ORM.
 The database schema only stores notification data. User IDs are stored as text
 references to the user service owned by `rensa-frontend`; this service does not
 own or migrate a `users` table.
+Pending migrations are applied automatically when the service starts.
 
 ```bash
 bun run db:generate

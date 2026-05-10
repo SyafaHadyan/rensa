@@ -14,6 +14,20 @@ const initialLoginState: LoginFormState = {
 	password: "",
 };
 
+const normalizeRedirectPath = (url: string | undefined): string => {
+	if (!url) {
+		return "/explore";
+	}
+
+	try {
+		const parsed = new URL(url, window.location.origin);
+		const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+		return path || "/explore";
+	} catch {
+		return "/explore";
+	}
+};
+
 const LoginFormContainer = () => {
 	const [form, setForm] = useState<LoginFormState>(initialLoginState);
 	const [error, setError] = useState("");
@@ -56,7 +70,7 @@ const LoginFormContainer = () => {
 		if (result?.error) {
 			setError(result.error);
 		} else {
-			window.location.href = result?.url || "/explore";
+			window.location.href = normalizeRedirectPath(result?.url);
 		}
 		setLoading(false);
 	};

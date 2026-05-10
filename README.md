@@ -120,6 +120,9 @@ The root `pnpm dev` command runs Docker Compose. The current `docker-compose-dev
 
 ## Database
 
+Web and notifications services now apply pending Drizzle migrations on startup.
+Use the commands below when you need to generate new migration files manually.
+
 The web app owns the main application schema:
 
 ```bash
@@ -163,4 +166,3 @@ Use `pnpm fix` to run the configured Ultracite formatter/fixer.
 - Bookmark toggling and bookmarked photo retrieval
 - Comments and notification workflows
 - Contact and bug-report submission flows with admin review endpoints
-
