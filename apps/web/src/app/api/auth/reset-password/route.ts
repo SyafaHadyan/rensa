@@ -6,6 +6,8 @@ import { type NextRequest, NextResponse } from "next/server";
 
 const userRepository = new UserRepository();
 
+const userRepository = new UserRepository();
+
 /*
   POST /api/auth/reset-password
   Reset password using token from email
