@@ -1,0 +1,31 @@
+name: ci
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-ai:
+    uses: ./.github/workflows/publish-docker-image-ai.yml
+    with:
+      tag: latest
+    secrets: inherit
+
+  build-web:
+    uses: ./.github/workflows/publish-docker-image-web.yml
+    with:
+      tag: latest
+    secrets: inherit
+
+  build-exif:
+    uses: ./.github/workflows/publish-docker-image-exif.yml
+    with:
+      tag: latest
+    secrets: inherit
+
+  build-notification:
+    uses: ./.github/workflows/publish-docker-image-notification.yml
+    with:
+      tag: latest
+    secrets: inherit

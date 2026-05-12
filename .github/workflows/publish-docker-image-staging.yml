@@ -1,0 +1,31 @@
+name: ci-staging
+
+on:
+  pull_request:
+    branches: [ "*" ]
+  workflow_dispatch:
+
+jobs:
+  build-ai:
+    uses: ./.github/workflows/publish-docker-image-ai.yml
+    with:
+      tag: staging
+    secrets: inherit
+
+  build-web:
+    uses: ./.github/workflows/publish-docker-image-web.yml
+    with:
+      tag: staging
+    secrets: inherit
+
+  build-exif:
+    uses: ./.github/workflows/publish-docker-image-exif.yml
+    with:
+      tag: staging
+    secrets: inherit
+
+  build-notification:
+    uses: ./.github/workflows/publish-docker-image-notification.yml
+    with:
+      tag: staging
+    secrets: inherit

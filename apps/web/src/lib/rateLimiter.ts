@@ -12,7 +12,7 @@ function createLazyRatelimit(opts: {
 	return {
 		limit: (
 			...args: Parameters<Ratelimit["limit"]>
-		): Promise<ReturnType<Ratelimit["limit"]>> => {
+		): ReturnType<Ratelimit["limit"]> => {
 			if (!instance) {
 				const redis = getRedis();
 				instance = new Ratelimit({

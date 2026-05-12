@@ -5,7 +5,7 @@ export const fetchRollById = async (rollId: string) => {
 	const res = await api.get(`/rolls/${rollId}`);
 	return res.data.data;
 };
-type SortOption = "latest" | "oldest";
+export type SortOption = "latest" | "oldest";
 export const fetchRollsByUserId = async (userId: string, sort?: SortOption) => {
 	const res = await api.get("/rolls", {
 		params: {
