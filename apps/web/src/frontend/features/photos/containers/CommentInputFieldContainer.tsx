@@ -36,7 +36,7 @@ const CommentInputFieldContainer: React.FC<CommentInputFieldContainerProps> = ({
 
 		onAddComment(newComment);
 		setComment("");
-		await commentPhoto(newComment, id || "", user?.id);
+		await commentPhoto(newComment, id || "");
 	};
 
 	return (

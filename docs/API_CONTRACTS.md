@@ -135,11 +135,12 @@ Database column names remain `snake_case` internally and must not leak into API 
 
 ### `POST /api/photos/[id]/comments`
 
-- Auth: session (or validated user id fallback)
+- Auth: session required
 - Path: `id`
-- Body: `createCommentDto`
+- Body: `{ text }`
 - Success: `201`
-- Errors: `400`, `401`, `403`, `500`
+- Side effect: creates `photo-commented` notification for the photo owner.
+- Errors: `400`, `401`, `404`, `500`
 
 ### `GET /api/photos/[id]/comments`
 
@@ -156,12 +157,26 @@ Database column names remain `snake_case` internally and must not leak into API 
 - Success: `200` paginated bookmarked photos
 - Errors: `400`, `500`
 
-### `POST /api/photos/bookmark/[id]`
+### `GET /api/photos/[id]/bookmark`
 
-- Auth: session owner
+- Auth: session required
 - Path: `id`
-- Body: `{ action: "increment" | "decrement", userId: uuid }`
-- Success: `200` with `{ bookmarks, isBookmarked }`
+- Success: `200` with `{ success, data: { isBookmarked, bookmarkCount } }`
+- Errors: `400`, `401`, `404`, `500`
+
+### `PUT /api/photos/[id]/bookmark`
+
+- Auth: session required
+- Path: `id`
+- Success: `200` with `{ success, data: { isBookmarked, bookmarkCount } }`
+- Side effect: creates `photo-bookmarked` notification for the photo owner when a new bookmark is inserted.
+- Errors: `400`, `401`, `404`, `500`
+
+### `DELETE /api/photos/[id]/bookmark`
+
+- Auth: session required
+- Path: `id`
+- Success: `200` with `{ success, data: { isBookmarked, bookmarkCount } }`
 - Errors: `400`, `401`, `403`, `404`, `500`
 
 ### `POST /api/photos/exifread`
@@ -189,10 +204,10 @@ Database column names remain `snake_case` internally and must not leak into API 
 
 ### `POST /api/rolls`
 
-- Auth: session owner
-- Body: `rollCreateDto`
+- Auth: session required
+- Body: `{ name, description?, imageUrl? }`
 - Success: `201`
-- Errors: `400`, `401`, `403`, `500`
+- Errors: `400`, `401`, `500`
 
 ### `GET /api/rolls/default`
 
@@ -249,6 +264,7 @@ Database column names remain `snake_case` internally and must not leak into API 
 - Auth: session owner
 - Path: `rollId`, `photoId`
 - Success: `200`
+- Side effect: creates `photo-saved` notification for the photo owner when a new roll-photo link is inserted.
 - Errors: `400`, `401`, `403`, `404`, `500`
 
 ### `DELETE /api/rolls/[rollId]/photos/[photoId]`

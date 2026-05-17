@@ -49,13 +49,11 @@ export async function POST(req: Request) {
 			description?: string;
 			imageUrl?: string;
 			name?: string;
-			userId?: string;
 		};
 		const body = rollCreateDto.parse({
 			name: rawBody.name,
 			description: rawBody.description,
 			imageUrl: rawBody.imageUrl,
-			userId: rawBody.userId,
 		});
 		const createdRoll = await rollService.create(body, actorId);
 		return NextResponse.json(

@@ -19,13 +19,11 @@ export const rollCreateDto = z
 		name: z.string().min(1),
 		description: z.string().optional(),
 		imageUrl: z.string().optional(),
-		userId: uuidDto,
 	})
 	.transform((value) => ({
 		name: value.name,
 		description: value.description,
 		imageUrl: value.imageUrl,
-		userId: value.userId,
 	}));
 
 export const rollUpdateDto = z

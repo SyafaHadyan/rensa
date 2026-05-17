@@ -1,5 +1,4 @@
 import { api } from "@/lib/axios-client";
-import { sendPhotoSavedNotification } from "./notification.service";
 
 export const fetchRollById = async (rollId: string) => {
 	const res = await api.get(`/rolls/${rollId}`);
@@ -16,17 +15,8 @@ export const fetchRollsByUserId = async (userId: string, sort?: SortOption) => {
 	return res.data.data.rolls;
 };
 
-export const addPhotoToRoll = async (
-	actorId: string,
-	rollId: string,
-	photoId: string
-) => {
-	await sendPhotoSavedNotification(actorId, photoId);
-	return api.post(`/rolls/${rollId}/photos/${photoId}`, {
-		rollIds: [rollId],
-		photoId,
-	});
-};
+export const addPhotoToRoll = async (rollId: string, photoId: string) =>
+	api.post(`/rolls/${rollId}/photos/${photoId}`);
 
 export const removePhotoFromRoll = async (rollId: string, photoId: string) => {
 	const result = await api.delete(`/rolls/${rollId}/photos/${photoId}`);

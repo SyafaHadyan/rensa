@@ -1,68 +1,92 @@
+import { BookmarkRepository } from "@rensa/db/queries/bookmark.repository";
 import { PhotoRepository } from "@rensa/db/queries/photo.repository";
-import { UserRepository } from "@rensa/db/queries/user.repository";
 import type {
+	BookmarkRepositoryInterface,
+	BookmarkStatusDto,
 	PhotoRepositoryInterface,
-	UserRepositoryInterface,
 } from "@rensa/db/schema";
-import {
-	ForbiddenError,
-	NotFoundError,
-	UnauthorizedError,
-} from "@/backend/common/backend.error";
+import { NotFoundError } from "@/backend/common/backend.error";
+import { notificationService } from "@/backend/services/notifications/service";
 
 export class BookmarkService {
+	readonly bookmarkRepository: BookmarkRepositoryInterface;
 	readonly photoRepository: PhotoRepositoryInterface;
-	readonly userRepository: UserRepositoryInterface;
 
 	constructor(
-		userRepository: UserRepositoryInterface,
+		bookmarkRepository: BookmarkRepositoryInterface,
 		photoRepository: PhotoRepositoryInterface
 	) {
-		this.userRepository = userRepository;
+		this.bookmarkRepository = bookmarkRepository;
 		this.photoRepository = photoRepository;
 	}
 
-	async updateBookmark(params: {
-		photoId: string;
-		userId: string;
-		action: "increment" | "decrement";
-		actorId?: string;
-	}): Promise<{
-		bookmarks: string[];
-		isBookmarked: boolean;
-	}> {
-		if (!params.actorId) {
-			throw new UnauthorizedError();
-		}
-		if (params.actorId !== params.userId) {
-			throw new ForbiddenError("Cannot update bookmarks for another user");
-		}
+	async getStatus(userId: string, photoId: string): Promise<BookmarkStatusDto> {
+		await this.assertPhotoExists(photoId);
+		return this.getCurrentStatus(userId, photoId);
+	}
 
-		const photoExists = await this.photoRepository.exists(params.photoId);
+	async add(userId: string, photoId: string): Promise<BookmarkStatusDto> {
+		await this.assertPhotoExists(photoId);
+		const inserted = await this.bookmarkRepository.add(userId, photoId);
+		if (inserted) {
+			await this.notifyPhotoOwner(userId, photoId);
+		}
+		return this.getCurrentStatus(userId, photoId);
+	}
+
+	async remove(userId: string, photoId: string): Promise<BookmarkStatusDto> {
+		await this.assertPhotoExists(photoId);
+		await this.bookmarkRepository.remove(userId, photoId);
+		return this.getCurrentStatus(userId, photoId);
+	}
+
+	private async assertPhotoExists(photoId: string): Promise<void> {
+		const photoExists = await this.photoRepository.exists(photoId);
 		if (!photoExists) {
 			throw new NotFoundError("Photo not found");
 		}
+	}
 
-		const updatedUser = await this.userRepository.updateBookmarks(
-			params.userId,
-			params.photoId,
-			params.action
-		);
-		if (!updatedUser) {
-			throw new NotFoundError("User not found");
+	private async getCurrentStatus(
+		userId: string,
+		photoId: string
+	): Promise<BookmarkStatusDto> {
+		const [isBookmarked, bookmarkCount] = await Promise.all([
+			this.bookmarkRepository.exists(userId, photoId),
+			this.bookmarkRepository.countByPhotoId(photoId),
+		]);
+		return {
+			bookmarkCount,
+			isBookmarked,
+		};
+	}
+
+	private async notifyPhotoOwner(
+		actorId: string,
+		photoId: string
+	): Promise<void> {
+		const recipientId = await this.photoRepository.getOwnerId(photoId);
+		if (!(recipientId && recipientId !== actorId)) {
+			return;
 		}
 
-		return {
-			bookmarks: updatedUser.bookmarks,
-			isBookmarked: params.action === "increment",
-		};
+		try {
+			await notificationService.create({
+				actorId,
+				photoId,
+				recipientId,
+				type: "photo-bookmarked",
+			});
+		} catch (error) {
+			console.error("Failed to create bookmark notification:", error);
+		}
 	}
 }
 
-const userRepository = new UserRepository();
+const bookmarkRepository = new BookmarkRepository();
 const photoRepository = new PhotoRepository();
 
 export const bookmarkService = new BookmarkService(
-	userRepository,
+	bookmarkRepository,
 	photoRepository
 );

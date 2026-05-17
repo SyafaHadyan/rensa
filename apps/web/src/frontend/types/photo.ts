@@ -38,15 +38,10 @@ export interface BackendPhotosResponse {
 	totalPages: number;
 }
 
-export type ExplorePhotoSource = "db" | "picsum";
+export type ExplorePhotoSource = "db";
 
 export interface FetchPhotosResponse {
 	data: Photo[];
 	nextPage: number | undefined;
 	source?: ExplorePhotoSource;
-}
-
-export interface PicsumPhotosResponse {
-	hasMore: boolean;
-	photos: Photo[];
 }

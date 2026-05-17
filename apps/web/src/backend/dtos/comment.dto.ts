@@ -22,11 +22,9 @@ export const commentPhotoParamsDto = z.object({
 export const createCommentDto = z
 	.object({
 		text: z.string().trim().min(1).max(500),
-		userId: z.string().min(1).optional(),
 	})
 	.transform((value) => ({
 		text: value.text,
-		userId: value.userId,
 	}));
 
 export const listCommentsQueryDto = z.object({

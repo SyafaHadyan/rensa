@@ -180,7 +180,7 @@ export class RollRepository implements RollRepositoryInterface {
 			return 0;
 		}
 
-		await db
+		const inserted = await db
 			.insert(rollPhotos)
 			.values({
 				photoId,
@@ -188,9 +188,10 @@ export class RollRepository implements RollRepositoryInterface {
 			})
 			.onConflictDoNothing({
 				target: [rollPhotos.rollId, rollPhotos.photoId],
-			});
+			})
+			.returning({ rollId: rollPhotos.rollId });
 
-		return 1;
+		return inserted.length;
 	}
 
 	async removePhotoFromRoll(rollId: string, photoId: string): Promise<void> {

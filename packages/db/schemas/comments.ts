@@ -37,7 +37,6 @@ export interface CommentResponseDto {
 
 export interface CreateCommentDto {
 	text: string;
-	userId?: string;
 }
 
 export interface ListCommentsResult {

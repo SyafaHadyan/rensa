@@ -1,37 +1,27 @@
 import type { CommentType } from "@/frontend/types/comment";
 import { api } from "@/lib/axios-client";
-import {
-	sendBookmarkedNotification,
-	sendCommentedNotification,
-} from "./notification.service";
+
+export interface BookmarkStatusResponse {
+	bookmarkCount: number;
+	isBookmarked: boolean;
+}
 
 export const bookmarkPhoto = async (
-	userId: string | undefined,
 	photoId: string,
-	action: "decrement" | "increment"
-) => {
-	const res = await api.post(`/photos/bookmark/${photoId}`, {
-		action,
-		userId,
-	});
+	action: "add" | "remove"
+): Promise<BookmarkStatusResponse> => {
+	const res =
+		action === "add"
+			? await api.put(`/photos/${photoId}/bookmark`)
+			: await api.delete(`/photos/${photoId}/bookmark`);
 
-	if (action === "increment") {
-		await sendBookmarkedNotification(userId || "", photoId);
-	}
-
-	return res.data.bookmarks;
+	return res.data.data;
 };
 
-export const commentPhoto = async (
-	newComment: CommentType,
-	id: string,
-	userId: string | undefined
-) => {
+export const commentPhoto = async (newComment: CommentType, id: string) => {
 	await api.post(`/photos/${id}/comments`, {
 		text: newComment.text,
-		userId,
 	});
-	await sendCommentedNotification(userId || "", id);
 };
 
 export const removeUserPhoto = async (photoId: string) => {

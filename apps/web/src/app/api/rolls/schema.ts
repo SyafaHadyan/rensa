@@ -5,9 +5,8 @@ export const rollsOpenApiSchemaFragment: OpenApiFragment = {
 		schemas: {
 			CreateRollDto: {
 				type: "object",
-				required: ["userId", "name"],
+				required: ["name"],
 				properties: {
-					userId: { type: "string", format: "uuid" },
 					name: { type: "string", minLength: 1 },
 					description: { type: "string" },
 					imageUrl: { type: "string" },

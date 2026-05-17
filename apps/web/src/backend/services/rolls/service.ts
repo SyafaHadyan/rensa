@@ -12,6 +12,7 @@ import {
 	NotFoundError,
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
+import { notificationService } from "@/backend/services/notifications/service";
 import type { PaginatedPhotoListResult } from "@/backend/types/service.types";
 
 export class RollService {
@@ -34,13 +35,20 @@ export class RollService {
 		return { rolls };
 	}
 
-	create(payload: RollCreateDto, actorId?: string): Promise<unknown> {
+	create(
+		payload: Omit<RollCreateDto, "userId">,
+		actorId?: string
+	): Promise<unknown> {
 		if (!actorId) {
 			throw new UnauthorizedError();
 		}
-		if (payload.userId !== actorId) {
-			throw new ForbiddenError("Cannot create rolls for another user");
-		}
+		return this.rollRepository.create({
+			...payload,
+			userId: actorId,
+		});
+	}
+
+	createForUser(payload: RollCreateDto): Promise<unknown> {
 		return this.rollRepository.create(payload);
 	}
 
@@ -147,7 +155,14 @@ export class RollService {
 			throw new NotFoundError("Photo not found");
 		}
 
-		return this.rollRepository.addPhotoToRoll(rollId, photoId);
+		const modifiedCount = await this.rollRepository.addPhotoToRoll(
+			rollId,
+			photoId
+		);
+		if (modifiedCount > 0) {
+			await this.notifyPhotoOwner(actorId, photoId);
+		}
+		return modifiedCount;
 	}
 
 	async removePhotoFromRoll(
@@ -187,6 +202,27 @@ export class RollService {
 			hasMore: query.page < totalPages,
 			total,
 		};
+	}
+
+	private async notifyPhotoOwner(
+		actorId: string,
+		photoId: string
+	): Promise<void> {
+		const recipientId = await this.photoRepository.getOwnerId(photoId);
+		if (!(recipientId && recipientId !== actorId)) {
+			return;
+		}
+
+		try {
+			await notificationService.create({
+				actorId,
+				photoId,
+				recipientId,
+				type: "photo-saved",
+			});
+		} catch (error) {
+			console.error("Failed to create roll save notification:", error);
+		}
 	}
 }
 

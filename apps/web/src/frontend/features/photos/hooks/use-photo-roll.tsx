@@ -19,7 +19,6 @@ export function usePhotoRoll(photoId: string | null) {
 	const queryClient = useQueryClient();
 	const { user } = useAuthStore();
 
-	const actorId = user?.id || "";
 	const [selectedRoll, setSelectedRoll] = useState<{
 		rollId: string;
 		name: string;
@@ -63,8 +62,7 @@ export function usePhotoRoll(photoId: string | null) {
 	// Add photo to roll
 	// -----------------------
 	const saveMutation = useMutation({
-		mutationFn: (rollId: string) =>
-			addPhotoToRoll(actorId, rollId, photoId || ""),
+		mutationFn: (rollId: string) => addPhotoToRoll(rollId, photoId || ""),
 		onSuccess: async () => {
 			showToast("Photo added to roll", "success");
 			await queryClient.invalidateQueries({

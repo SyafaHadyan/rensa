@@ -44,12 +44,13 @@ image compression (`sharp`) -> NSFW model call (`FAST_API_BASE_URL`) -> Cloudina
 - Query whether a photo is saved to any roll.
 
 ### 5.4 Bookmarks
-- Toggle bookmark on photo (`increment`/`decrement` semantics).
+- Toggle bookmark on photo through add/remove bookmark semantics.
 - List user's bookmarked photos.
 
 ### 5.5 Comments and Notifications
 - Create/list comments per photo.
-- List/create notifications; mark read; clear by user.
+- Server-created notifications for photo bookmark, comment, and roll-save events.
+- List notifications; mark read; clear by user.
 - WebSocket notification consumption in client (`NotificationProvider`).
 
 ### 5.6x Support and Admin Ops
@@ -106,11 +107,12 @@ Contract documentation:
 - The system shall support create/read/update/delete roll operations for resource owners.
 - The system shall support adding and removing photos to/from a roll for authorized owners.
 - The system shall provide a query to determine whether a photo is saved in any of the user's rolls.
-- The system shall support bookmark toggle (`increment` / `decrement`) and bookmarked photo retrieval.
+- The system shall support adding/removing photo bookmarks and bookmarked photo retrieval.
 
 ### FR-006 Comments and Notifications
 - The system shall support creating and listing comments per photo.
-- The system shall support creating, listing, and marking notifications as read, including clear-by-user semantics.
+- The system shall create notifications server-side for photo bookmark, comment, and roll-save events.
+- The system shall support listing and marking notifications as read, including clear-by-user semantics.
 - The client shall consume real-time notification updates through websocket integration.
 
 ### FR-007 Support and Bug Reporting Operations

@@ -1,8 +1,6 @@
 import type {
 	BackendPhotosResponse,
-	ExplorePhotoSource,
 	FetchPhotosResponse,
-	PicsumPhotosResponse,
 } from "@/frontend/types/photo";
 import { api } from "@/lib/axios-client";
 
@@ -67,51 +65,13 @@ export const fetchPhotosFromRoll = async (
 	};
 };
 
-const getExplorePhotoSource = (): ExplorePhotoSource => {
-	// const requestedSource = process.env.NEXT_PUBLIC_EXPLORE_SOURCE;
-	// if (process.env.NODE_ENV === "production") {
-	// 	return "db";
-	// }
-	// if (requestedSource === "picsum") {
-	// 	return "picsum";
-	// }
-	return "db";
-};
-
 export const fetchExplorePhotos = async (
 	page: number,
 	filters: string[] | undefined,
 	sort: "popular" | "recent" = "recent"
 ): Promise<FetchPhotosResponse> => {
-	const source = getExplorePhotoSource();
-	if (source === "db") {
-		const response = await fetchPhotosFromDB(page, filters, sort);
-		console.log("response", response);
-		return { ...response, source };
-	}
-
-	const params: Record<string, number | string | undefined> = {
-		page,
-		limit: 10,
-		sort,
-		filters: filters?.join(" "),
-	};
-
-	const response = await api.get<PicsumPhotosResponse>("/photos/debug/picsum", {
-		params,
-	});
-	return {
-		data: response.data.photos,
-		nextPage: response.data.hasMore ? page + 1 : undefined,
-		source,
-	};
-};
-
-export const fetchPhotoOwnerByPhotoId = async (photoId: string) => {
-	const res = await api.get<{ data: { ownerId: string } }>(
-		`/photos/${photoId}/owner`
-	);
-	return res.data.data.ownerId;
+	const response = await fetchPhotosFromDB(page, filters, sort);
+	return { ...response, source: "db" };
 };
 
 export const fetchPhotoById = async (photoId: string) => {
@@ -119,7 +79,10 @@ export const fetchPhotoById = async (photoId: string) => {
 	return res.data.data;
 };
 
-export const fetchUserBookmarkedPhotos = async (userId: string) => {
-	const res = await api.get(`/users/${userId}`);
-	return res.data.data.user.bookmarks;
+export const fetchPhotoBookmarkStatus = async (photoId: string) => {
+	const res = await api.get(`/photos/${photoId}/bookmark`);
+	return res.data.data as {
+		bookmarkCount: number;
+		isBookmarked: boolean;
+	};
 };
