@@ -56,7 +56,7 @@ const LoginFormContainer = () => {
 		if (result?.error) {
 			setError(result.error);
 		} else {
-			window.location.href = result?.url || "/explore";
+			window.location.href = "/explore";
 		}
 		setLoading(false);
 	};
