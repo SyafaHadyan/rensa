@@ -66,7 +66,6 @@ export default async function PhotoPage({
 	let photo: Photo | null = null;
 	try {
 		photo = await fetchPhotoById(id);
-		console.log("Fetched photo:", photo);
 	} catch {
 		photo = null;
 	}
