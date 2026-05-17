@@ -9,6 +9,7 @@ import Text from "@/frontend/components/Text";
 import BookmarkToggleContainer from "@/frontend/features/photos/containers/BookmarkToggleContainer";
 import CommentSection from "@/frontend/sections/CommentSection";
 import type { PhotoMetadata } from "@/frontend/types/photo";
+import type { SelectedRoll } from "@/frontend/types/roll";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/date-formatter";
 
@@ -27,11 +28,9 @@ interface PhotoInfoCardViewProps {
 	profileAvatarUrl?: string;
 	profileUsername?: string;
 	savedToRolls: string[];
-	selectedRoll: { roll_id: string; name: string } | null;
+	selectedRoll: SelectedRoll | null;
 	setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	setSelectedRoll: React.Dispatch<
-		React.SetStateAction<{ roll_id: string; name: string } | null>
-	>;
+	setSelectedRoll: React.Dispatch<React.SetStateAction<SelectedRoll | null>>;
 	title?: string;
 	userId?: string;
 }
@@ -90,7 +89,7 @@ const PhotoInfoCardView: React.FC<PhotoInfoCardViewProps> = ({
 		<div className="mb-9">
 			<div className="mb-7">
 				<Text className="text-white-700" size="s">
-					{formatDate(metadata?.uploaded_at)}
+					{formatDate(metadata?.uploadedAt)}
 				</Text>
 				<Heading size="m">{title}</Heading>
 			</div>

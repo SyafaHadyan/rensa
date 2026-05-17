@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useRollDropdownController } from "@/frontend/features/rolls/hooks/use-roll-dropdown-controller";
+import type { SelectedRoll } from "@/frontend/types/roll";
 import RollDropdownIconButtonView from "../components/RollDropdownIconButtonView";
 
 export interface RollDropdownIconButtonContainerProps {
@@ -9,11 +10,9 @@ export interface RollDropdownIconButtonContainerProps {
 	disabled: boolean;
 	isOpen: boolean;
 	savedToRolls: string[];
-	selectedRoll: { roll_id: string; name: string } | null;
+	selectedRoll: SelectedRoll | null;
 	setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	setSelectedRoll: React.Dispatch<
-		React.SetStateAction<{ roll_id: string; name: string } | null>
-	>;
+	setSelectedRoll: React.Dispatch<React.SetStateAction<SelectedRoll | null>>;
 }
 
 const RollDropdownIconButtonContainer: React.FC<

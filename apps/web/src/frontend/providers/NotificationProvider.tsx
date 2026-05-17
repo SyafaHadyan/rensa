@@ -127,7 +127,7 @@ export function NotificationProvider({
 		ws.onmessage = (event) => {
 			try {
 				const data = JSON.parse(event.data);
-				if (!(data.id && data.recipientId && data.type)) {
+				if (!(data.id && data.recipient_id && data.type)) {
 					console.warn("Invalid notification data received:", data);
 					return;
 				}

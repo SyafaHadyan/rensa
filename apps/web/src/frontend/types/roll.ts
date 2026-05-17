@@ -1,31 +1,28 @@
 export interface Roll {
-	created_at?: string;
-	createdAt?: string;
-	image_url?: string;
-	imageUrl?: string;
-	name: string;
-	photos?: string[];
-	previewPhotos?: string[];
-	roll_id: string;
-	user_id?: string;
-	userId?: string;
+  createdAt?: string;
+  imageUrl?: string;
+  name: string;
+  photos?: string[];
+  previewPhotos?: string[];
+  rollId: string;
+  userId?: string;
 }
 
 export interface ApiRoll {
-	image_url?: string;
-	imageUrl?: string;
-	name: string;
-	roll_id?: string;
+  imageUrl?: string;
+  name: string;
+  rollId?: string;
+}
+
+export interface SelectedRoll {
+  name: string;
+  rollId: string;
 }
 
 export interface RollsState {
-	clearRolls: () => void;
-	createRoll: (newRoll: {
-		image_url?: string;
-		imageUrl?: string;
-		name: string;
-	}) => Promise<void>;
-	fetchRolls: () => Promise<void>;
-	isLoading: boolean;
-	rolls: Roll[];
+  clearRolls: () => void;
+  createRoll: (newRoll: { imageUrl?: string; name: string }) => Promise<void>;
+  fetchRolls: () => Promise<void>;
+  isLoading: boolean;
+  rolls: Roll[];
 }

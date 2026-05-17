@@ -5,6 +5,7 @@ import PrimaryButton from "@/frontend/components/buttons/PrimaryButton";
 import TertiaryButton from "@/frontend/components/buttons/TertiaryButton";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
 import { api } from "@/lib/axios-client";
+import type { SelectedRoll } from "../types/roll";
 import { useToast } from "./ToastProvider";
 
 interface CreateRollContextType {
@@ -28,7 +29,7 @@ export const useCreateRoll = () => {
 
 interface CreateRollProviderProps {
 	children: ReactNode;
-	onRollCreate?: (roll: { roll_id: string; name: string }) => void;
+	onRollCreate?: (roll: SelectedRoll) => void;
 }
 
 export const CreateRollProvider = ({

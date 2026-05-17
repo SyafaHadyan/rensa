@@ -7,53 +7,53 @@ import { rollService } from "@/backend/services/rolls/service";
 import { authOptions } from "@/lib/auth";
 
 /*
- * GET /api/rolls/is-saved?photoId=<photoId>
+ * GET /api/rolls/is-saved?photo_id=<photo_id>
  */
 export async function GET(req: NextRequest) {
-	try {
-		const session = await getServerSession(authOptions);
-		const actorId = session?.user?.id;
-		const { searchParams } = new URL(req.url);
-		const query = isSavedQueryDto.parse({
-			photoId: searchParams.get("photoId") ?? undefined,
-		});
+  try {
+    const session = await getServerSession(authOptions);
+    const actor_id = session?.user?.id;
+    const { searchParams } = new URL(req.url);
+    const query = isSavedQueryDto.parse({
+      photo_id: searchParams.get("photo_id") ?? undefined,
+    });
 
-		const result = await rollService.listContainingPhoto(
-			query.photo_id,
-			actorId
-		);
-		return NextResponse.json(
-			{
-				success: true,
-				message: "Fetched saved rolls successfully",
-				data: result,
-			},
-			{ status: 200 }
-		);
-	} catch (error) {
-		if (error instanceof ZodError) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: "Validation failed",
-					details: error.flatten(),
-				},
-				{ status: 400 }
-			);
-		}
-		if (error instanceof BackendError) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: error.message,
-					code: error.code,
-				},
-				{ status: error.statusCode }
-			);
-		}
-		return NextResponse.json(
-			{ success: false, message: "Internal Server Error" },
-			{ status: 500 }
-		);
-	}
+    const result = await rollService.listContainingPhoto(
+      query.photo_id,
+      actor_id,
+    );
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Fetched saved rolls successfully",
+        data: result,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Validation failed",
+          details: error.flatten(),
+        },
+        { status: 400 },
+      );
+    }
+    if (error instanceof BackendError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: error.message,
+          code: error.code,
+        },
+        { status: error.statusCode },
+      );
+    }
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
 }

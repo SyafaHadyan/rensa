@@ -134,7 +134,7 @@ export async function POST(req: Request) {
         severity,
         reportId,
         submittedAt:
-          bugReport.createdAt?.toISOString() ?? new Date().toISOString(),
+          bugReport.created_at?.toISOString() ?? new Date().toISOString(),
       }),
     });
     await resend.emails.send({
@@ -192,7 +192,7 @@ export async function GET(req: Request) {
     const severity = searchParams.get("severity") as BugReportSeverity | null;
     const page = Number.parseInt(searchParams.get("page") || "1");
     const limit = Number.parseInt(searchParams.get("limit") || "10");
-    const sortBy = searchParams.get("sortBy") || "-createdAt";
+    const sortBy = searchParams.get("sortBy") || "-created_at";
     const validStatuses: BugReportStatus[] = [
       "new",
       "investigating",

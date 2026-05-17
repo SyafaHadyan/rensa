@@ -20,7 +20,7 @@ export default function RollPageClient({
 	const { user } = useAuthStore();
 	const isOwner = user?.id === ownerId;
 	const [rollName, setRollName] = useState(name);
-	const handleOnRollUpdate = (roll: { rollId: string; name: string }) => {
+	const handleOnRollUpdate = (roll: SelectedRoll) => {
 		setRollName(roll.name);
 	};
 

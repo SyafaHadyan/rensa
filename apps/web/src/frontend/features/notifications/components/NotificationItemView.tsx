@@ -20,7 +20,7 @@ const NotificationItemView = ({
 }: NotificationItemViewProps) => (
 	<DropdownItem
 		className={cn("w-full", isLast && "rounded-b-2xl")}
-		href={`/photo/${notification.photoId}`}
+		href={`/photo/${notification.photo_id}`}
 		key={notification.id}
 		ref={itemRef}
 	>
@@ -29,11 +29,11 @@ const NotificationItemView = ({
 				alt="profile"
 				className="aspect-square rounded-2xl object-cover"
 				fill
-				src={notification.actorId.avatar || "/profile.jpg"}
+				src={notification.actor_id.avatar || "/profile.jpg"}
 			/>
 		</div>
 		<Text className="inline" size="xs">
-			<span className="inline font-bold">{notification.actorId.username}</span>{" "}
+			<span className="inline font-bold">{notification.actor_id.username}</span>{" "}
 			{notification.type === "photo-saved"
 				? "saved your photo."
 				: notification.type === "photo-commented"

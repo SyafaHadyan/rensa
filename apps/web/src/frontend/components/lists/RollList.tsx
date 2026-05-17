@@ -20,12 +20,12 @@ export default function RollList({ rolls, isOwner }: RollListProps) {
 							: []);
 					return (
 						<RollCard
-							createdAt={roll.created_at ?? roll.createdAt}
+							created_at={roll.created_at}
 							id={roll.roll_id}
 							imageUrls={imageUrls}
 							key={roll.roll_id}
 							name={roll.name}
-							userId={roll.userId ?? roll.user_id}
+							userId={roll.user_id}
 						/>
 					);
 				})}

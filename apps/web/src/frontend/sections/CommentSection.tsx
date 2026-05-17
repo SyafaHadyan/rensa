@@ -95,44 +95,33 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 
 			<div className="no-scrollbar mb-5 max-h-90 overflow-y-auto">
 				{comments.length > 0 ? (
-					comments.map((comment, idx) => {
-						const user =
-							typeof comment.user_id === "string"
-								? {
-										id: comment.user_id,
-										username: "Unknown user",
-										avatar_url: "/profile.jpg",
-									}
-								: comment.user_id;
-
-						return (
-							<div className="relative" key={comment.comment_id}>
-								<Comment
-									avatarUrl={user.avatar_url}
-									createdAt={comment.created_at}
-									disableBorder={idx === comments.length - 1}
-									userId={user.id}
-									username={user.username}
+					comments.map((comment, idx) => (
+						<div className="relative" key={comment.commentId}>
+							<Comment
+								avatarUrl={comment.user.avatarUrl}
+								created_at={comment.createdAt}
+								disableBorder={idx === comments.length - 1}
+								userId={comment.user.userId}
+								username={comment.user.username}
+							>
+								{comment.text}
+							</Comment>
+							{hasMore && idx === comments.length - 1 && (
+								<div
+									className="absolute bottom-0 left-0 flex h-5 w-full cursor-pointer items-center justify-center bg-linear-to-t from-white/95 via-white/60 to-transparent backdrop-blur-[1px]"
+									onClick={fetchMoreComments}
 								>
-									{comment.text}
-								</Comment>
-								{hasMore && idx === comments.length - 1 && (
-									<div
-										className="absolute bottom-0 left-0 flex h-5 w-full cursor-pointer items-center justify-center bg-linear-to-t from-white/95 via-white/60 to-transparent backdrop-blur-[1px]"
-										onClick={fetchMoreComments}
-									>
-										{loading ? (
-											<div className="loading loading-spinner scale-75 text-primary" />
-										) : (
-											<span className="font-figtree text-primary text-xs">
-												Load more
-											</span>
-										)}
-									</div>
-								)}
-							</div>
-						);
-					})
+									{loading ? (
+										<div className="loading loading-spinner scale-75 text-primary" />
+									) : (
+										<span className="font-figtree text-primary text-xs">
+											Load more
+										</span>
+									)}
+								</div>
+							)}
+						</div>
+					))
 				) : loading ? (
 					""
 				) : (

@@ -8,7 +8,7 @@ interface CommentProps {
 	avatarUrl?: string;
 	children?: string;
 	className?: string;
-	createdAt?: string;
+	created_at?: string;
 	disableBorder?: boolean;
 	id?: string;
 	userId?: string;
@@ -20,7 +20,7 @@ const Comment: React.FC<CommentProps> = ({
 	className,
 	children,
 	username,
-	createdAt,
+	created_at,
 	userId,
 	avatarUrl,
 	disableBorder = false,
@@ -34,7 +34,7 @@ const Comment: React.FC<CommentProps> = ({
 				username={username}
 			/>
 			<Text className="mb-1 text-white-700" size="xs">
-				{formatTimeAgo(createdAt || "")}
+				{formatTimeAgo(created_at || "")}
 			</Text>
 		</div>
 		<h1 className="font-figtree text-black">{children}</h1>

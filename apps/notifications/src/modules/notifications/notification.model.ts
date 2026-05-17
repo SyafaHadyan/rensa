@@ -1,27 +1,27 @@
 import type {
-	NewNotification,
-	Notification,
-	NotificationType,
-	UserProfileDto,
+  NewNotification,
+  Notification,
+  NotificationType,
+  UserProfileDto,
 } from "@rensa/db/schema";
 
 export type CreateNotificationInput = Pick<
-	NewNotification,
-	"recipientId" | "actorId" | "photoId" | "type"
+  NewNotification,
+  "recipient_id" | "actor_id" | "photo_id" | "type"
 >;
 
 export type NotificationRecord = Notification;
 
-export type NotificationResponse = Omit<Notification, "actorId"> & {
-	actorId: UserProfileDto | null;
+export type NotificationResponse = Omit<Notification, "actor_id"> & {
+  actor_id: UserProfileDto | null;
 };
 
 export const notificationTypes: NotificationType[] = [
-	"photo-saved",
-	"photo-bookmarked",
-	"photo-commented",
+  "photo-saved",
+  "photo-bookmarked",
+  "photo-commented",
 ];
 
 export function isNotificationType(value: string): value is NotificationType {
-	return notificationTypes.includes(value as NotificationType);
+  return notificationTypes.includes(value as NotificationType);
 }

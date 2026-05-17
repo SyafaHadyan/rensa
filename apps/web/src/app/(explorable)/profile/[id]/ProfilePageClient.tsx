@@ -38,7 +38,7 @@ export default function ProfilePageClient({
 		enabled: !!profileData.user?.username,
 	});
 
-	const handleRollUpdate = (roll: { rollId: string; name: string }) => {
+	const handleRollUpdate = (roll: SelectedRoll) => {
 		queryClient.setQueryData<Roll[]>(
 			["profileRolls", profileData.user.id, filter],
 			(oldRolls) => {
@@ -63,7 +63,7 @@ export default function ProfilePageClient({
 		);
 	};
 
-	const handleRollCreate = (roll: { roll_id: string; name: string }) => {
+	const handleRollCreate = (roll: SelectedRoll) => {
 		queryClient.setQueryData<Roll[]>(
 			["profileRolls", profileData.user.id, filter],
 			(oldRolls) => {
@@ -76,7 +76,7 @@ export default function ProfilePageClient({
 						userId: user?.id || "",
 						name: roll.name,
 						previewPhotos: [],
-						createdAt: new Date().toISOString(),
+						created_at: new Date().toISOString(),
 					},
 					...oldRolls,
 				];

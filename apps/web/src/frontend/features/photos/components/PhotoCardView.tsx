@@ -6,6 +6,7 @@ import RollDropdown from "@/frontend/components/dropdowns/rolls/RollDropdown";
 import { ImageWithSkeleton } from "@/frontend/components/ImageWithSkeleton";
 import Text from "@/frontend/components/Text";
 import type { Photo } from "@/frontend/types/photo";
+import type { SelectedRoll } from "@/frontend/types/roll";
 import { cn } from "@/utils/cn";
 
 interface PhotoCardViewProps {
@@ -18,10 +19,8 @@ interface PhotoCardViewProps {
 	onToggleDropdown: React.Dispatch<React.SetStateAction<boolean>>;
 	photo: Photo;
 	savedToRolls: string[];
-	selectedRoll: { roll_id: string; name: string } | null;
-	setSelectedRoll: React.Dispatch<
-		React.SetStateAction<{ roll_id: string; name: string } | null>
-	>;
+	selectedRoll: SelectedRoll | null;
+	setSelectedRoll: React.Dispatch<React.SetStateAction<SelectedRoll | null>>;
 	showVisitPageCta: boolean;
 }
 

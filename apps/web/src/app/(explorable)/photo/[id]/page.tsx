@@ -86,7 +86,7 @@ export default async function PhotoPage({
 				<PhotoInfoCard
 					description={photo?.description}
 					id={id}
-					initialBookmarks={photo?.bookmarkedBy?.length || 0}
+					initialBookmarks={photo?.bookmarked_by?.length || 0}
 					metadata={photo?.metadata}
 					ownerId={photo?.user?.user_id}
 					title={photo?.title}

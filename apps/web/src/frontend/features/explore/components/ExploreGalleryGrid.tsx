@@ -48,16 +48,16 @@ const ExploreGalleryGrid: React.FC<ExploreGalleryGridProps> = ({
 				columnClassName="my-masonry-grid_column"
 			>
 				{photos.map((photo) => {
-					const photoId = photo.photo_id.toString();
+					const photo_id = photo.photo_id.toString();
 					return (
 						<PhotoCard
 							closeAllDropdowns={() => setActiveDropdownId(null)}
-							id={allowPhotoPageNavigation ? photoId : null}
-							isDropdownOpen={activeDropdownId === photoId}
-							key={photoId}
+							id={allowPhotoPageNavigation ? photo_id : null}
+							isDropdownOpen={activeDropdownId === photo_id}
+							key={photo_id}
 							onToggleDropdown={() =>
 								setActiveDropdownId((previousId) =>
-									previousId === photoId ? null : photoId
+									previousId === photo_id ? null : photo_id
 								)
 							}
 							photo={photo}
