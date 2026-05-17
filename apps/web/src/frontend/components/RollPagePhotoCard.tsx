@@ -1,14 +1,14 @@
 import RollPagePhotoCardContainer, {
 	type RollPagePhotoCardContainerProps,
 } from "@/frontend/features/photos/containers/RollPagePhotoCardContainer";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/services/photo.service";
 
 export interface RollPagePhotoCardProps
 	extends RollPagePhotoCardContainerProps {
 	id: string;
 	isOwner: boolean;
 	onPhotoRemoved?: (photoId: string) => void;
-	photo: PopulatedPhoto;
+	photo: Photo;
 	rollId: string;
 }
 

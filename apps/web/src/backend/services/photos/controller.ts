@@ -15,6 +15,7 @@ export class PhotosController {
 	}
 
 	getById(photoId: string): Promise<unknown> {
+		
 		return this.photoService.getById(photoId);
 	}
 

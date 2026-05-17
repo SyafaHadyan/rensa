@@ -1,15 +1,15 @@
 import type React from "react";
 import { useState } from "react";
 import { useToast } from "@/frontend/providers/ToastProvider";
+import type { Photo } from "@/frontend/services/photo.service";
 import { removePhotoFromRoll } from "@/frontend/services/roll.service";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
 import RollPagePhotoCardView from "../components/RollPagePhotoCardView";
 
 export interface RollPagePhotoCardContainerProps {
 	id: string;
 	isOwner: boolean;
 	onPhotoRemoved?: (photoId: string) => void;
-	photo: PopulatedPhoto;
+	photo: Photo;
 	rollId: string;
 }
 

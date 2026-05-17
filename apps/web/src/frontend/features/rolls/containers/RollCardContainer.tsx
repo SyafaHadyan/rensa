@@ -8,7 +8,7 @@ import RollCardView from "../components/RollCardView";
 export interface RollCardContainerProps {
 	createdAt?: string;
 	id: string;
-	imageUrls: string[];
+	imageUrls?: string[];
 	name: string;
 	userId?: string;
 }
@@ -34,7 +34,9 @@ const RollCardContainer: React.FC<RollCardContainerProps> = ({
 		<RollCardView
 			createdAt={createdAt}
 			id={id}
-			imageUrls={imageUrls}
+			imageUrls={(imageUrls ?? []).filter(
+				(url) => url.startsWith("/") || url.startsWith("http")
+			)}
 			isOwner={isOwner}
 			name={name}
 			onEdit={handleEdit}

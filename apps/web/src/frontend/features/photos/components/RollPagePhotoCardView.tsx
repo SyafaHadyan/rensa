@@ -4,7 +4,7 @@ import Link from "next/link";
 import type React from "react";
 import SmallIconButton from "@/frontend/components/buttons/SmallIconButton";
 import { ImageWithSkeleton } from "@/frontend/components/ImageWithSkeleton";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/services/photo.service";
 import { cn } from "@/utils/cn";
 
 interface RollPagePhotoCardViewProps {
@@ -12,7 +12,7 @@ interface RollPagePhotoCardViewProps {
 	id: string;
 	isLoading: boolean;
 	isOwner: boolean;
-	photo: PopulatedPhoto;
+	photo: Photo;
 }
 
 const RollPagePhotoCardView: React.FC<RollPagePhotoCardViewProps> = ({

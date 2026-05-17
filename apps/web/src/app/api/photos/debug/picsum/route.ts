@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/services/photo.service";
 
 interface PicsumPhoto {
 	author: string;
@@ -10,7 +10,7 @@ interface PicsumPhoto {
 	width: number;
 }
 
-const toPopulatedPhoto = (photo: PicsumPhoto): PopulatedPhoto => ({
+const toPhoto = (photo: PicsumPhoto): Photo => ({
 	bookmarks: 0,
 	createdAt: undefined,
 	description: `Photo by ${photo.author}`,
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
 
 		const payload = (await response.json()) as PicsumPhoto[];
 		const sortedPayload = sort === "popular" ? [...payload].reverse() : payload;
-		const photos = sortedPayload.map(toPopulatedPhoto);
+		const photos = sortedPayload.map(toPhoto);
 
 		return NextResponse.json({
 			photos,

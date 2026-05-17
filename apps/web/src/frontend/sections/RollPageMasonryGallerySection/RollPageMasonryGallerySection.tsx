@@ -14,7 +14,6 @@ import {
 	fetchPhotosFromRoll, // 🆕 New service
 	type Photo,
 } from "@/frontend/services/photo.service";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
 import RollPageMasonryGalleryGrid from "./RollPageMasonryGalleryGrid";
 
 interface RollPageMasonryGallerySectionProps {
@@ -49,8 +48,8 @@ const RollPageMasonryGallerySection: React.FC<
 		gcTime: 1000 * 60 * 30,
 	});
 
-	const photos: PopulatedPhoto[] =
-		data?.pages.flatMap((page) => page.data as PopulatedPhoto[]) ?? [];
+	const photos: Photo[] =
+		data?.pages.flatMap((page) => page.data as Photo[]) ?? [];
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetchingNextPage) {

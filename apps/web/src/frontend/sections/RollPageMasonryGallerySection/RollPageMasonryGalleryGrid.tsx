@@ -1,13 +1,13 @@
 import { AnimatePresence } from "motion/react";
 import Masonry from "react-masonry-css";
 import RollPagePhotoCard from "@/frontend/components/RollPagePhotoCard";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/services/photo.service";
 import { cn } from "@/utils/cn";
 
 interface RollPageMasonryGalleryGridProps {
 	isOwner: boolean;
 	onPhotoRemoved?: (photoId: string) => void;
-	photos: PopulatedPhoto[];
+	photos: Photo[];
 	rollId: string;
 }
 

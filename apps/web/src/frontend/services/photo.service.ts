@@ -1,38 +1,55 @@
 import { api } from "@/lib/axios-client";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
 
 export interface PhotoMetadata {
 	exif?: Record<string, string>;
-	format: "jpg" | "jpeg";
-	height: number;
-	size: number;
-	uploadedAt: Date | string;
-	width: number;
+	format?: "jpg" | "jpeg" | string;
+	height?: number;
+	size?: number;
+	uploadedAt?: Date | string;
+	width?: number;
+}
+
+export interface PhotoUser {
+	_id?: string;
+	avatar?: string;
+	avatarUrl?: string;
+	user_id?: string;
+	userId?: string;
+	username?: string;
 }
 
 export interface Photo {
-	bookmarks: number;
+	bookmarkedBy?: string[];
+	bookmarks?: number;
+	camera?: string;
+	category?: string;
+	color?: string;
+	created_at?: string;
 	createdAt?: string;
 	description: string;
-	metadata: PhotoMetadata;
+	metadata?: PhotoMetadata;
 	photo_id: string;
-	tags: string[];
+	style?: string;
+	tags?: string[];
 	title: string;
+	updated_at?: string;
 	updatedAt?: string;
 	url: string;
-	userId: string;
+	user?: PhotoUser;
+	user_id?: string | PhotoUser;
+	userId?: string | PhotoUser;
 }
 
 interface BackendPhotosResponse {
 	currentPage: number;
 	hasMore: boolean;
-	photos: PopulatedPhoto[];
+	photos: Photo[];
 	total: number;
 	totalPages: number;
 }
 
 export interface FetchPhotosResponse {
-	data: PopulatedPhoto[];
+	data: Photo[];
 	nextPage: number | undefined;
 	source?: ExplorePhotoSource;
 	urls: string[];
@@ -99,24 +116,24 @@ export const fetchPhotosFromRoll = async (
 
 	return {
 		data: res.data.data.photos,
-		urls: res.data.data.photos.map((photo: PopulatedPhoto) => photo.url),
+		urls: res.data.data.photos.map((photo: Photo) => photo.url),
 		nextPage: res.data.data.hasMore ? page + 1 : undefined,
 	};
 };
 
 interface PicsumPhotosResponse {
 	hasMore: boolean;
-	photos: PopulatedPhoto[];
+	photos: Photo[];
 }
 
 const getExplorePhotoSource = (): ExplorePhotoSource => {
-	const requestedSource = process.env.NEXT_PUBLIC_EXPLORE_SOURCE;
-	if (process.env.NODE_ENV === "production") {
-		return "db";
-	}
-	if (requestedSource === "picsum") {
-		return "picsum";
-	}
+	// const requestedSource = process.env.NEXT_PUBLIC_EXPLORE_SOURCE;
+	// if (process.env.NODE_ENV === "production") {
+	// 	return "db";
+	// }
+	// if (requestedSource === "picsum") {
+	// 	return "picsum";
+	// }
 	return "db";
 };
 

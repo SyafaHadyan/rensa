@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import "@/frontend/components/MasonryGallery.css";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
+import type { Photo } from "@/frontend/services/photo.service";
 import {
 	type ExplorePhotoSource,
 	type FetchPhotosResponse,
 	fetchExplorePhotos,
 } from "@/frontend/services/photo.service";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
 import ExploreGalleryView from "../components/ExploreGalleryView";
 
 interface ExploreGalleryContainerProps {
@@ -42,8 +42,8 @@ const ExploreGalleryContainer: React.FC<ExploreGalleryContainerProps> = ({
 		gcTime: 1000 * 60 * 30,
 	});
 
-	const photos: PopulatedPhoto[] =
-		data?.pages.flatMap((page) => page.data as PopulatedPhoto[]) ?? [];
+	const photos: Photo[] =
+		data?.pages.flatMap((page) => page.data as Photo[]) ?? [];
 	const source: ExplorePhotoSource = data?.pages?.[0]?.source ?? "db";
 
 	useEffect(() => {

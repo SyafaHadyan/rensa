@@ -7,5 +7,5 @@ export const fetchProfile = async (id: string) => {
 
 export const fetchProfileByRollId = async (rollId: string) => {
 	const res = await api.get(`/rolls/${rollId}/owner`);
-	return res.data.data.userId;
+	return res.data.data.user_id;
 };

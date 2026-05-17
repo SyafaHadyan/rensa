@@ -2,11 +2,11 @@ import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import Masonry from "react-masonry-css";
 import PhotoCard from "@/frontend/components/PhotoCard";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/services/photo.service";
 
 interface ExploreGalleryGridProps {
 	allowPhotoPageNavigation: boolean;
-	photos: PopulatedPhoto[];
+	photos: Photo[];
 }
 
 const getDynamicColumns = (photoCount: number): number => {

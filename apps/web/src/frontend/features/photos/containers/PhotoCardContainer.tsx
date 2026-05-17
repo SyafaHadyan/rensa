@@ -1,7 +1,7 @@
 import type React from "react";
 import usePhotoRoll from "@/frontend/features/photos/hooks/use-photo-roll";
+import type { Photo } from "@/frontend/services/photo.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
 import PhotoCardView from "../components/PhotoCardView";
 
 export interface PhotoCardContainerProps {
@@ -9,7 +9,7 @@ export interface PhotoCardContainerProps {
 	id: string | null;
 	isDropdownOpen: boolean;
 	onToggleDropdown: React.Dispatch<React.SetStateAction<boolean>>;
-	photo: PopulatedPhoto;
+	photo: Photo;
 }
 
 const PhotoCardContainer: React.FC<PhotoCardContainerProps> = ({

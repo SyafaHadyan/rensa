@@ -65,6 +65,7 @@ export default async function PhotoPage({
 	let photo: Awaited<ReturnType<typeof fetchPhotoById>> | null = null;
 	try {
 		photo = await fetchPhotoById(id);
+		console.log("Fetched photo:", photo);
 	} catch {
 		photo = null;
 	}
@@ -77,9 +78,9 @@ export default async function PhotoPage({
 				<div className="flex flex-col items-center justify-center gap-2 md:items-start md:justify-start">
 					<ImagePreview
 						alt={photo?.title ?? "Photo"}
-						height={photo?.metadata?.height}
+						height={photo.metadata.height}
 						src={photo?.url ?? ""}
-						width={photo?.metadata?.width}
+						width={photo.metadata.width}
 					/>
 				</div>
 				<PhotoInfoCard
@@ -87,7 +88,7 @@ export default async function PhotoPage({
 					id={id}
 					initialBookmarks={photo?.bookmarkedBy?.length || 0}
 					metadata={photo?.metadata}
-					ownerId={photo?.userId.toString() || ""}
+					ownerId={photo?.user?.user_id}
 					title={photo?.title}
 				/>
 			</div>
