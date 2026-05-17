@@ -46,11 +46,6 @@ export interface UserRepositoryInterface {
 		password: string;
 		userId: string;
 	}): Promise<boolean>;
-	updateBookmarks(
-		userId: string,
-		photoId: string,
-		action: "increment" | "decrement"
-	): Promise<UserResponseDto | null>;
 	updateProfile(params: {
 		avatarUrl: string;
 		email: string;

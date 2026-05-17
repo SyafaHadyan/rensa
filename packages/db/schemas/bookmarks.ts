@@ -22,6 +22,17 @@ export const bookmarks = pgTable(
 );
 
 export interface BookmarkActionDto {
-	action: "increment" | "decrement";
-	userId: string;
+	action: "add" | "remove";
+}
+
+export interface BookmarkStatusDto {
+	bookmarkCount: number;
+	isBookmarked: boolean;
+}
+
+export interface BookmarkRepositoryInterface {
+	add(userId: string, photoId: string): Promise<boolean>;
+	countByPhotoId(photoId: string): Promise<number>;
+	exists(userId: string, photoId: string): Promise<boolean>;
+	remove(userId: string, photoId: string): Promise<void>;
 }

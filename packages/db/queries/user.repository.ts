@@ -188,30 +188,4 @@ export class UserRepository implements UserRepositoryInterface {
 
 		return Boolean(updated);
 	}
-
-	async updateBookmarks(
-		userId: string,
-		photoId: string,
-		action: "increment" | "decrement"
-	): Promise<UserResponseDto | null> {
-		if (action === "increment") {
-			await db
-				.insert(bookmarks)
-				.values({
-					photoId,
-					userId,
-				})
-				.onConflictDoNothing({
-					target: [bookmarks.photoId, bookmarks.userId],
-				});
-		} else {
-			await db
-				.delete(bookmarks)
-				.where(
-					and(eq(bookmarks.photoId, photoId), eq(bookmarks.userId, userId))
-				);
-		}
-
-		return this.getById(userId);
-	}
 }
