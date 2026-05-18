@@ -226,6 +226,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		const conditions = filters.flatMap((filter) => {
 			const needle = `%${filter}%`;
 			return [
+				ilike(photos.camera, needle),
 				ilike(photos.category, needle),
 				ilike(photos.style, needle),
 				ilike(photos.color, needle),
