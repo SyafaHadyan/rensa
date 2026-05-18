@@ -61,14 +61,30 @@ export async function POST(req: Request) {
 			description: "This is your default roll.",
 		});
 
+		let verificationEmailSent = false;
+		let verificationUrl: string | undefined;
+		let verificationEmailError: string | undefined;
 		try {
-			await sendVerificationEmail(email);
+			const result = await sendVerificationEmail(email);
+			verificationEmailSent = true;
+			verificationUrl = result.verificationUrl;
 		} catch (err) {
 			console.error("Error sending verification email:", err);
+			verificationEmailError =
+				err instanceof Error
+					? err.message
+					: "Failed to send verification email";
 		}
 
 		return NextResponse.json(
-			{ message: "User registered successfully" },
+			{
+				message: verificationEmailSent
+					? "User registered successfully"
+					: "User registered, but verification email failed to send",
+				verificationEmailSent,
+				...(verificationEmailError ? { verificationEmailError } : {}),
+				...(verificationUrl ? { verificationUrl } : {}),
+			},
 			{ status: 201 }
 		);
 	} catch (err) {

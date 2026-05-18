@@ -3,51 +3,102 @@ import EmailVerificationTemplate from "@/frontend/components/emailTemplates/Emai
 import { PasswordResetEmail } from "@/frontend/components/emailTemplates/PasswordResetEmail";
 import getResend from "@/lib/resend";
 
-export const sendVerificationEmail = async (email: string): Promise<void> => {
-  if (!email) {
-    throw new Error("Email is required");
-  }
+interface EmailSendResult {
+	id?: string;
+	verificationUrl?: string;
+}
 
-  if (!process.env.NEXTAUTH_SECRET) {
-    throw new Error("Email verification is not configured.");
-  }
+const getAppUrl = (): string => {
+	const configuredUrl =
+		process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
+	const vercelUrl =
+		process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+	const appUrl = configuredUrl || (vercelUrl ? `https://${vercelUrl}` : "");
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rensa.site";
-  const token = jwt.sign({ email }, process.env.NEXTAUTH_SECRET, {
-    expiresIn: "1h",
-  });
+	if (!appUrl) {
+		throw new Error("App URL is not configured.");
+	}
 
-  const verificationUrl = `${appUrl}/verified?token=${token}`;
+	return appUrl.replace(/\/$/, "").replace(/^http:\/\//, "https://");
+};
 
-  const resend = await getResend();
-  await resend.emails.send({
-    from: process.env.NO_REPLY_EMAIL || "",
-    to: email,
-    subject: "Verify your email address",
-    react: EmailVerificationTemplate({ verificationLink: verificationUrl }),
-  });
+const getEmailFrom = (): string => {
+	const from = process.env.EMAIL_FROM || process.env.NO_REPLY_EMAIL;
+	if (!from) {
+		throw new Error("Email sender is not configured.");
+	}
+	return from;
+};
+
+const assertEmailSent = (result: {
+	data?: { id?: string } | null;
+	error?: { message?: string; name?: string } | null;
+}) => {
+	if (result.error) {
+		throw new Error(
+			result.error.message ||
+				result.error.name ||
+				"Email provider rejected the request."
+		);
+	}
+
+	return result.data?.id;
+};
+
+export const sendVerificationEmail = async (
+	email: string
+): Promise<EmailSendResult> => {
+	if (!email) {
+		throw new Error("Email is required");
+	}
+
+	if (!process.env.NEXTAUTH_SECRET) {
+		throw new Error("Email verification is not configured.");
+	}
+
+	const appUrl = getAppUrl();
+	const token = jwt.sign({ email }, process.env.NEXTAUTH_SECRET, {
+		expiresIn: "1h",
+	});
+
+	const verificationUrl = `${appUrl}/verified?token=${token}`;
+
+	const resend = await getResend();
+	const result = await resend.emails.send({
+		from: getEmailFrom(),
+		to: email,
+		subject: "Verify your email address",
+		react: EmailVerificationTemplate({ verificationLink: verificationUrl }),
+	});
+
+	return {
+		id: assertEmailSent(result),
+		verificationUrl:
+			process.env.NODE_ENV === "development" ? verificationUrl : undefined,
+	};
 };
 
 export const sendPasswordResetEmail = async (email: string): Promise<void> => {
-  if (!email || typeof email !== "string") {
-    throw new Error("Valid email is required");
-  }
+	if (!email || typeof email !== "string") {
+		throw new Error("Valid email is required");
+	}
 
-  if (!process.env.NEXTAUTH_SECRET) {
-    throw new Error("Password reset is not configured.");
-  }
+	if (!process.env.NEXTAUTH_SECRET) {
+		throw new Error("Password reset is not configured.");
+	}
 
-  const token = jwt.sign({ email }, process.env.NEXTAUTH_SECRET, {
-    expiresIn: "1h",
-  });
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rensa.site";
-  const resetLink = `${appUrl}/reset-password?token=${token}`;
+	const token = jwt.sign({ email }, process.env.NEXTAUTH_SECRET, {
+		expiresIn: "1h",
+	});
+	const appUrl = getAppUrl();
+	const resetLink = `${appUrl}/reset-password?token=${token}`;
 
-  const resend = await getResend();
-  await resend.emails.send({
-    from: process.env.NO_REPLY_EMAIL || "",
-    to: email,
-    subject: "Password Reset Request",
-    react: PasswordResetEmail({ resetLink }),
-  });
+	const resend = await getResend();
+	const result = await resend.emails.send({
+		from: getEmailFrom(),
+		to: email,
+		subject: "Password Reset Request",
+		react: PasswordResetEmail({ resetLink }),
+	});
+	assertEmailSent(result);
 };

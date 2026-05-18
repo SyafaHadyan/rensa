@@ -20,11 +20,18 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
+		if (!process.env.NEXTAUTH_SECRET) {
+			return NextResponse.json(
+				{ success: false, message: "Email verification is not configured" },
+				{ status: 500 }
+			);
+		}
+
 		let payload: VerifyTokenPayload;
 		try {
 			payload = jwt.verify(
 				token,
-				process.env.NEXTAUTH_SECRET!
+				process.env.NEXTAUTH_SECRET
 			) as VerifyTokenPayload;
 		} catch (err) {
 			if (err instanceof jwt.TokenExpiredError) {

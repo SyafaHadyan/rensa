@@ -19,16 +19,28 @@ export async function POST(req: NextRequest) {
 	}
 
 	try {
-		await sendVerificationEmail(email);
+		const result = await sendVerificationEmail(email);
 
 		return NextResponse.json(
-			{ success: true, message: "Verification email sent" },
+			{
+				success: true,
+				message: "Verification email sent",
+				...(result.verificationUrl
+					? { verificationUrl: result.verificationUrl }
+					: {}),
+			},
 			{ status: 200 }
 		);
 	} catch (err) {
 		console.error("Error sending verification email:", err);
 		return NextResponse.json(
-			{ success: false, message: "Failed to send verification email" },
+			{
+				success: false,
+				message:
+					err instanceof Error
+						? err.message
+						: "Failed to send verification email",
+			},
 			{ status: 500 }
 		);
 	}
