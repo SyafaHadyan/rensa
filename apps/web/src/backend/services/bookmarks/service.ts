@@ -67,10 +67,20 @@ export class BookmarkService {
 	): Promise<void> {
 		const recipientId = await this.photoRepository.getOwnerId(photoId);
 		if (!(recipientId && recipientId !== actorId)) {
+			console.info("[notifications-api] skipped bookmark notification", {
+				hasRecipient: Boolean(recipientId),
+				isSelfAction: recipientId === actorId,
+				photoId,
+			});
 			return;
 		}
 
 		try {
+			console.info("[notifications-api] creating bookmark notification", {
+				photoId,
+				recipientId,
+				type: "photo-bookmarked",
+			});
 			await notificationService.create({
 				actorId,
 				photoId,
