@@ -49,7 +49,8 @@ export const photoIdParamDto = z.object({
 });
 
 export const listPhotosQueryDto = paginationQueryDto.extend({
-	sort: z.enum(["recent", "popular"]).default("recent"),
+	sort: z.enum(["recent", "popular", "oldest"]).default("recent"),
+	userId: uuidDto.optional(),
 	filters: z
 		.string()
 		.transform((value) =>

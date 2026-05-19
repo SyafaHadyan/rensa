@@ -9,7 +9,7 @@ interface RollListProps {
 
 export default function RollList({ rolls, isOwner }: RollListProps) {
 	return (
-		<div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">
+		<div className="flex flex-wrap items-start gap-x-4 gap-y-6">
 			{isOwner && <CreateNewRollCard key="create-new-roll" />}
 			{rolls?.length > 0 &&
 				rolls.map((roll) => {

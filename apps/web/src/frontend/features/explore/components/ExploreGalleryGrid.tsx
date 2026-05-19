@@ -1,6 +1,7 @@
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import Masonry from "react-masonry-css";
+import "@/frontend/components/MasonryGallery.css";
 import PhotoCard from "@/frontend/components/PhotoCard";
 import type { Photo } from "@/frontend/types/photo";
 

@@ -7,13 +7,15 @@ import { api } from "@/lib/axios-client";
 export const fetchPhotosFromDB = async (
 	page: number,
 	filters: string[] | undefined,
-	sort: "popular" | "recent" = "recent"
+	sort: "oldest" | "popular" | "recent" = "recent",
+	userId?: string
 ): Promise<FetchPhotosResponse> => {
 	const params: Record<string, number | string | undefined> = {
 		page,
 		limit: 10,
 		sort,
 		filters: filters?.join(","),
+		userId,
 	};
 
 	const res = await api.get<BackendPhotosResponse>("/photos", { params });
@@ -71,6 +73,15 @@ export const fetchExplorePhotos = async (
 	sort: "popular" | "recent" = "recent"
 ): Promise<FetchPhotosResponse> => {
 	const response = await fetchPhotosFromDB(page, filters, sort);
+	return { ...response, source: "db" };
+};
+
+export const fetchCreatedPhotosByUserId = async (
+	userId: string,
+	page: number,
+	sort: "oldest" | "recent" = "recent"
+): Promise<FetchPhotosResponse> => {
+	const response = await fetchPhotosFromDB(page, undefined, sort, userId);
 	return { ...response, source: "db" };
 };
 

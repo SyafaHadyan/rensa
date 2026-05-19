@@ -15,6 +15,7 @@ export async function GET(req: Request) {
 			limit: searchParams.get("limit") ?? undefined,
 			sort: searchParams.get("sort") ?? undefined,
 			filters: searchParams.get("filters") ?? undefined,
+			userId: searchParams.get("userId") ?? undefined,
 		});
 
 		const result = await photoService.list(query);

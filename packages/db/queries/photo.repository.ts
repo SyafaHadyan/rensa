@@ -1,4 +1,4 @@
-import { count, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { bookmarks } from "../schemas/bookmarks";
 import type {
 	CreateUploadedPhotoDto,
@@ -237,7 +237,14 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 
 	async list(query: ListPhotosQueryDto): Promise<ListPhotosResult> {
 		const from = (query.page - 1) * query.limit;
-		const whereClause = this.buildFilterWhere(query.filters);
+		const filterWhereClause = this.buildFilterWhere(query.filters);
+		const ownerWhereClause = query.userId
+			? eq(photos.userId, query.userId)
+			: undefined;
+		const whereClause =
+			filterWhereClause && ownerWhereClause
+				? and(filterWhereClause, ownerWhereClause)
+				: (filterWhereClause ?? ownerWhereClause);
 		let photoRows: PhotoRow[] = [];
 
 		if (query.sort === "popular") {
@@ -260,7 +267,9 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 				.select()
 				.from(photos)
 				.where(whereClause)
-				.orderBy(desc(photos.createdAt))
+				.orderBy(
+					query.sort === "oldest" ? asc(photos.createdAt) : desc(photos.createdAt)
+				)
 				.limit(query.limit)
 				.offset(from);
 		}

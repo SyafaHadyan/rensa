@@ -49,7 +49,8 @@ export interface ListPhotosQueryDto {
 	filters?: string[];
 	limit: number;
 	page: number;
-	sort: "recent" | "popular";
+	sort: "oldest" | "popular" | "recent";
+	userId?: string;
 }
 
 export interface PhotoResponseDto extends Passthrough {
