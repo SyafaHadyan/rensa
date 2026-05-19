@@ -7,6 +7,7 @@ import type {
 } from "@rensa/db/schema";
 import { ForbiddenError, NotFoundError } from "@/backend/common/backend.error";
 import type { PaginatedPhotoListResult } from "@/backend/types/service.types";
+import cloudinary, { getCloudinaryPublicIdFromUrl } from "@/lib/cloudinary";
 
 export class PhotoService {
 	readonly photoRepository: PhotoRepositoryInterface;
@@ -50,10 +51,24 @@ export class PhotoService {
 	}
 
 	async deleteById(photoId: string, actorId: string): Promise<void> {
-		const ownerId = await this.getOwnerId(photoId);
-		if (ownerId !== actorId) {
+		const photo = await this.photoRepository.getById(photoId);
+		if (!photo) {
+			throw new NotFoundError("Photo not found");
+		}
+		if (photo.user.userId !== actorId) {
 			throw new ForbiddenError("Forbidden: You don't own this photo");
 		}
+
+		const publicId = getCloudinaryPublicIdFromUrl(photo.url);
+		if (publicId) {
+			const result = await cloudinary.uploader.destroy(publicId, {
+				resource_type: "image",
+			});
+			if (result.result !== "ok" && result.result !== "not found") {
+				throw new Error(`Failed to delete Cloudinary asset: ${result.result}`);
+			}
+		}
+
 		await this.photoRepository.deleteById(photoId);
 	}
 
