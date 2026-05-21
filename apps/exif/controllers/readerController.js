@@ -6,40 +6,11 @@ const log = debug("rensa:controller");
 const logError = debug("rensa:error");
 const fsAsync = fs.promises;
 
-const SAFE_METADATA_KEYS = [
-	"Make",
-	"Model",
-	"LensModel",
-	"ImageWidth",
-	"ImageHeight",
-	"Megapixels",
-	"DateTimeOriginal",
-	"CreateDate",
-	"ModifyDate",
-	"Orientation",
-	"ExposureTime",
-	"FNumber",
-	"ISO",
-	"FocalLength",
-	"WhiteBalance",
-	"Flash",
-];
-
 const isJpegSignature = (buffer) => {
 	if (!buffer || buffer.length < 3) {
 		return false;
 	}
 	return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
-};
-
-const toSafeMetadata = (metadata) => {
-	const safeMetadata = {};
-	for (const key of SAFE_METADATA_KEYS) {
-		if (metadata[key] !== undefined) {
-			safeMetadata[key] = metadata[key];
-		}
-	}
-	return safeMetadata;
 };
 
 export const exifRead = async (req, res) => {
@@ -75,13 +46,8 @@ export const exifRead = async (req, res) => {
 
 		log("Reading EXIF metadata from temp file");
 		const metadata = await exiftool.read(tempPath);
-		const safeMetadata = toSafeMetadata(metadata);
 		log(
-			"Metadata extracted successfully, found %d safe properties",
-			Object.keys(safeMetadata).length
-		);
-		log(
-			"Metadata extraction total properties from exiftool: %d",
+			"Metadata extracted successfully, found %d properties",
 			Object.keys(metadata).length
 		);
 
@@ -91,7 +57,7 @@ export const exifRead = async (req, res) => {
 				filename: req.file.originalname,
 				size: req.file.size,
 				mimetype: req.file.mimetype,
-				metadata: safeMetadata,
+				metadata,
 			},
 			message: "Metadata extracted successfully",
 		});
