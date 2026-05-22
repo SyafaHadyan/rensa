@@ -2,6 +2,8 @@
 import { XIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 import type React from "react";
+import { useState } from "react";
+import { cn } from "@/utils/cn";
 import LinkIconButton from "./buttons/LinkIconButton";
 
 interface ImagePreviewProps {
@@ -16,18 +18,28 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
 	alt,
 	width,
 	height,
-}) => (
-	<div className="relative flex flex-col items-center justify-center gap-5">
-		<LinkIconButton className="self-start" href={"back"} Icon={XIcon} />
-		<div className="w-full xl:max-w-2xl">
-			<Image
-				alt={alt}
-				className="rounded-3xl"
-				height={height}
-				src={src}
-				width={width}
-			/>
+}) => {
+	const [loaded, setLoaded] = useState(false);
+	return (
+		<div className="relative flex flex-col items-center justify-center gap-5">
+			<LinkIconButton className="self-start" href={"back"} Icon={XIcon} />
+			<div className="relative w-fit max-w-full overflow-hidden rounded-3xl xl:max-w-2xl">
+				{!loaded && (
+					<div className="skeleton absolute inset-0 z-10 animate-pulse bg-[#D5D5D5]" />
+				)}
+				<Image
+					alt={alt}
+					className={cn(
+						"h-auto max-w-full rounded-3xl transition-opacity duration-300",
+						loaded ? "opacity-100" : "opacity-0"
+					)}
+					height={height}
+					onLoad={() => setLoaded(true)}
+					src={src}
+					width={width}
+				/>
+			</div>
 		</div>
-	</div>
-);
+	);
+};
 export default ImagePreview;

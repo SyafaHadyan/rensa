@@ -1,5 +1,4 @@
 import type React from "react";
-import ProfileBadge from "@/frontend/components/badges/ProfileBadge";
 import PrimaryButton from "@/frontend/components/buttons/PrimaryButton";
 import PhotoDropdown from "@/frontend/components/dropdowns/PhotoDropdown";
 import RollDropdownIconButton from "@/frontend/components/dropdowns/rolls/RollDropdownIconButton";
@@ -24,9 +23,7 @@ interface PhotoInfoCardViewProps {
 	isSaved: boolean;
 	metadata?: PhotoMetadata;
 	onSaveToggle: () => void;
-	ownerId: string;
-	profileAvatarUrl?: string;
-	profileUsername?: string;
+	profileBadge: React.ReactNode;
 	savedToRolls: string[];
 	selectedRoll: SelectedRoll | null;
 	setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -42,11 +39,9 @@ const PhotoInfoCardView: React.FC<PhotoInfoCardViewProps> = ({
 	initialBookmarks,
 	description,
 	metadata,
-	ownerId,
 	isOwner,
 	userId,
-	profileAvatarUrl,
-	profileUsername,
+	profileBadge,
 	selectedRoll,
 	isLoading,
 	isSaved,
@@ -93,13 +88,7 @@ const PhotoInfoCardView: React.FC<PhotoInfoCardViewProps> = ({
 				</Text>
 				<Heading size="m">{title}</Heading>
 			</div>
-			<ProfileBadge
-				alt={profileUsername}
-				avatarUrl={profileAvatarUrl}
-				className="mb-5"
-				href={`/profile/${ownerId}`}
-				username={profileUsername || "loading..."}
-			/>
+			{profileBadge}
 			<p className="max-w-87.5 text-[16px] text-black-200">{description}</p>
 		</div>
 		<div>

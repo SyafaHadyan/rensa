@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { cache, Suspense } from "react";
 import PhotoInfoCard from "@/frontend/components/cards/PhotoInfoCard";
 import Heading from "@/frontend/components/Heading";
 import ImagePreview from "@/frontend/components/ImagePreview";
-import MasonryGalleryPage from "@/frontend/sections/MasonryGallerySection/MasonryGallerySection";
+import PhotoPageFallback, {
+	PhotoRecommendationsFallback,
+} from "@/frontend/features/photos/components/fallbacks/PhotoPageFallbacks";
+import PhotoRecommendationsSection from "@/frontend/features/photos/components/PhotoRecommendationsSection";
 import { fetchPhotoById } from "@/frontend/services/photo.service";
 import type { Photo } from "@/frontend/types/photo";
+
+const getPhotoById = cache(async (id: string): Promise<Photo | null> => {
+	try {
+		return await fetchPhotoById(id);
+	} catch {
+		return null;
+	}
+});
 
 export async function generateMetadata({
 	params,
@@ -13,40 +25,9 @@ export async function generateMetadata({
 	params: Promise<{ id: string }>;
 }): Promise<Metadata> {
 	const { id } = await params;
-	try {
-		const photo = await fetchPhotoById(id);
-		const title = photo?.title || "Photo";
-		const description =
-			photo?.description || "Discover photography inspiration on Rensa.";
+	const photo = await getPhotoById(id);
 
-		return {
-			title: `${title}`,
-			description,
-			alternates: {
-				canonical: `/photo/${id}`,
-			},
-			openGraph: {
-				title,
-				description,
-				url: `/photo/${id}`,
-				type: "article",
-				images: photo?.url
-					? [
-							{
-								url: photo.url,
-								alt: title,
-							},
-						]
-					: undefined,
-			},
-			twitter: {
-				card: "summary_large_image",
-				title,
-				description,
-				images: photo?.url ? [photo.url] : undefined,
-			},
-		};
-	} catch {
+	if (!photo) {
 		return {
 			title: "Photo Not Found",
 			robots: {
@@ -55,6 +36,38 @@ export async function generateMetadata({
 			},
 		};
 	}
+
+	const title = photo.title || "Photo";
+	const description =
+		photo.description || "Discover photography inspiration on Rensa.";
+
+	return {
+		title: `${title}`,
+		description,
+		alternates: {
+			canonical: `/photo/${id}`,
+		},
+		openGraph: {
+			title,
+			description,
+			url: `/photo/${id}`,
+			type: "article",
+			images: photo.url
+				? [
+						{
+							url: photo.url,
+							alt: title,
+						},
+					]
+				: undefined,
+		},
+		twitter: {
+			card: "summary_large_image",
+			title,
+			description,
+			images: photo.url ? [photo.url] : undefined,
+		},
+	};
 }
 
 export default async function PhotoPage({
@@ -63,15 +76,20 @@ export default async function PhotoPage({
 	params: Promise<{ id: string }>;
 }) {
 	const { id } = await params;
-	let photo: Photo | null = null;
-	try {
-		photo = await fetchPhotoById(id);
-	} catch {
-		photo = null;
-	}
+	return (
+		<Suspense fallback={<PhotoPageFallback />}>
+			<PhotoPageContent id={id} />
+		</Suspense>
+	);
+}
+
+async function PhotoPageContent({ id }: { id: string }) {
+	const photo = await getPhotoById(id);
+
 	if (!photo) {
 		redirect("/not-found");
 	}
+
 	return (
 		<div className="flex w-full flex-col items-center justify-center gap-10 bg-white-500 px-6.25 md:px-7.5 lg:px-17.5 xl:px-22.5 2xl:px-65">
 			<div className="flex flex-col items-start justify-center gap-16.75 pt-35 lg:flex-row">
@@ -95,7 +113,9 @@ export default async function PhotoPage({
 			<Heading className="text-primary" size="s">
 				We thought you will like this
 			</Heading>
-			<MasonryGalleryPage type="explore" />
+			<Suspense fallback={<PhotoRecommendationsFallback />}>
+				<PhotoRecommendationsSection />
+			</Suspense>
 		</div>
 	);
 }

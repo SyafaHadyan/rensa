@@ -1,8 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type React from "react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import ProfileBadge from "@/frontend/components/badges/ProfileBadge";
+import { ProfileBadgeFallback } from "@/frontend/features/photos/components/fallbacks/PhotoPageFallbacks";
 import usePhotoRoll from "@/frontend/features/photos/hooks/use-photo-roll";
 import { fetchProfile } from "@/frontend/services/profile.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
@@ -31,12 +33,6 @@ const PhotoInfoCardContainer: React.FC<PhotoInfoCardContainerProps> = ({
 	ownerId,
 }) => {
 	const { user } = useAuthStore();
-	const { data: profile } = useQuery({
-		queryKey: ["profile", ownerId],
-		queryFn: () => fetchProfile(ownerId),
-		staleTime: 5 * 60 * 1000,
-		enabled: !!ownerId,
-	});
 	const {
 		selectedRoll,
 		isLoading,
@@ -60,15 +56,35 @@ const PhotoInfoCardContainer: React.FC<PhotoInfoCardContainerProps> = ({
 			isSaved={isSaved}
 			metadata={metadata}
 			onSaveToggle={isSaved ? removeFromRoll : saveToRoll}
-			ownerId={ownerId}
-			profileAvatarUrl={profile?.avatarUrl}
-			profileUsername={profile?.username}
+			profileBadge={
+				<Suspense fallback={<ProfileBadgeFallback className="mb-5" />}>
+					<OwnerProfileBadge ownerId={ownerId} />
+				</Suspense>
+			}
 			savedToRolls={savedToRolls}
 			selectedRoll={selectedRoll}
 			setIsDropdownOpen={setIsDropdownOpen}
 			setSelectedRoll={setSelectedRoll}
 			title={title}
 			userId={user?.id}
+		/>
+	);
+};
+
+const OwnerProfileBadge: React.FC<{ ownerId: string }> = ({ ownerId }) => {
+	const { data: profile } = useSuspenseQuery({
+		queryKey: ["profile", ownerId],
+		queryFn: () => fetchProfile(ownerId),
+		staleTime: 5 * 60 * 1000,
+	});
+
+	return (
+		<ProfileBadge
+			alt={profile?.username}
+			avatarUrl={profile?.avatarUrl}
+			className="mb-5"
+			href={`/profile/${ownerId}`}
+			username={profile?.username}
 		/>
 	);
 };
