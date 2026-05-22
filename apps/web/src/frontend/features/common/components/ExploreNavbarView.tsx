@@ -43,12 +43,9 @@ const ExploreNavbarView = ({ avatarUrl, user }: ExploreNavbarViewProps) => (
 						<ProfileButton
 							alt={user.name ?? "Profile"}
 							href={`/profile/${user.id}`}
-							src={avatarUrl || user.image || "/profile.jpg"}
+							src={avatarUrl || user.image}
 						/>
-						<AccountDropdown
-							src={avatarUrl || user.image || "/profile.jpg"}
-							user={user}
-						/>
+						<AccountDropdown src={avatarUrl || user.image} user={user} />
 					</>
 				) : (
 					<>

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         "Content-Type": "multipart/form-data",
       },
     });
-    console.log("EXIF read response:", res.data);
+    console.log("EXIF read response:", res.data.data.metadata);
     return NextResponse.json(
       {
         success: true,

@@ -37,7 +37,7 @@ const CommentInputFieldContainer: React.FC<CommentInputFieldContainerProps> = ({
 			user: {
 				userId: user?.id || "unknown",
 				username: user?.name || "Anonymous",
-				avatarUrl: profile?.avatarUrl || user?.image || "/profile.jpg",
+				avatarUrl: profile?.avatarUrl || user?.image || undefined,
 			},
 			createdAt: new Date().toISOString(),
 		};

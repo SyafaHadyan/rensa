@@ -1,8 +1,8 @@
-import Image from "next/image";
 import type React from "react";
 import AccentButton from "@/frontend/components/buttons/AccentButton";
 import ShareButton from "@/frontend/components/buttons/ShareButton";
 import Heading from "@/frontend/components/Heading";
+import ProfileAvatar from "@/frontend/components/ProfileAvatar";
 import type { EditableProfile } from "../types";
 
 interface ProfileHeaderViewProps {
@@ -17,15 +17,12 @@ const ProfileHeaderView: React.FC<ProfileHeaderViewProps> = ({
 	profile,
 }) => (
 	<header className="flex flex-col items-center">
-		<div className="relative h-32.75 w-32.75 overflow-hidden rounded-full bg-gray-100">
-			<Image
-				alt={profile.username || "User Avatar"}
-				className="h-full w-full object-cover"
-				fill
-				sizes="131px"
-				src={profile.avatarUrl || "/profile.jpg"}
-			/>
-		</div>
+		<ProfileAvatar
+			alt={profile.username || "User Avatar"}
+			className="h-32.75 w-32.75"
+			sizes="131px"
+			src={profile.avatarUrl}
+		/>
 		<Heading className="mt-4 text-black" size="l">
 			@{profile.username || "User Name"}
 		</Heading>
