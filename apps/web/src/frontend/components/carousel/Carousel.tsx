@@ -33,6 +33,7 @@ export default function Carousel() {
 								className="object-cover"
 								fill
 								priority={index === 0}
+								quality={20}
 								sizes="100vw"
 								src={slide.src}
 							/>

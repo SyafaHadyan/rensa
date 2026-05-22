@@ -69,7 +69,7 @@ export default function HeroSection() {
 							fill
 							loading={i < 3 ? "eager" : "lazy"}
 							priority={i < 3}
-							quality={75}
+							quality={20}
 							sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 							src={data.src}
 						/>

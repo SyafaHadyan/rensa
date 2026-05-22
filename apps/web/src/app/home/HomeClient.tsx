@@ -101,6 +101,7 @@ export default function HomeClient() {
 									alt="photo"
 									className="h-full w-full object-cover"
 									fill
+									quality={20}
 									sizes="(max-width: 1024px) 40vw, 32vw"
 									src={card.src}
 								/>
