@@ -19,10 +19,11 @@ interface ExploreNavbarUser {
 }
 
 interface ExploreNavbarViewProps {
+	avatarUrl?: string;
 	user?: ExploreNavbarUser | null;
 }
 
-const ExploreNavbarView = ({ user }: ExploreNavbarViewProps) => (
+const ExploreNavbarView = ({ avatarUrl, user }: ExploreNavbarViewProps) => (
 	<nav className="fixed top-5 left-1/2 z-20 flex h-14 w-[90%] -translate-x-1/2 items-center justify-between rounded-[48px] bg-white-200 text-black shadow-lg md:h-18 lg:w-[70%]">
 		<div className="ml-2 flex flex-row items-center gap-1 lg:ml-6 lg:gap-4">
 			<Logo size="s" />
@@ -39,8 +40,15 @@ const ExploreNavbarView = ({ user }: ExploreNavbarViewProps) => (
 							<NotificationDropdown />
 							<BookmarkButton />
 						</span>
-						<ProfileButton alt="" src="/profile.jpg" />
-						<AccountDropdown src="/profile.jpg" user={user} />
+						<ProfileButton
+							alt={user.name ?? "Profile"}
+							href={`/profile/${user.id}`}
+							src={avatarUrl || user.image || "/profile.jpg"}
+						/>
+						<AccountDropdown
+							src={avatarUrl || user.image || "/profile.jpg"}
+							user={user}
+						/>
 					</>
 				) : (
 					<>

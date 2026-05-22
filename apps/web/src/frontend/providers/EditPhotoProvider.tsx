@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useState } from "react";
 import Button from "@/frontend/components/buttons/Button";
 import TertiaryButton from "@/frontend/components/buttons/TertiaryButton";
+import ModalFrame from "@/frontend/components/modal/ModalFrame";
 import { api } from "@/lib/axios-client";
 import { useToast } from "./ToastProvider";
 
@@ -75,11 +76,8 @@ export const EditPhotoProvider: React.FC<EditPhotoProviderProps> = ({
 		>
 			{children}
 			{isOpen && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-black">
-					<div className="w-95 rounded-2xl bg-white p-6 shadow-xl">
-						<h2 className="mb-4 font-bold text-xl">
-							Are you sure you want to delete this photo?
-						</h2>
+				<ModalFrame
+					footer={
 						<div className="flex flex-row justify-end gap-4">
 							<Button
 								className="bg-red-600 text-white hover:bg-red-700"
@@ -89,8 +87,14 @@ export const EditPhotoProvider: React.FC<EditPhotoProviderProps> = ({
 							</Button>
 							<TertiaryButton onClick={closeEditor}>Cancel</TertiaryButton>
 						</div>
-					</div>
-				</div>
+					}
+					onClose={closeEditor}
+					title="Are you sure you want to delete this photo?"
+				>
+					<p className="font-figtree text-black-300 text-sm">
+						This will remove the photo from your profile and rolls.
+					</p>
+				</ModalFrame>
 			)}
 		</EditPhotoContext.Provider>
 	);

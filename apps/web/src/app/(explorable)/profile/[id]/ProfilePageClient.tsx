@@ -5,16 +5,16 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import AccentButton from "@/frontend/components/buttons/AccentButton";
-import ShareButton from "@/frontend/components/buttons/ShareButton";
 import ProfileRollFilterDropdown from "@/frontend/components/dropdowns/profile/ProfileRollFilterDropdown";
-import Heading from "@/frontend/components/Heading";
 import RollList from "@/frontend/components/lists/RollList";
 import ExploreTabs from "@/frontend/components/tabs/ExploreTabs";
 import ExploreGalleryView from "@/frontend/features/explore/components/ExploreGalleryView";
+import EditProfileModal from "@/frontend/features/profile/components/EditProfileModal";
+import ProfileHeaderView from "@/frontend/features/profile/components/ProfileHeaderView";
+import { useEditProfile } from "@/frontend/features/profile/hooks/use-edit-profile";
+import type { EditableProfile } from "@/frontend/features/profile/types";
 import { CreateRollProvider } from "@/frontend/providers/CreateRollProvider";
 import { EditRollProvider } from "@/frontend/providers/EditRollProvider";
 import { fetchCreatedPhotosByUserId } from "@/frontend/services/photo.service";
@@ -28,7 +28,7 @@ import type { Roll, SelectedRoll } from "@/frontend/types/roll";
 
 interface ProfilePageClientProps {
 	profileData: {
-		user: { avatarUrl?: string; id: string; username: string };
+		user: EditableProfile;
 		rolls: Roll[];
 	};
 }
@@ -43,15 +43,23 @@ export default function ProfilePageClient({
 }: ProfilePageClientProps) {
 	const { user } = useAuthStore();
 	const queryClient = useQueryClient();
+	const [profile, setProfile] = useState(profileData.user);
 	const [filter, setFilter] = useState<SortOption>("latest");
 	const [activeTabId, setActiveTabId] = useState("rolls");
 	const { ref, inView } = useInView({ threshold: 0.5 });
-	const isOwner = user?.id === profileData.user.id;
+	const isOwner = user?.id === profile.id;
+	const handleProfileUpdate = useCallback((nextProfile: EditableProfile) => {
+		setProfile(nextProfile);
+	}, []);
+	const editProfile = useEditProfile({
+		initialProfile: profile,
+		onProfileUpdate: handleProfileUpdate,
+	});
 
 	const { data: rolls } = useQuery({
-		queryKey: ["profileRolls", profileData.user.id, filter],
-		queryFn: () => fetchRollsByUserId(profileData.user.id, filter),
-		enabled: !!profileData.user?.username,
+		queryKey: ["profileRolls", profile.id, filter],
+		queryFn: () => fetchRollsByUserId(profile.id, filter),
+		enabled: !!profile?.username,
 		initialData: filter === "latest" ? profileData.rolls : undefined,
 	});
 	const {
@@ -63,10 +71,10 @@ export default function ProfilePageClient({
 		isFetchingNextPage,
 		isPending: isCreatedPhotosPending,
 	} = useInfiniteQuery<FetchPhotosResponse>({
-		queryKey: ["profileCreatedPhotos", profileData.user.id, filter],
+		queryKey: ["profileCreatedPhotos", profile.id, filter],
 		queryFn: ({ pageParam }) =>
 			fetchCreatedPhotosByUserId(
-				profileData.user.id,
+				profile.id,
 				pageParam as number,
 				filter === "oldest" ? "oldest" : "recent"
 			),
@@ -93,7 +101,7 @@ export default function ProfilePageClient({
 
 	const handleRollUpdate = (roll: SelectedRoll) => {
 		queryClient.setQueryData<Roll[]>(
-			["profileRolls", profileData.user.id, filter],
+			["profileRolls", profile.id, filter],
 			(oldRolls) => {
 				if (!oldRolls) {
 					return [];
@@ -106,7 +114,7 @@ export default function ProfilePageClient({
 	};
 	const handleRollDelete = (rollId: string) => {
 		queryClient.setQueryData<Roll[]>(
-			["profileRolls", profileData.user.id, filter],
+			["profileRolls", profile.id, filter],
 			(oldRolls) => {
 				if (!oldRolls) {
 					return [];
@@ -118,7 +126,7 @@ export default function ProfilePageClient({
 
 	const handleRollCreate = (roll: SelectedRoll) => {
 		queryClient.setQueryData<Roll[]>(
-			["profileRolls", profileData.user.id, filter],
+			["profileRolls", profile.id, filter],
 			(oldRolls) => {
 				if (!oldRolls) {
 					return [];
@@ -143,22 +151,23 @@ export default function ProfilePageClient({
 				onRollUpdate={handleRollUpdate}
 			>
 				<div className="flex min-h-screen w-full flex-col items-center justify-start bg-white py-16">
-					<div className="relative h-32.75 w-32.75 overflow-hidden rounded-full">
-						<Image
-							alt={profileData.user?.username || "User Avatar"}
-							className="h-full w-full object-cover"
-							fill
-							src={profileData.user?.avatarUrl || "/profile.jpg"}
+					<ProfileHeaderView
+						isOwner={isOwner}
+						onEditProfile={editProfile.open}
+						profile={profile}
+					/>
+					{editProfile.isOpen && (
+						<EditProfileModal
+							avatarPreviewUrl={editProfile.avatarPreviewUrl}
+							error={editProfile.error}
+							isSubmitting={editProfile.isSubmitting}
+							onAvatarChange={editProfile.selectAvatar}
+							onClose={editProfile.close}
+							onSubmit={editProfile.submit}
+							onUsernameChange={editProfile.setUsername}
+							username={editProfile.username}
 						/>
-					</div>
-					<Heading className="mt-4 text-black" size="l">
-						@{profileData.user?.username || "User Name"}
-					</Heading>
-					<div className="mt-4 flex flex-row items-center justify-center gap-4">
-						<ShareButton userId={profileData.user.id} />
-
-						{isOwner && <AccentButton>Edit Profile</AccentButton>}
-					</div>
+					)}
 					<div className="mt-10 flex w-full flex-col gap-8 px-6 md:px-12 lg:px-30 xl:mt-0">
 						<div className="flex w-full flex-col gap-5 md:flex-row md:items-center md:justify-between">
 							<ExploreTabs
