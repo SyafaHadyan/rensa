@@ -54,7 +54,7 @@ export default function HomeClient() {
 
 			<section
 				aria-labelledby="home-idea-title"
-				className="justfify-center static flex h-[50%] w-full flex-col items-center p-10 lg:justify-between xl:h-screen xl:flex-row xl:p-40"
+				className="relative flex h-[50%] w-full flex-col items-center justify-center p-10 lg:justify-between xl:h-screen xl:flex-row xl:p-40"
 				id="idea-content"
 			>
 				<header className="flex flex-col pr-10 pb-8 xl:pb-[28vh]">
@@ -101,6 +101,7 @@ export default function HomeClient() {
 									alt="photo"
 									className="h-full w-full object-cover"
 									fill
+									sizes="(max-width: 1024px) 40vw, 32vw"
 									src={card.src}
 								/>
 							</motion.div>

@@ -14,7 +14,7 @@ export default function Carousel() {
 	};
 
 	return (
-		<div className="carousel h-[76vh] w-full">
+		<div className="carousel relative h-[76vh] w-full">
 			{carouselData.map((slide, index) => {
 				const prevId =
 					carouselData[(index - 1 + carouselData.length) % carouselData.length]
@@ -33,6 +33,7 @@ export default function Carousel() {
 								className="object-cover"
 								fill
 								priority={index === 0}
+								sizes="100vw"
 								src={slide.src}
 							/>
 						</div>
