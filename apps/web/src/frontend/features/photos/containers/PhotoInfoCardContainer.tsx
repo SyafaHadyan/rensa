@@ -4,7 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import type React from "react";
 import { Suspense, useState } from "react";
 import ProfileBadge from "@/frontend/components/badges/ProfileBadge";
-import { ProfileBadgeFallback } from "@/frontend/features/photos/components/fallbacks/PhotoPageFallbacks";
+import { ProfileBadgeFallback } from "@/frontend/features/photos/components/fallbacks";
 import usePhotoRoll from "@/frontend/features/photos/hooks/use-photo-roll";
 import { fetchProfile } from "@/frontend/services/profile.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";

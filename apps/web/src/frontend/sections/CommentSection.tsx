@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Comment from "@/frontend/components/Comment";
 import Heading from "@/frontend/components/Heading";
 import CommentInputField from "@/frontend/components/inputfields/CommentInputField";
-import { CommentsListFallback } from "@/frontend/features/photos/components/fallbacks/PhotoPageFallbacks";
+import { CommentsListFallback } from "@/frontend/features/photos/components/fallbacks";
 import type { CommentType } from "@/frontend/types/comment";
 import { api } from "@/lib/axios-client";
 

@@ -7,7 +7,7 @@ import { useInView } from "react-intersection-observer";
 import MasonryGalleryGrid from "@/frontend/sections/MasonryGallerySection/MasonryGalleryGrid";
 import { fetchExplorePhotos } from "@/frontend/services/photo.service";
 import type { FetchPhotosResponse, Photo } from "@/frontend/types/photo";
-import { PhotoRecommendationsFallback } from "./fallbacks/PhotoPageFallbacks";
+import { PhotoRecommendationsFallback } from "./fallbacks";
 
 const PhotoRecommendationsSection: React.FC = () => {
 	const { ref, inView } = useInView({ threshold: 0.5 });

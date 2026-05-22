@@ -12,6 +12,10 @@ import RollList from "@/frontend/components/lists/RollList";
 import ExploreTabs from "@/frontend/components/tabs/ExploreTabs";
 import ExploreGalleryView from "@/frontend/features/explore/components/ExploreGalleryView";
 import EditProfileModal from "@/frontend/features/profile/components/EditProfileModal";
+import {
+	ProfileCreatedPhotosFallback,
+	ProfileRollListFallback,
+} from "@/frontend/features/profile/components/fallbacks";
 import ProfileHeaderView from "@/frontend/features/profile/components/ProfileHeaderView";
 import { useEditProfile } from "@/frontend/features/profile/hooks/use-edit-profile";
 import type { EditableProfile } from "@/frontend/features/profile/types";
@@ -56,7 +60,7 @@ export default function ProfilePageClient({
 		onProfileUpdate: handleProfileUpdate,
 	});
 
-	const { data: rolls } = useQuery({
+	const { data: rolls, isPending: isRollsPending } = useQuery({
 		queryKey: ["profileRolls", profile.id, filter],
 		queryFn: () => fetchRollsByUserId(profile.id, filter),
 		enabled: !!profile?.username,
@@ -182,7 +186,9 @@ export default function ProfilePageClient({
 								/>
 							</div>
 						</div>
-						{activeTabId === "created" ? (
+						{activeTabId === "created" && isCreatedPhotosPending ? (
+							<ProfileCreatedPhotosFallback />
+						) : activeTabId === "created" ? (
 							<ExploreGalleryView
 								allowPhotoPageNavigation
 								errorMessage={
@@ -197,6 +203,8 @@ export default function ProfilePageClient({
 								photos={createdPhotos}
 								ref={ref}
 							/>
+						) : isRollsPending ? (
+							<ProfileRollListFallback />
 						) : (
 							<RollList isOwner={isOwner} rolls={rolls} />
 						)}

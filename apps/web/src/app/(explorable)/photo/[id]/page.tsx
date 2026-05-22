@@ -4,9 +4,10 @@ import { cache, Suspense } from "react";
 import PhotoInfoCard from "@/frontend/components/cards/PhotoInfoCard";
 import Heading from "@/frontend/components/Heading";
 import ImagePreview from "@/frontend/components/ImagePreview";
-import PhotoPageFallback, {
+import {
+	PhotoPageFallback,
 	PhotoRecommendationsFallback,
-} from "@/frontend/features/photos/components/fallbacks/PhotoPageFallbacks";
+} from "@/frontend/features/photos/components/fallbacks";
 import PhotoRecommendationsSection from "@/frontend/features/photos/components/PhotoRecommendationsSection";
 import { fetchPhotoById } from "@/frontend/services/photo.service";
 import type { Photo } from "@/frontend/types/photo";
