@@ -1,6 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import type React from "react";
 import { useState } from "react";
 import { commentPhoto } from "@/frontend/services/photo-post.service";
+import { fetchProfile } from "@/frontend/services/profile.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
 import type { CommentType } from "@/frontend/types/comment";
 import CommentInputFieldView from "../components/CommentInputFieldView";
@@ -16,6 +18,12 @@ const CommentInputFieldContainer: React.FC<CommentInputFieldContainerProps> = ({
 }) => {
 	const { user } = useAuthStore();
 	const [comment, setComment] = useState("");
+	const { data: profile } = useQuery({
+		queryKey: ["profile", user?.id],
+		queryFn: () => fetchProfile(user?.id ?? ""),
+		enabled: !!user?.id,
+		staleTime: 1000 * 60 * 5,
+	});
 
 	const handleSubmit = async () => {
 		if (!comment.trim()) {
@@ -29,7 +37,7 @@ const CommentInputFieldContainer: React.FC<CommentInputFieldContainerProps> = ({
 			user: {
 				userId: user?.id || "unknown",
 				username: user?.name || "Anonymous",
-				avatarUrl: user?.image || "/profile.jpg",
+				avatarUrl: profile?.avatarUrl || user?.image || "/profile.jpg",
 			},
 			createdAt: new Date().toISOString(),
 		};
