@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree, Forum } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import Toast from "@/frontend/components/toast/Toast";
 import { LoadingProvider } from "@/frontend/features/common/hooks/use-loading";
 import { NotificationProvider } from "@/frontend/providers/NotificationProvider";
@@ -88,6 +89,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={cn("antialiased", forum.variable, figtree.variable)}>
+				<Analytics />
 				<ToastProvider>
 					<QueryProvider>
 						<SessionProviderWrapper>

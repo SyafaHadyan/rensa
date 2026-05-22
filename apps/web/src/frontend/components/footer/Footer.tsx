@@ -18,7 +18,7 @@ const Footer = () => {
 							</h1>
 						</div>
 						<p className="mt-6 hidden font-figtree text-[10px] text-black-200 md:block md:text-[16px]">
-							Rensa 2025. All Rights Reserved
+							Rensa {new Date().getFullYear()}. All Rights Reserved
 						</p>
 					</div>
 
