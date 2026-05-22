@@ -3,6 +3,7 @@ import { XIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 import type React from "react";
 import { useState } from "react";
+import { getOptimizedCloudinaryImageUrl } from "@/utils/cloudinary-image";
 import { cn } from "@/utils/cn";
 import LinkIconButton from "./buttons/LinkIconButton";
 
@@ -35,7 +36,11 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
 					)}
 					height={height}
 					onLoad={() => setLoaded(true)}
-					src={src}
+					src={getOptimizedCloudinaryImageUrl(src, {
+						quality: 40,
+						width: 1200,
+						crop: "limit",
+					})}
 					width={width}
 				/>
 			</div>

@@ -1,6 +1,7 @@
 import Image, { type ImageProps } from "next/image";
 import type React from "react";
 import { useState } from "react";
+import { getOptimizedCloudinaryImageUrl } from "@/utils/cloudinary-image";
 import { cn } from "@/utils/cn";
 
 interface ImageWithSkeletonProps {
@@ -41,6 +42,15 @@ export const ImageWithSkeleton: React.FC<ImageWithSkeletonProps> = ({
 					// console.log("Image loaded:", image.src);
 					handleLoad();
 				}}
+				src={
+					typeof image.src === "string"
+						? getOptimizedCloudinaryImageUrl(image.src, {
+								quality: 30,
+								width: image.width,
+								crop: "limit",
+							})
+						: image.src
+				}
 			/>
 		</div>
 	);
