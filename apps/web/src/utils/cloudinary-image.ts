@@ -8,7 +8,7 @@ export function getOptimizedCloudinaryImageUrl(
 	url: string,
 	options: CloudinaryImageOptions = {}
 ): string {
-	if (!url.includes("res.cloudinary.com") || !url.includes("/upload/")) {
+	if (!(url.includes("res.cloudinary.com") && url.includes("/upload/"))) {
 		return url;
 	}
 
