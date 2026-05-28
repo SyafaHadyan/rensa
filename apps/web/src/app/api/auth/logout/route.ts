@@ -1,7 +1,7 @@
+import { logoutLimiter } from "@rensa/rate-limit";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { logoutLimiter } from "@/lib/rateLimiter";
 
 /*
   POST /api/auth/logout

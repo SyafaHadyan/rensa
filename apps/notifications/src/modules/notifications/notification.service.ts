@@ -1,12 +1,29 @@
-import { redis, redisConnected } from "../../utils/redis";
-import { UserRepository } from "../users/user.repository";
+import { getRedis, redisConnected } from "@rensa/cache";
+import { NotificationDbRepository } from "@rensa/db/queries/notification.repository";
+import { UserRepository } from "@rensa/db/queries/user.repository";
+import { env } from "../../config/env";
 import { WebSocketService } from "../websocket/websocket.service";
 import {
 	isNotificationType,
 	type NotificationRecord,
 	type NotificationResponse,
 } from "./notification.model";
-import { NotificationRepository } from "./notification.repository";
+
+const notificationRepository = new NotificationDbRepository();
+const userRepository = new UserRepository();
+const redis = getRedis({
+	defaultUrl: "redis://localhost:6379",
+	globalKey: "notifications",
+	logLifecycle: true,
+	url: env.redisUrl,
+});
+
+const isRedisConnected = () =>
+	redisConnected({
+		defaultUrl: "redis://localhost:6379",
+		globalKey: "notifications",
+		url: env.redisUrl,
+	});
 
 class NotificationServiceError extends Error {
 	success = false;
@@ -22,7 +39,7 @@ function getNotificationKey(notification: NotificationRecord) {
 }
 
 async function checkNotificationKey(notificationKey: string) {
-	if (!redisConnected()) {
+	if (!isRedisConnected()) {
 		console.warn("Redis not connected, skipping duplicate check");
 		return false;
 	}
@@ -32,7 +49,7 @@ async function checkNotificationKey(notificationKey: string) {
 }
 
 async function setNotificationKey(notificationKey: string) {
-	if (!redisConnected()) {
+	if (!isRedisConnected()) {
 		console.warn("Redis not connected, skipping key set");
 		return false;
 	}
@@ -44,11 +61,14 @@ async function setNotificationKey(notificationKey: string) {
 async function populateNotificationActor(
 	notification: NotificationRecord
 ): Promise<NotificationResponse> {
-	const actor = await UserRepository.findPublicById(notification.actorId);
+	const actor = await userRepository.getProfileById(notification.actorId);
+	if (!actor) {
+		throw new NotificationServiceError("Notification actor not found");
+	}
 
 	return {
 		...notification,
-		actorId: actor,
+		actor,
 	};
 }
 
@@ -63,12 +83,12 @@ export const NotificationService = {
 		const offset = (page - 1) * limit;
 
 		const [notifications, total] = await Promise.all([
-			NotificationRepository.findByRecipient({
+			notificationRepository.findByRecipient({
 				recipientId: query.recipientId,
 				limit,
 				offset,
 			}),
-			NotificationRepository.countByRecipient(query.recipientId),
+			notificationRepository.countByRecipient(query.recipientId),
 		]);
 
 		const populatedNotifications = await Promise.all(
@@ -99,7 +119,7 @@ export const NotificationService = {
 			};
 		}
 
-		const deletedCount = await NotificationRepository.deleteByRecipient(userId);
+		const deletedCount = await notificationRepository.deleteByRecipient(userId);
 
 		return {
 			success: true,
@@ -129,7 +149,7 @@ export const NotificationService = {
 			throw new NotificationServiceError("Invalid notification type");
 		}
 
-		const notification = await NotificationRepository.create({
+		const notification = await notificationRepository.create({
 			actorId,
 			recipientId,
 			photoId,
@@ -155,7 +175,7 @@ export const NotificationService = {
 
 	async markNotificationAsRead(notificationId: string) {
 		const notification =
-			await NotificationRepository.markAsRead(notificationId);
+			await notificationRepository.markAsRead(notificationId);
 
 		if (!notification) {
 			return {

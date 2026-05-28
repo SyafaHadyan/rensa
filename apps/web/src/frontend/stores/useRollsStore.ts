@@ -1,35 +1,15 @@
 import { create } from "zustand";
+import type { ApiRoll, Roll, RollsState } from "@/frontend/types/roll";
 import { api } from "@/lib/axios-client";
 import { useAuthStore } from "./useAuthStore";
 
-interface Roll {
-	imageUrl: string;
-	name: string;
-	roll_id: string;
-}
-
-interface ApiRoll {
-	imageUrl?: string;
-	name: string;
-	roll_id?: string;
-}
-
-interface RollsState {
-	clearRolls: () => void;
-	createRoll: (newRoll: { name: string; imageUrl?: string }) => Promise<void>;
-	fetchRolls: () => Promise<void>;
-	isLoading: boolean;
-	rolls: Roll[];
-}
-
 const normalizeRoll = (roll: ApiRoll): Roll | null => {
-	const rollId = roll.roll_id;
-	if (!rollId) {
+	if (!roll.rollId) {
 		return null;
 	}
 
 	return {
-		roll_id: rollId,
+		rollId: roll.rollId,
 		name: roll.name,
 		imageUrl: roll.imageUrl ?? "/images/default-roll.jpg",
 	};
@@ -77,7 +57,7 @@ export const useRollsStore = create<RollsState>((set, get) => ({
 			});
 			const normalizedRoll = normalizeRoll(res.data.data as ApiRoll);
 			if (!normalizedRoll) {
-				throw new Error("Created roll is missing roll_id");
+				throw new Error("Created roll is missing rollId");
 			}
 			set((state) => ({
 				rolls: [...state.rolls, normalizedRoll],

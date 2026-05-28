@@ -1,11 +1,10 @@
-import { UserRepository } from "@rensa/db/queries/user.repository";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { ZodError } from "zod";
+import { BackendError } from "@/backend/common/backend.error";
+import { profileIdParamDto } from "@/backend/dtos/profile.dto";
+import { profileService } from "@/backend/services/profile/service";
 import { authOptions } from "@/lib/auth";
-import cloudinary from "@/lib/cloudinary";
-import { compressImageUnder10MB } from "../../photos/upload/route";
-
-const userRepository = new UserRepository();
 
 /*
   GET /api/profile/[id]
@@ -15,16 +14,10 @@ export async function GET(
 	_req: Request,
 	context: { params: Promise<{ id: string }> }
 ) {
-	const { id } = await context.params;
 	try {
-		const user = await userRepository.getProfileById(id);
-
-		if (!user) {
-			return NextResponse.json(
-				{ success: false, message: "User not found" },
-				{ status: 404 }
-			);
-		}
+		const rawParams = await context.params;
+		const params = profileIdParamDto.parse({ userId: rawParams.id });
+		const user = await profileService.getById(params.userId);
 
 		return NextResponse.json(
 			{
@@ -32,142 +25,35 @@ export async function GET(
 				message: "Successfully fetched user profile!",
 				data: {
 					user: {
-						id: user.id,
+						userId: user.userId,
 						username: user.username,
 						email: user.email,
-						avatar: user.avatar ?? undefined,
+						avatarUrl: user.avatarUrl ?? undefined,
 					},
 				},
 			},
 			{ status: 200 }
 		);
 	} catch (error) {
-		console.error("Error fetching user:", error);
-		return NextResponse.json(
-			{ success: false, message: "Internal Server Error" },
-			{ status: 500 }
-		);
+		return mapRouteError(error, "Failed to fetch profile");
 	}
 }
 
-export async function POST(req: Request) {
-	const session = await getServerSession(authOptions);
-	if (!session?.user?.id) {
-		return NextResponse.json(
-			{
-				success: false,
-				message: "Unauthorized. Please login to update profile.",
-			},
-			{ status: 401 }
-		);
-	}
-
+export async function PATCH(
+	req: Request,
+	context: { params: Promise<{ id: string }> }
+) {
 	try {
-		const contentType = req.headers.get("content-type") ?? "";
-		let id = "";
-		let username = "";
-		let email = "";
-		let avatarFile: File | null = null;
-
-		if (contentType.includes("multipart/form-data")) {
-			const formData = await req.formData();
-			id = String(formData.get("id") ?? "");
-			username = String(formData.get("username") ?? "");
-			email = String(formData.get("email") ?? "");
-			const candidate = formData.get("avatar");
-			avatarFile = candidate instanceof File ? candidate : null;
-		} else {
-			const body = await req.json();
-			id = String(body.id ?? "");
-			username = String(body.username ?? "");
-			email = String(body.email ?? "");
-		}
-
-		const user = await userRepository.getProfileById(id);
-
-		if (!user) {
-			return NextResponse.json(
-				{ success: false, message: "User not found" },
-				{ status: 404 }
-			);
-		}
-
-		if (user.id !== session.user.id) {
-			return NextResponse.json(
-				{ success: false, message: "Unauthorized to update this profile" },
-				{ status: 403 }
-			);
-		}
-
-		if (!(username && email)) {
-			return NextResponse.json(
-				{ success: false, message: "Username and email are required" },
-				{ status: 400 }
-			);
-		}
-
-		let avatarUrl = user.avatar ?? "";
-		if (avatarFile) {
-			try {
-				const idx = avatarUrl.indexOf("user_profile/");
-				if (idx !== -1) {
-					let publicId = avatarUrl.slice(idx);
-					const q = publicId.search(/[?#]/);
-					if (q !== -1) {
-						publicId = publicId.slice(0, q);
-					}
-					const lastDot = publicId.lastIndexOf(".");
-					if (lastDot !== -1) {
-						publicId = publicId.slice(0, lastDot);
-					}
-					publicId = decodeURIComponent(publicId);
-					if (/^[A-Za-z0-9_\\-\\/]+$/.test(publicId)) {
-						await cloudinary.uploader.destroy(publicId);
-					}
-				}
-			} catch (err) {
-				console.error("Failed to delete old avatar from Cloudinary:", err);
-			}
-
-			try {
-				const arrayBuffer = await avatarFile.arrayBuffer();
-				const buffer = Buffer.from(arrayBuffer);
-				const compressedBuffer = await compressImageUnder10MB(buffer);
-
-				const base64File = `data:${avatarFile.type};base64,${compressedBuffer.toString(
-					"base64"
-				)}`;
-
-				const uploadRes = await cloudinary.uploader.upload(base64File, {
-					folder: `user_profile/${session.user.id}`,
-					resource_type: "image",
-					quality: "auto",
-					fetch_format: "auto",
-					transformation: [{ width: 200, crop: "limit" }],
-				});
-				avatarUrl = uploadRes.secure_url;
-			} catch (err) {
-				console.error("Error uploading new avatar:", err);
-				return NextResponse.json(
-					{ success: false, message: "Failed to upload new avatar." },
-					{ status: 500 }
-				);
-			}
-		}
-
-		const updatedUser = await userRepository.updateProfile({
-			avatar: avatarUrl,
-			email,
-			userId: id,
+		const rawParams = await context.params;
+		const params = profileIdParamDto.parse({ userId: rawParams.id });
+		const session = await getServerSession(authOptions);
+		const { avatarFile, username } = await parseProfileUpdateRequest(req);
+		const updatedUser = await profileService.updateProfile({
+			actorId: session?.user?.id,
+			avatarFile,
+			userId: params.userId,
 			username,
 		});
-
-		if (!updatedUser) {
-			return NextResponse.json(
-				{ success: false, message: "Failed to update profile." },
-				{ status: 500 }
-			);
-		}
 
 		return NextResponse.json(
 			{
@@ -175,20 +61,74 @@ export async function POST(req: Request) {
 				message: "Successfully updated user profile!",
 				data: {
 					user: {
-						id: updatedUser.id,
+						userId: updatedUser.userId,
 						username: updatedUser.username,
 						email: updatedUser.email,
-						avatar: updatedUser.avatar ?? undefined,
+						avatarUrl: updatedUser.avatarUrl ?? undefined,
 					},
 				},
 			},
 			{ status: 200 }
 		);
-	} catch (err) {
-		console.error("Error updating user:", err);
+	} catch (error) {
+		return mapRouteError(error, "Failed to update profile");
+	}
+}
+
+export async function POST(
+	req: Request,
+	context: { params: Promise<{ id: string }> }
+) {
+	return PATCH(req, context);
+}
+
+async function parseProfileUpdateRequest(req: Request): Promise<{
+	avatarFile: File | null;
+	username: string;
+}> {
+	const contentType = req.headers.get("content-type") ?? "";
+	if (contentType.includes("multipart/form-data")) {
+		const formData = await req.formData();
+		const avatar = formData.get("avatar") ?? formData.get("avatarUrl");
+		return {
+			avatarFile: avatar instanceof File && avatar.size > 0 ? avatar : null,
+			username: String(formData.get("username") ?? ""),
+		};
+	}
+
+	const body = (await req.json()) as { username?: unknown };
+	return {
+		avatarFile: null,
+		username: typeof body.username === "string" ? body.username : "",
+	};
+}
+
+function mapRouteError(error: unknown, fallbackMessage: string): NextResponse {
+	if (error instanceof ZodError) {
 		return NextResponse.json(
-			{ success: false, message: "Internal Server Error" },
-			{ status: 500 }
+			{
+				success: false,
+				message: "Validation failed",
+				details: error.flatten(),
+			},
+			{ status: 400 }
 		);
 	}
+
+	if (error instanceof BackendError) {
+		return NextResponse.json(
+			{
+				success: false,
+				message: error.message,
+				code: error.code,
+			},
+			{ status: error.statusCode }
+		);
+	}
+
+	console.error(fallbackMessage, error);
+	return NextResponse.json(
+		{ success: false, message: "Internal Server Error" },
+		{ status: 500 }
+	);
 }

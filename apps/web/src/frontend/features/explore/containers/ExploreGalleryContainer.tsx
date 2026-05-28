@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import "@/frontend/components/MasonryGallery.css";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
-import {
-	type ExplorePhotoSource,
-	type FetchPhotosResponse,
-	fetchExplorePhotos,
-} from "@/frontend/services/photo.service";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import { fetchExplorePhotos } from "@/frontend/services/photo.service";
+import type {
+	ExplorePhotoSource,
+	FetchPhotosResponse,
+	Photo,
+} from "@/frontend/types/photo";
 import ExploreGalleryView from "../components/ExploreGalleryView";
 
 interface ExploreGalleryContainerProps {
@@ -34,7 +34,8 @@ const ExploreGalleryContainer: React.FC<ExploreGalleryContainerProps> = ({
 		queryKey: ["explore-photos", filters, sort],
 		queryFn: ({ pageParam }) => {
 			const page = pageParam as number;
-			return fetchExplorePhotos(page, filters, sort);
+			const result = fetchExplorePhotos(page, filters, sort);
+			return result;
 		},
 		getNextPageParam: (lastPage) => lastPage.nextPage,
 		initialPageParam: 1,
@@ -42,8 +43,8 @@ const ExploreGalleryContainer: React.FC<ExploreGalleryContainerProps> = ({
 		gcTime: 1000 * 60 * 30,
 	});
 
-	const photos: PopulatedPhoto[] =
-		data?.pages.flatMap((page) => page.data as PopulatedPhoto[]) ?? [];
+	const photos: Photo[] =
+		data?.pages.flatMap((page) => page.data as Photo[]) ?? [];
 	const source: ExplorePhotoSource = data?.pages?.[0]?.source ?? "db";
 
 	useEffect(() => {

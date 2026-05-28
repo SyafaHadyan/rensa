@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { BackendError } from "@/backend/common/backend.error";
 import { photoIdParamDto } from "@/backend/dtos/photo.dto";
-import { photoController } from "@/backend/services/photos/controller";
+import { photoService } from "@/backend/services/photos/service";
 
 /*
   GET /api/photos/[id]/owner
@@ -13,7 +13,7 @@ export async function GET(
 ) {
 	try {
 		const params = photoIdParamDto.parse(await context.params);
-		const ownerId = await photoController.getOwnerId(params.id);
+		const ownerId = await photoService.getOwnerId(params.id);
 		return NextResponse.json({
 			success: true,
 			message: "Successfully fetched photo's owner.",

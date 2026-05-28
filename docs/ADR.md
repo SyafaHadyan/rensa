@@ -1,6 +1,6 @@
 # Architecture Decision Record (ADR)
 
-Updated: 2026-04-13
+Updated: 2026-05-17
 
 This document captures active architecture decisions and transitional decisions
 for the current Rensa codebase.
@@ -144,3 +144,35 @@ error mapping (`BackendError` family) for consistency.
 - Consequences:
 More uniform observability and error handling.
 Short-term refactor effort for legacy handlers.
+
+## ADR-013: Application Naming Uses camelCase
+- Status: Accepted
+- Date: 2026-05-17
+- Context:
+The codebase spans frontend components, Next.js API routes, backend DTOs/services,
+Drizzle schemas, SQL migrations, and generated documentation. Mixed `snake_case`
+and `camelCase` across application boundaries previously caused API drift and
+renames such as `avatar` versus `avatarUrl`.
+- Decision:
+Use `camelCase` for all TypeScript application identifiers and API contracts,
+including frontend props/state, DTO fields, route params, query params, request
+bodies, response bodies, service params, repository params, and Drizzle schema
+property keys.
+
+Keep `snake_case` for physical PostgreSQL identifiers only: table columns,
+indexes, constraints, SQL migrations, and ERD fields that describe database
+columns. Drizzle schema definitions bridge the two forms by using a camelCase
+property mapped to a snake_case column string, for example:
+
+```ts
+avatarUrl: text("avatar_url")
+```
+
+External providers that expose `snake_case` fields must be normalized at the
+boundary, for example `secure_url` from Cloudinary should become `secureUrl`
+before it is passed into domain code.
+- Consequences:
+Frontend/backend contracts stay idiomatic and consistent.
+Database migrations remain compatible with existing PostgreSQL naming.
+Schema changes require explicit review to distinguish TypeScript-only property
+renames from physical database column renames.

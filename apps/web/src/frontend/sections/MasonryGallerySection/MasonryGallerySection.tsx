@@ -6,13 +6,11 @@ import "@/frontend/components/MasonryGallery.css";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import {
-	type FetchPhotosResponse,
 	fetchBookmarkedPhotosFromDB,
 	fetchPhotosFromDB,
 	fetchPhotosFromRoll,
-	type Photo,
 } from "@/frontend/services/photo.service";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { FetchPhotosResponse, Photo } from "@/frontend/types/photo";
 import MasonryGalleryGrid from "./MasonryGalleryGrid";
 
 interface MasonryGallerySectionProps {
@@ -71,8 +69,8 @@ const MasonryGallerySection: React.FC<MasonryGallerySectionProps> = ({
 		gcTime: 1000 * 60 * 30,
 	});
 
-	const photos: PopulatedPhoto[] =
-		data?.pages.flatMap((page) => page.data as PopulatedPhoto[]) ?? [];
+	const photos: Photo[] =
+		data?.pages.flatMap((page) => page.data as Photo[]) ?? [];
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetchingNextPage) {

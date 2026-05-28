@@ -2,10 +2,10 @@ import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import Masonry from "react-masonry-css";
 import PhotoCard from "@/frontend/components/PhotoCard";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/types/photo";
 
 interface MasonryGalleryGridProps {
-	photos: PopulatedPhoto[];
+	photos: Photo[];
 	photosId?: string[];
 }
 
@@ -48,8 +48,8 @@ const MasonryGalleryGrid: React.FC<MasonryGalleryGridProps> = ({ photos }) => {
 				className={"my-masonry-grid max-w-auto"}
 				columnClassName="my-masonry-grid_column"
 			>
-				{photos.map((photo: PopulatedPhoto) => {
-					const photoId = photo.photo_id.toString();
+				{photos.map((photo: Photo) => {
+					const photoId = photo.photoId.toString();
 					return (
 						<PhotoCard
 							closeAllDropdowns={() => setActiveDropdownId(null)}

@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
 		optimizePackageImports: ["@phosphor-icons/react"],
 		proxyClientMaxBodySize: "30mb",
 	},
+	logging: {
+		browserToTerminal: process.env.NODE_ENV === "development",
+	},
+	output: "standalone",
 };
 
 export default nextConfig;

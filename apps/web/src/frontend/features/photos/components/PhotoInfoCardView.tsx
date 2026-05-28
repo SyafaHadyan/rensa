@@ -1,5 +1,4 @@
 import type React from "react";
-import ProfileBadge from "@/frontend/components/badges/ProfileBadge";
 import PrimaryButton from "@/frontend/components/buttons/PrimaryButton";
 import PhotoDropdown from "@/frontend/components/dropdowns/PhotoDropdown";
 import RollDropdownIconButton from "@/frontend/components/dropdowns/rolls/RollDropdownIconButton";
@@ -9,6 +8,7 @@ import Text from "@/frontend/components/Text";
 import BookmarkToggleContainer from "@/frontend/features/photos/containers/BookmarkToggleContainer";
 import CommentSection from "@/frontend/sections/CommentSection";
 import type { PhotoMetadata } from "@/frontend/types/photo";
+import type { SelectedRoll } from "@/frontend/types/roll";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/date-formatter";
 
@@ -23,15 +23,11 @@ interface PhotoInfoCardViewProps {
 	isSaved: boolean;
 	metadata?: PhotoMetadata;
 	onSaveToggle: () => void;
-	ownerId: string;
-	profileAvatarUrl?: string;
-	profileUsername?: string;
+	profileBadge: React.ReactNode;
 	savedToRolls: string[];
-	selectedRoll: { roll_id: string; name: string } | null;
+	selectedRoll: SelectedRoll | null;
 	setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	setSelectedRoll: React.Dispatch<
-		React.SetStateAction<{ roll_id: string; name: string } | null>
-	>;
+	setSelectedRoll: React.Dispatch<React.SetStateAction<SelectedRoll | null>>;
 	title?: string;
 	userId?: string;
 }
@@ -43,11 +39,9 @@ const PhotoInfoCardView: React.FC<PhotoInfoCardViewProps> = ({
 	initialBookmarks,
 	description,
 	metadata,
-	ownerId,
 	isOwner,
 	userId,
-	profileAvatarUrl,
-	profileUsername,
+	profileBadge,
 	selectedRoll,
 	isLoading,
 	isSaved,
@@ -90,17 +84,11 @@ const PhotoInfoCardView: React.FC<PhotoInfoCardViewProps> = ({
 		<div className="mb-9">
 			<div className="mb-7">
 				<Text className="text-white-700" size="s">
-					{formatDate(metadata?.uploadedAt || "")}
+					{formatDate(metadata?.uploadedAt)}
 				</Text>
 				<Heading size="m">{title}</Heading>
 			</div>
-			<ProfileBadge
-				alt={profileUsername}
-				avatarUrl={profileAvatarUrl}
-				className="mb-5"
-				href={`/profile/${ownerId}`}
-				username={profileUsername || "loading..."}
-			/>
+			{profileBadge}
 			<p className="max-w-87.5 text-[16px] text-black-200">{description}</p>
 		</div>
 		<div>

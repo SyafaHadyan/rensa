@@ -65,7 +65,6 @@ export const photoByIdOpenApiFragment: OpenApiFragment = {
 							schema: { $ref: "#/components/schemas/CreateCommentDto" },
 							example: {
 								text: "Great photo!",
-								userId: "0f2d8f3e-1dd7-4a52-9dd7-8cbffa4fd89f",
 							},
 						},
 					},
@@ -96,7 +95,6 @@ export const photoByIdOpenApiFragment: OpenApiFragment = {
 				required: ["text"],
 				properties: {
 					text: { type: "string", minLength: 1, maxLength: 500 },
-					userId: { type: "string", format: "uuid" },
 				},
 			},
 		},

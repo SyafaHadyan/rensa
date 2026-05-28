@@ -13,13 +13,22 @@ export const notificationController = new Elysia({ prefix: "/notifications" })
 	.derive(async ({ jwt, headers }) => {
 		const auth = headers.authorization;
 		if (!auth) {
+			console.warn("[notifications-api] unauthorized: missing authorization");
 			return {};
 		}
 
 		const token = auth.replace("Bearer ", "");
-		const payload = await jwt.verify(token);
+		const payload = await jwt.verify(token).catch((error) => {
+			console.warn("[notifications-api] unauthorized: invalid token", {
+				message: error instanceof Error ? error.message : "Unknown error",
+			});
+			return false;
+		});
 
 		if (!payload) {
+			console.warn(
+				"[notifications-api] unauthorized: token verification failed"
+			);
 			return {};
 		}
 
@@ -27,8 +36,9 @@ export const notificationController = new Elysia({ prefix: "/notifications" })
 	})
 	.post(
 		"",
-		async ({ user, body }) => {
+		async ({ user, body, set }) => {
 			if (!user?.id) {
+				set.status = 401;
 				return { success: false, message: "Unauthorized" };
 			}
 
@@ -49,8 +59,9 @@ export const notificationController = new Elysia({ prefix: "/notifications" })
 	)
 	.get(
 		"",
-		async ({ user, query }) => {
+		async ({ user, query, set }) => {
 			if (!user?.id) {
+				set.status = 401;
 				return { success: false, message: "Unauthorized" };
 			}
 

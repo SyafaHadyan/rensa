@@ -19,7 +19,7 @@ export interface PhotoUploadConfig {
 }
 
 export const PHOTO_UPLOAD_MAX_FILES = 1;
-export const PHOTO_UPLOAD_MAX_INPUT_SIZE_MB = 20;
+export const PHOTO_UPLOAD_MAX_INPUT_SIZE_MB = 4;
 export const PHOTO_UPLOAD_TARGET_OUTPUT_SIZE_MB = 10;
 
 export const PHOTO_UPLOAD_MAX_INPUT_SIZE_BYTES =

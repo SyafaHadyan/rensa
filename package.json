@@ -1,6 +1,10 @@
 {
   "name": "rensa",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "dev": "docker compose -f docker-compose-development.yaml up --build",
     "dev:all": "turbo run dev --parallel",

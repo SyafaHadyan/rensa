@@ -6,7 +6,7 @@ import {
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
 import { userIdParamDto } from "@/backend/dtos/user.dto";
-import { userController } from "@/backend/services/users/controller";
+import { userService } from "@/backend/services/users/service";
 import { authOptions } from "@/lib/auth";
 
 /*
@@ -17,14 +17,15 @@ export async function GET(
 	context: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const params = userIdParamDto.parse(await context.params);
+		const rawParams = await context.params;
+		const params = userIdParamDto.parse({ userId: rawParams.id });
 		const session = await getServerSession(authOptions);
 		const actorId = session?.user?.id;
 		if (!actorId) {
 			throw new UnauthorizedError();
 		}
 
-		const user = await userController.getById(params.id, actorId);
+		const user = await userService.getById(params.userId, actorId);
 		return NextResponse.json(
 			{
 				success: true,

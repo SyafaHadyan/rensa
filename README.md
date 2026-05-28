@@ -134,6 +134,37 @@ pnpm --filter @rensa/notifications db:generate
 pnpm --filter @rensa/notifications db:migrate
 ```
 
+## Naming Conventions
+
+Use `camelCase` everywhere in application code and API contracts:
+
+- TypeScript variables, functions, DTO fields, service/repository params, React props, hooks, and frontend state.
+- API request body fields, query parameters, path parameter names, and response fields.
+- Drizzle schema property keys that application code imports and references.
+
+Keep `snake_case` only for physical database identifiers that already exist in PostgreSQL:
+
+- Drizzle column names inside column builders, for example `userId: uuid("user_id")`.
+- SQL migration files, raw SQL, indexes, constraints, and database diagrams that describe actual table columns.
+
+Example:
+
+```ts
+export const users = pgTable("users", {
+  userId: uuid("user_id").primaryKey().defaultRandom(),
+  avatarUrl: text("avatar_url"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+```
+
+When integrating external providers that return `snake_case` fields, convert at the boundary before passing data deeper into the app:
+
+```ts
+const { secure_url: secureUrl } = uploadResult;
+```
+
+For schema changes, keep migration history append-only. If only a TypeScript property is renamed, preserve the existing database column string in Drizzle. If the physical column changes, generate and review a new migration before running `db:migrate`.
+
 ## Quality Checks
 
 ```bash
@@ -163,4 +194,3 @@ Use `pnpm fix` to run the configured Ultracite formatter/fixer.
 - Bookmark toggling and bookmarked photo retrieval
 - Comments and notification workflows
 - Contact and bug-report submission flows with admin review endpoints
-

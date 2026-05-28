@@ -1,115 +1,124 @@
 services:
-  rensa-frontend:
-    image: rensa-frontend:prod
+  web:
+    image: ghcr.io/rensa/rensa-web:${RENSA_IMAGE_TAG:-latest}
     build:
-      context: ./rensa-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
       target: prod
-    container_name: rensa-frontend
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+        NEXT_PUBLIC_ELYSIA_WS_URL: ${NEXT_PUBLIC_ELYSIA_WS_URL:-wss://rensa.site:3002}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_EXPLORE_SOURCE: ${NEXT_PUBLIC_EXPLORE_SOURCE:-database}
     ports:
-      - "3000:3000"
+      - "3000"
     env_file:
-      - ./envs/frontend.env
+      - path: ./envs/.env.web
+        required: false
+    environment:
+      ELYSIA_BASE_URL: http://notifications:3002/api
+      FAST_API_BASE_URL: http://ai:3001/api
+      EXPRESS_BASE_URL: http://exif:3003/api
+      REDIS_URL: redis://redis:6379
     restart: unless-stopped
-    networks:
-      - rensa-net
     depends_on:
-      rensa-elysia:
+      notifications:
         condition: service_healthy
-      rensa-fastapi:
+      ai:
         condition: service_healthy
-      rensa-express:
+      exif:
         condition: service_healthy
-
-  rensa-fastapi:
-    image: rensa-fastapi:prod
-    build:
-      context: ./rensa-fastapi
-      dockerfile: Dockerfile
-      target: prod
-    container_name: rensa-fastapi
-    ports:
-      - "3001:3001"
-    restart: unless-stopped
+      redis:
+        condition: service_healthy
     networks:
       - rensa-net
+
+  notifications:
+    image: ${RENSA_IMAGE_REGISTRY:-ghcr.io}/${RENSA_IMAGE_NAMESPACE:-rensa}/rensa-notifications:${RENSA_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: apps/notifications/Dockerfile
+      target: prod
+    ports:
+      - "3002"
+    env_file:
+      - path: ./envs/.env.notifications
+        required: false
+    environment:
+      PORT: 3002
+      REDIS_URL: redis://redis:6379
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - rensa-net
+
+  ai:
+    image: ${RENSA_IMAGE_REGISTRY:-ghcr.io}/${RENSA_IMAGE_NAMESPACE:-rensa}/rensa-ai:${RENSA_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: apps/ai/Dockerfile
+      target: prod
+    ports:
+      - "3001"
+    restart: unless-stopped
     healthcheck:
       test:
         - CMD-SHELL
-        - python -c "import urllib.request; urllib.request.urlopen('http://localhost:3001/health')"
+        - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3001/api/health')"
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
+    networks:
+      - rensa-net
 
-  rensa-elysia:
-    image: rensa-elysia:prod
+  exif:
+    image: ${RENSA_IMAGE_REGISTRY:-ghcr.io}/${RENSA_IMAGE_NAMESPACE:-rensa}/rensa-exif:${RENSA_IMAGE_TAG:-latest}
     build:
-      context: ./rensa-elysia
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/exif/Dockerfile
       target: prod
-    container_name: rensa-elysia
     ports:
-      - "3002:3002"
+      - "3003"
     env_file:
-      - ./envs/elysia.env
-    restart: unless-stopped
-    networks:
-      - rensa-net
-    depends_on:
-      rensa-redis:
-        condition: service_healthy
-    healthcheck:
-      test:
-        - CMD
-        - /app/healthcheck
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  rensa-express:
-    image: rensa-express:prod
-    build:
-      context: ./rensa-express
-      dockerfile: Dockerfile
-      target: prod
-    container_name: rensa-express
-    ports:
-      - "3003:3003"
-    restart: unless-stopped
-    networks:
-      - rensa-net
-    depends_on:
-      rensa-redis:
-        condition: service_healthy
+      - path: ./envs/.env.exif
+        required: false
     environment:
       PORT: 3003
+    restart: unless-stopped
     healthcheck:
       test:
         - CMD-SHELL
-        - node -e "fetch('http://localhost:3003/health').then(()=>process.exit(0)).catch(()=>process.exit(1))"
+        - node -e "fetch('http://127.0.0.1:3003/health').then(()=>process.exit(0)).catch(()=>process.exit(1))"
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - rensa-net
 
-  rensa-redis:
+  redis:
     image: redis:7-alpine
-    container_name: rensa-redis
-    ports:
-      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
     restart: unless-stopped
-    networks:
-      - rensa-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 5s
+    networks:
+      - rensa-net
 
 networks:
   rensa-net:

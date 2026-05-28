@@ -6,14 +6,14 @@ import {
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
 import { photoIdParamDto, rollIdParamDto } from "@/backend/dtos/roll.dto";
-import { rollController } from "@/backend/services/rolls/controller";
+import { rollService } from "@/backend/services/rolls/service";
 import { authOptions } from "@/lib/auth";
 
 /*
   POST /api/rolls/[rollId]/photos/[photoId]
 */
 export async function POST(
-	_req: Request,
+	req: Request,
 	context: { params: Promise<{ rollId: string; photoId: string }> }
 ) {
 	try {
@@ -26,7 +26,7 @@ export async function POST(
 			throw new UnauthorizedError();
 		}
 
-		const modifiedCount = await rollController.addPhotoToRoll(
+		const modifiedCount = await rollService.addPhotoToRoll(
 			rollId,
 			photoId,
 			actorId
@@ -59,7 +59,7 @@ export async function DELETE(
 			throw new UnauthorizedError();
 		}
 
-		await rollController.removePhotoFromRoll(rollId, photoId, actorId);
+		await rollService.removePhotoFromRoll(rollId, photoId, actorId);
 
 		return NextResponse.json({
 			success: true,

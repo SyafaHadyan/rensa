@@ -6,7 +6,7 @@ import {
 	createContactDto,
 	listContactsQueryDto,
 } from "@/backend/dtos/contact.dto";
-import { contactController } from "@/backend/services/contacts/controller";
+import { contactService } from "@/backend/services/contacts/service";
 import { authOptions } from "@/lib/auth";
 
 /**
@@ -21,9 +21,9 @@ export async function POST(req: Request) {
 		const ipAddress =
 			forwardedIp?.split(",")[0]?.trim() || fallbackIp || "unknown";
 		const userAgent = req.headers.get("user-agent") || "";
-		const result = await contactController.submit(body, {
-			ipAddress,
-			userAgent,
+		const result = await contactService.submit(body, {
+			ipAddress: ipAddress,
+			userAgent: userAgent,
 		});
 
 		return NextResponse.json(
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
 			page: searchParams.get("page") ?? undefined,
 			limit: searchParams.get("limit") ?? undefined,
 		});
-		const result = await contactController.list(query, session?.user?.role);
+		const result = await contactService.list(query, session?.user?.role);
 
 		return NextResponse.json({
 			success: true,

@@ -15,11 +15,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-	matcher: [
-		"/bookmarks/:path*",
-		"/login",
-		"/register",
-		"/explore/:path*",
-		"/api/:path*",
-	],
+	matcher: ["/bookmarks/:path*"],
 };

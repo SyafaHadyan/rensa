@@ -5,7 +5,7 @@ import {
 	listRollPhotosQueryDto,
 	rollIdParamDto,
 } from "@/backend/dtos/roll.dto";
-import { rollController } from "@/backend/services/rolls/controller";
+import { rollService } from "@/backend/services/rolls/service";
 
 /*
  * GET /api/rolls/[rollId]/photos?page=1&limit=10
@@ -22,7 +22,7 @@ export async function GET(
 			limit: searchParams.get("limit") ?? undefined,
 		});
 
-		const result = await rollController.listPhotos(params.rollId, query);
+		const result = await rollService.listPhotos(params.rollId, query);
 		return NextResponse.json(
 			{
 				success: true,

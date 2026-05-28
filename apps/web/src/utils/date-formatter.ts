@@ -7,9 +7,15 @@
  * @param locale - (optional) Locale string (default: "en-US")
  * @returns Formatted date string (e.g. "Sep 1, 2025")
  */
-export function formatDate(date: string | Date, locale = "en-US"): string {
+export function formatDate(date?: string | Date, locale = "en-US"): string {
+	if (!date) {
+		return "";
+	}
 	try {
 		const d = typeof date === "string" ? new Date(date) : date;
+		if (Number.isNaN(d.getTime())) {
+			return "";
+		}
 
 		return d.toLocaleDateString(locale, {
 			year: "numeric",

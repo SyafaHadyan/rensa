@@ -24,7 +24,7 @@ export const usersByIdOpenApiFragment: OpenApiFragment = {
 									success: true,
 									data: {
 										user: {
-											user_id: "0f2d8f3e-1dd7-4a52-9dd7-8cbffa4fd89f",
+											userId: "0f2d8f3e-1dd7-4a52-9dd7-8cbffa4fd89f",
 											username: "rensa-user",
 											email: "user@rensa.site",
 											role: "user",

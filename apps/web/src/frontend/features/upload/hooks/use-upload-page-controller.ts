@@ -154,8 +154,8 @@ export function useUploadPageController() {
 
 		setLoading(true);
 		try {
-			await uploadFormData(formData);
-			router.push("/explore");
+			const uploadedPhoto = await uploadFormData(formData);
+			router.push(`/photo/${uploadedPhoto.photoId}`);
 		} catch (uploadError) {
 			console.error("Upload failed:", uploadError);
 			setError("Upload failed. Please try again.");

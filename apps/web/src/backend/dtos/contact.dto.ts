@@ -5,7 +5,7 @@ export const contactStatusDto = z.enum(["new", "read", "responded"]);
 
 export const contactResponseDto = z
 	.object({
-		_id: z.string().min(1),
+		contactId: z.string().min(1),
 		name: z.string().min(1),
 		email: z.email(),
 		subject: z.string().min(1),

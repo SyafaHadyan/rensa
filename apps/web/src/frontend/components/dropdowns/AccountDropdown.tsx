@@ -1,15 +1,15 @@
 "use client";
 
 import { CaretDownIcon } from "@phosphor-icons/react";
-import Image from "next/image";
 import { accountDropdownDatas } from "@/frontend/data/accountDropdownDatas";
 import { cn } from "@/utils/cn";
+import ProfileAvatar from "../ProfileAvatar";
 import Text from "../Text";
 import DropdownItem from "./DropdownItem";
 import IconDropdown from "./IconDropdown";
 
 interface AccountDropdownProps {
-	src: string;
+	src?: string | null;
 	user?: {
 		id?: string | null | undefined;
 		name?: string | null | undefined;
@@ -32,14 +32,12 @@ const AccountDropdown = ({ src, user }: AccountDropdownProps) => (
 				href={`/profile/${user?.id}`}
 			>
 				<div className="flex flex-row items-center justify-center gap-3">
-					<div className="relative h-10 w-10 rounded-full md:h-12 md:w-12">
-						<Image
-							alt="Profile"
-							className="aspect-square rounded-full object-cover"
-							fill
-							src={src}
-						/>
-					</div>
+					<ProfileAvatar
+						alt="Profile"
+						className="h-10 w-10 md:h-12 md:w-12"
+						sizes="48px"
+						src={src}
+					/>
 					<div className="flex flex-col items-start justify-center">
 						<Text size="s">{user?.name}</Text>
 						<Text className="font-light text-gray-600" size="s">

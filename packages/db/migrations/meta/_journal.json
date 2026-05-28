@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1777717939294,
+      "tag": "0000_ordinary_shaman",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779000000000,
+      "tag": "0001_add_photo_metadata_exif",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779009000000,
+      "tag": "0002_rename_notification_id_and_avatar_url",
+      "breakpoints": true
+    }
+  ]
+}

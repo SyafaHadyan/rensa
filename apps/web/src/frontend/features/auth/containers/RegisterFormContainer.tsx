@@ -17,6 +17,11 @@ const initialFormState: RegisterFormState = {
 	confirmPassword: "",
 };
 
+interface RegisterResponse {
+	message?: string;
+	verificationEmailSent?: boolean;
+}
+
 const RegisterFormContainer = () => {
 	const [form, setForm] = useState<RegisterFormState>(initialFormState);
 	const [error, setError] = useState("");
@@ -55,7 +60,7 @@ const RegisterFormContainer = () => {
 
 		setLoading(true);
 		try {
-			await api.post("/auth/register", form);
+			const response = await api.post<RegisterResponse>("/auth/register", form);
 			await signIn("credentials", {
 				email: form.email,
 				password: form.password,
@@ -63,7 +68,9 @@ const RegisterFormContainer = () => {
 			});
 
 			const message = encodeURIComponent(
-				"Sent a verification to your email. Please verify to continue."
+				response.data.verificationEmailSent === false
+					? "Account created, but verification email failed to send. Please request a new verification email."
+					: "Sent a verification to your email. Please verify to continue."
 			);
 			router.push(`/login?message=${message}`);
 		} catch (errorValue) {

@@ -11,7 +11,7 @@ import { useAuthStore } from "@/frontend/stores/useAuthStore";
 
 interface DefaultRoll {
 	name: string;
-	roll_id: string;
+	rollId: string;
 }
 
 export function usePhotoRoll(photoId: string | null) {
@@ -19,9 +19,8 @@ export function usePhotoRoll(photoId: string | null) {
 	const queryClient = useQueryClient();
 	const { user } = useAuthStore();
 
-	const actorId = user?.id || "";
 	const [selectedRoll, setSelectedRoll] = useState<{
-		roll_id: string;
+		rollId: string;
 		name: string;
 	} | null>(null);
 
@@ -38,7 +37,7 @@ export function usePhotoRoll(photoId: string | null) {
 	useEffect(() => {
 		if (defaultRoll && !selectedRoll) {
 			setSelectedRoll({
-				roll_id: defaultRoll.roll_id,
+				rollId: defaultRoll.rollId,
 				name: defaultRoll.name,
 			});
 		}
@@ -63,8 +62,7 @@ export function usePhotoRoll(photoId: string | null) {
 	// Add photo to roll
 	// -----------------------
 	const saveMutation = useMutation({
-		mutationFn: (rollId: string) =>
-			addPhotoToRoll(actorId, rollId, photoId || ""),
+		mutationFn: (rollId: string) => addPhotoToRoll(rollId, photoId || ""),
 		onSuccess: async () => {
 			showToast("Photo added to roll", "success");
 			await queryClient.invalidateQueries({
@@ -115,12 +113,12 @@ export function usePhotoRoll(photoId: string | null) {
 	return {
 		selectedRoll,
 		isLoading: saveMutation.isPending || removeMutation.isPending,
-		isSaved: selectedRoll ? savedToRolls.includes(selectedRoll.roll_id) : false,
+		isSaved: selectedRoll ? savedToRolls.includes(selectedRoll.rollId) : false,
 		savedToRolls,
 		setSelectedRoll,
-		saveToRoll: () => selectedRoll && saveMutation.mutate(selectedRoll.roll_id),
+		saveToRoll: () => selectedRoll && saveMutation.mutate(selectedRoll.rollId),
 		removeFromRoll: () =>
-			selectedRoll && removeMutation.mutate(selectedRoll.roll_id),
+			selectedRoll && removeMutation.mutate(selectedRoll.rollId),
 	};
 }
 

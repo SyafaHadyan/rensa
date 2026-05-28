@@ -7,7 +7,7 @@ import {
 	createCommentDto,
 	listCommentsQueryDto,
 } from "@/backend/dtos/comment.dto";
-import { commentController } from "@/backend/services/comments/controller";
+import { commentService } from "@/backend/services/comments/service";
 import { authOptions } from "@/lib/auth";
 
 /*
@@ -23,7 +23,7 @@ export async function POST(
 		const body = createCommentDto.parse(await request.json());
 		const session = await getServerSession(authOptions);
 		const actorId = session?.user?.id;
-		const newComment = await commentController.createForPhoto(
+		const newComment = await commentService.createForPhoto(
 			params.id,
 			body,
 			actorId
@@ -57,7 +57,7 @@ export async function GET(
 			offset: searchParams.get("offset") ?? undefined,
 			limit: searchParams.get("limit") ?? undefined,
 		});
-		const result = await commentController.listByPhotoId(
+		const result = await commentService.listByPhotoId(
 			params.id,
 			query.offset,
 			query.limit

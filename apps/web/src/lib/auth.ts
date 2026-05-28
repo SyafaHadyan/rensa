@@ -14,7 +14,7 @@ import type {
 	Session,
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { userController } from "../backend/services/users/controller";
+import { userService } from "../backend/services/users/service";
 
 declare module "next-auth" {
 	interface Session {
@@ -54,16 +54,16 @@ export const authOptions: NextAuthOptions = {
 					throw new Error("Email and password are required");
 				}
 
-				const user = await userController.getByEmail(credentials.email);
+				const user = await userService.getByEmail(credentials.email);
 				if (!user) {
 					throw new Error("Invalid email or password");
 				}
 				// Temporarily disable email verification enforcement.
-				// if (!user.verified) {
-				// 	throw new Error(
-				// 		"Email not verified. We’ve sent a verification email to your email address."
-				// 	);
-				// }
+				if (!user.verified) {
+					throw new Error(
+						"Email not verified. We’ve sent a verification email to your email address."
+					);
+				}
 				const isValid = await bcrypt.compare(
 					credentials.password,
 					user.password
@@ -73,7 +73,7 @@ export const authOptions: NextAuthOptions = {
 				}
 
 				return {
-					id: user.user_id,
+					id: user.userId,
 					name: user.username,
 					email: user.email,
 					role: user.role,
@@ -88,7 +88,7 @@ export const authOptions: NextAuthOptions = {
 		updateAge: 24 * 60 * 60, // rotate token only once every 24 hours
 	},
 	callbacks: {
-		jwt({ token, account, user }) {
+		async jwt({ token, account, user }) {
 			if (account) {
 				token.accessToken = account.access_token;
 				token.provider = account.provider;
@@ -101,6 +101,14 @@ export const authOptions: NextAuthOptions = {
 				token.name = user.name;
 				token.email = user.email;
 				token.role = user.role;
+			}
+			if (token.email) {
+				const appUser = await userService.getByEmail(token.email);
+				if (appUser) {
+					token.id = appUser.userId;
+					token.name = appUser.username;
+					token.role = appUser.role;
+				}
 			}
 			return token;
 		},

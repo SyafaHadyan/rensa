@@ -31,7 +31,6 @@ export const rollsOpenApiDocFragment: OpenApiFragment = {
 						"application/json": {
 							schema: { $ref: "#/components/schemas/CreateRollDto" },
 							example: {
-								user_id: "0f2d8f3e-1dd7-4a52-9dd7-8cbffa4fd89f",
 								name: "My Travel Roll",
 								description: "Trip photos",
 							},

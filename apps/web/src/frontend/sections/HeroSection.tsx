@@ -67,9 +67,9 @@ export default function HeroSection() {
 							alt={`Rensa photo inspiration ${i + 1}`}
 							className="h-full w-full rounded-lg object-cover"
 							fill
-							loading={i < 2 ? "eager" : "lazy"}
-							priority={i < 2}
-							quality={75}
+							loading={i < 3 ? "eager" : "lazy"}
+							priority={i < 3}
+							quality={20}
 							sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 							src={data.src}
 						/>

@@ -3,8 +3,8 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
 import PrimaryButton from "@/frontend/components/buttons/PrimaryButton";
 import TertiaryButton from "@/frontend/components/buttons/TertiaryButton";
-import { useAuthStore } from "@/frontend/stores/useAuthStore";
 import { api } from "@/lib/axios-client";
+import type { SelectedRoll } from "../types/roll";
 import { useToast } from "./ToastProvider";
 
 interface CreateRollContextType {
@@ -28,7 +28,7 @@ export const useCreateRoll = () => {
 
 interface CreateRollProviderProps {
 	children: ReactNode;
-	onRollCreate?: (roll: { roll_id: string; name: string }) => void;
+	onRollCreate?: (roll: SelectedRoll) => void;
 }
 
 export const CreateRollProvider = ({
@@ -36,7 +36,6 @@ export const CreateRollProvider = ({
 	onRollCreate,
 }: CreateRollProviderProps) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const { user } = useAuthStore();
 	const [name, setName] = useState("");
 	const { showToast } = useToast();
 
@@ -52,7 +51,7 @@ export const CreateRollProvider = ({
 
 	const createRoll = async (name: string) => {
 		try {
-			const res = await api.post("/rolls", { name, userId: user?.id });
+			const res = await api.post("/rolls", { name });
 
 			showToast("Roll created successfully", "success");
 

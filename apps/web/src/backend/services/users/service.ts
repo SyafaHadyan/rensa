@@ -1,3 +1,4 @@
+import { UserRepository } from "@rensa/db/queries/user.repository";
 import type {
 	UserRegisterDto,
 	UserRepositoryInterface,
@@ -39,3 +40,5 @@ export class UserService {
 		return user;
 	}
 }
+
+export const userService = new UserService(new UserRepository());

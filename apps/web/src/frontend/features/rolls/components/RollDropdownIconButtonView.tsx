@@ -10,11 +10,12 @@ import RollDropdownItem from "@/frontend/components/dropdowns/rolls/RollDropdown
 import Heading from "@/frontend/components/Heading";
 import SearchInputField from "@/frontend/components/inputfields/SearchInputField";
 import Text from "@/frontend/components/Text";
+import type { SelectedRoll } from "@/frontend/types/roll";
 
 interface RollOption {
 	imageUrl?: string;
 	name: string;
-	roll_id: string;
+	rollId: string;
 }
 
 interface RollDropdownIconButtonViewProps {
@@ -32,12 +33,10 @@ interface RollDropdownIconButtonViewProps {
 	newRollName: string;
 	rolls: RollOption[];
 	savedToRolls: string[];
-	selectedRoll: { roll_id: string; name: string } | null;
+	selectedRoll: SelectedRoll | null;
 	setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
 	setNewRollName: React.Dispatch<React.SetStateAction<string>>;
-	setSelectedRoll: React.Dispatch<
-		React.SetStateAction<{ roll_id: string; name: string } | null>
-	>;
+	setSelectedRoll: React.Dispatch<React.SetStateAction<SelectedRoll | null>>;
 }
 
 const RollDropdownIconButtonView: React.FC<RollDropdownIconButtonViewProps> = ({
@@ -93,16 +92,16 @@ const RollDropdownIconButtonView: React.FC<RollDropdownIconButtonViewProps> = ({
 							rolls.map((roll) => (
 								<RollDropdownItem
 									isCreating={isCreating}
-									isSaved={savedToRolls.includes(roll.roll_id)}
-									key={roll.roll_id}
+									isSaved={savedToRolls.includes(roll.rollId)}
+									key={roll.rollId}
 									onSelectedRoll={() =>
 										setSelectedRoll({
-											roll_id: roll.roll_id,
+											rollId: roll.rollId,
 											name: roll.name,
 										})
 									}
 									roll={roll}
-									selectedRollId={selectedRoll?.roll_id || null}
+									selectedRollId={selectedRoll?.rollId || null}
 								/>
 							))
 						) : (

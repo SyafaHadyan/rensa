@@ -2,8 +2,8 @@ import type {
 	NewNotification,
 	Notification,
 	NotificationType,
-} from "../../database/schema";
-import type { PublicUser } from "../users/user.model";
+	UserProfileDto,
+} from "@rensa/db/schema";
 
 export type CreateNotificationInput = Pick<
 	NewNotification,
@@ -13,7 +13,7 @@ export type CreateNotificationInput = Pick<
 export type NotificationRecord = Notification;
 
 export type NotificationResponse = Omit<Notification, "actorId"> & {
-	actorId: PublicUser | null;
+	actor: UserProfileDto;
 };
 
 export const notificationTypes: NotificationType[] = [

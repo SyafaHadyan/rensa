@@ -1,102 +1,103 @@
 services:
-  rensa-frontend:
-    image: rensa-frontend:dev
+  web:
+    image: rensa-web:dev
     build:
-      context: ./rensa-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
       target: dev
-    container_name: rensa-frontend
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+        NEXT_PUBLIC_ELYSIA_WS_URL: ${NEXT_PUBLIC_ELYSIA_WS_URL:-ws://localhost:3002}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_EXPLORE_SOURCE: ${NEXT_PUBLIC_EXPLORE_SOURCE:-database}
     ports:
       - "3000:3000"
     env_file:
-      - ./rensa-frontend/.env.local
-    volumes:
-      - ./rensa-frontend:/app
-      - /app/node_modules
+      - ./apps/web/.env.local
+    environment:
+      ELYSIA_BASE_URL: http://notifications:3002/api
+      FAST_API_BASE_URL: http://ai:3001/api
+      EXPRESS_BASE_URL: http://exif:3003/api
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      notifications:
+        condition: service_started
+      ai:
+        condition: service_started
+      exif:
+        condition: service_started
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - rensa-net
-    depends_on:
-      rensa-elysia:
-        condition: service_started
-      rensa-fastapi:
-        condition: service_started
-      rensa-express:
-        condition: service_started
 
-  rensa-fastapi:
-    image: rensa-fastapi:dev
+  notifications:
+    image: rensa-notifications:dev
     build:
-      context: ./rensa-fastapi
+      context: .
+      dockerfile: apps/notifications/Dockerfile
+      target: dev
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./apps/notifications/.env.local
+    environment:
+      PORT: 3002
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rensa-net
+
+  ai:
+    image: rensa-ai:dev
+    build:
+      context: ./apps/ai
       dockerfile: Dockerfile
       target: dev
-    container_name: rensa-fastapi
     ports:
       - "3001:3001"
     restart: unless-stopped
     networks:
       - rensa-net
 
-  rensa-elysia:
-    image: rensa-elysia:dev
+  exif:
+    image: rensa-exif:dev
     build:
-      context: ./rensa-elysia
+      context: ./apps/exif
       dockerfile: Dockerfile
       target: dev
-    container_name: rensa-elysia
-    ports:
-      - "3002:3002"
-    env_file:
-      - ./rensa-elysia/.env.local
-    volumes:
-      - ./rensa-elysia:/app
-      - elysia-node-modules:/app/node_modules
-    restart: unless-stopped
-    networks:
-      - rensa-net
-    depends_on:
-      rensa-redis:
-        condition: service_healthy
-
-  rensa-express:
-    image: rensa-express:dev
-    build:
-      context: ./rensa-express
-      dockerfile: Dockerfile
-      target: dev
-    container_name: rensa-express
     ports:
       - "3003:3003"
     env_file:
-      - ./rensa-express/.env.local
-    volumes:
-      - ./rensa-express:/app
-      - /app/node_modules
-    restart: unless-stopped
-    networks:
-      - rensa-net
+      - ./apps/exif/.env.local
     environment:
       PORT: 3003
     depends_on:
-      rensa-redis:
+      redis:
         condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rensa-net
 
-  rensa-redis:
+  redis:
     image: redis:7-alpine
-    container_name: rensa-redis
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
-    networks:
-      - rensa-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 5s
+    networks:
+      - rensa-net
 
 networks:
   rensa-net:
@@ -104,4 +105,3 @@ networks:
 
 volumes:
   redis-data:
-  elysia-node-modules:

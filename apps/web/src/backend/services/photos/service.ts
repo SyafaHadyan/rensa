@@ -1,21 +1,13 @@
+import { PhotoRepository } from "@rensa/db/queries/photo.repository";
+import { UserRepository } from "@rensa/db/queries/user.repository";
 import type {
 	ListPhotosQueryDto,
 	PhotoRepositoryInterface,
 	UserRepositoryInterface,
 } from "@rensa/db/schema";
-import {
-	ForbiddenError,
-	NotFoundError,
-	UnauthorizedError,
-} from "@/backend/common/backend.error";
-
-interface PaginatedPhotosResult {
-	currentPage: number;
-	hasMore: boolean;
-	photos: unknown[];
-	total: number;
-	totalPages: number;
-}
+import { ForbiddenError, NotFoundError } from "@/backend/common/backend.error";
+import type { PaginatedPhotoListResult } from "@/backend/types/service.types";
+import cloudinary, { getCloudinaryPublicIdFromUrl } from "@/lib/cloudinary";
 
 export class PhotoService {
 	readonly photoRepository: PhotoRepositoryInterface;
@@ -29,7 +21,7 @@ export class PhotoService {
 		this.userRepository = userRepository;
 	}
 
-	async list(query: ListPhotosQueryDto): Promise<PaginatedPhotosResult> {
+	async list(query: ListPhotosQueryDto): Promise<PaginatedPhotoListResult> {
 		const { photos, total } = await this.photoRepository.list(query);
 		const totalPages = Math.ceil(total / query.limit);
 		return {
@@ -46,7 +38,8 @@ export class PhotoService {
 		if (!photo) {
 			throw new NotFoundError("Photo not found");
 		}
-		return photo;
+		const user = await this.userRepository.getById(photo.user.userId);
+		return { ...photo, user };
 	}
 
 	async getOwnerId(photoId: string): Promise<string> {
@@ -58,10 +51,24 @@ export class PhotoService {
 	}
 
 	async deleteById(photoId: string, actorId: string): Promise<void> {
-		const ownerId = await this.getOwnerId(photoId);
-		if (ownerId !== actorId) {
+		const photo = await this.photoRepository.getById(photoId);
+		if (!photo) {
+			throw new NotFoundError("Photo not found");
+		}
+		if (photo.user.userId !== actorId) {
 			throw new ForbiddenError("Forbidden: You don't own this photo");
 		}
+
+		const publicId = getCloudinaryPublicIdFromUrl(photo.url);
+		if (publicId) {
+			const result = await cloudinary.uploader.destroy(publicId, {
+				resource_type: "image",
+			});
+			if (result.result !== "ok" && result.result !== "not found") {
+				throw new Error(`Failed to delete Cloudinary asset: ${result.result}`);
+			}
+		}
+
 		await this.photoRepository.deleteById(photoId);
 	}
 
@@ -69,7 +76,7 @@ export class PhotoService {
 		userId: string,
 		page: number,
 		limit: number
-	): Promise<PaginatedPhotosResult> {
+	): Promise<PaginatedPhotoListResult> {
 		const { photos, total } = await this.photoRepository.listBookmarkedByUser(
 			userId,
 			page,
@@ -84,40 +91,9 @@ export class PhotoService {
 			total,
 		};
 	}
-
-	async updateBookmark(params: {
-		photoId: string;
-		userId: string;
-		action: "increment" | "decrement";
-		actorId?: string;
-	}): Promise<{
-		bookmarks: string[];
-		isBookmarked: boolean;
-	}> {
-		if (!params.actorId) {
-			throw new UnauthorizedError();
-		}
-		if (params.actorId !== params.userId) {
-			throw new ForbiddenError("Cannot update bookmarks for another user");
-		}
-
-		const photoExists = await this.photoRepository.exists(params.photoId);
-		if (!photoExists) {
-			throw new NotFoundError("Photo not found");
-		}
-
-		const updatedUser = await this.userRepository.updateBookmarks(
-			params.userId,
-			params.photoId,
-			params.action
-		);
-		if (!updatedUser) {
-			throw new NotFoundError("User not found");
-		}
-
-		return {
-			bookmarks: updatedUser.bookmarks,
-			isBookmarked: params.action === "increment",
-		};
-	}
 }
+
+const photoRepository = new PhotoRepository();
+const userRepository = new UserRepository();
+
+export const photoService = new PhotoService(photoRepository, userRepository);

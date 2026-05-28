@@ -9,12 +9,8 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
-import {
-	type FetchPhotosResponse,
-	fetchPhotosFromRoll, // 🆕 New service
-	type Photo,
-} from "@/frontend/services/photo.service";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import { fetchPhotosFromRoll } from "@/frontend/services/photo.service";
+import type { FetchPhotosResponse, Photo } from "@/frontend/types/photo";
 import RollPageMasonryGalleryGrid from "./RollPageMasonryGalleryGrid";
 
 interface RollPageMasonryGallerySectionProps {
@@ -49,8 +45,8 @@ const RollPageMasonryGallerySection: React.FC<
 		gcTime: 1000 * 60 * 30,
 	});
 
-	const photos: PopulatedPhoto[] =
-		data?.pages.flatMap((page) => page.data as PopulatedPhoto[]) ?? [];
+	const photos: Photo[] =
+		data?.pages.flatMap((page) => page.data as Photo[]) ?? [];
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetchingNextPage) {
@@ -79,7 +75,7 @@ const RollPageMasonryGallerySection: React.FC<
 					pages: oldData.pages.map((page: FetchPhotosResponse) => ({
 						...page,
 						data: page.data.filter(
-							(photo) => photo.photo_id.toString() !== photoId
+							(photo) => photo.photoId.toString() !== photoId
 						),
 					})),
 				};

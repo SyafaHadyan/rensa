@@ -8,10 +8,23 @@ import ExploreTabsContainer, {
 type ExploreTabsProps = ExploreTabsContainerProps;
 
 const ExploreTabs: React.FC<ExploreTabsProps> = ({
+	activeTabId,
 	className,
+	defaultActiveTabId,
+	name,
+	onTabChange,
 	setActiveTab,
+	tabs,
 }) => (
-	<ExploreTabsContainer className={className} setActiveTab={setActiveTab} />
+	<ExploreTabsContainer
+		activeTabId={activeTabId}
+		className={className}
+		defaultActiveTabId={defaultActiveTabId}
+		name={name}
+		onTabChange={onTabChange}
+		setActiveTab={setActiveTab}
+		tabs={tabs}
+	/>
 );
 
 export default ExploreTabs;

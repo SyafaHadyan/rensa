@@ -1,14 +1,25 @@
-# ===== Base =====
-FROM oven/bun:1.3.5 AS base
-WORKDIR /app
+FROM node:20-bookworm-slim AS deps
+WORKDIR /repo
 
-COPY package.json .
-RUN bun install
+RUN npm install -g pnpm@10.33.2 bun@1.3.5
 
-# ===== Build =====
-FROM base AS build
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/notifications/package.json apps/notifications/package.json
+COPY packages/cache/package.json packages/cache/package.json
+COPY packages/db/package.json packages/db/package.json
+
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
+FROM deps AS build
+WORKDIR /repo
+
 ENV NODE_ENV=production
-COPY src ./src
+
+COPY apps/notifications apps/notifications
+COPY packages/cache packages/cache
+COPY packages/db packages/db
+
+WORKDIR /repo/apps/notifications
 
 RUN bun build \
   --compile \
@@ -20,21 +31,25 @@ RUN bun build \
   --outfile healthcheck \
   src/healthcheck.ts
 
-# ===== Development =====
-FROM base AS dev
+FROM deps AS dev
+WORKDIR /repo
+
 ENV NODE_ENV=development
-COPY src ./src
+
+COPY apps/notifications apps/notifications
+COPY packages/cache packages/cache
+COPY packages/db packages/db
 
 EXPOSE 3002
-CMD ["bun", "run", "src/index.ts"]
+CMD ["bun", "run", "--cwd", "apps/notifications", "src/index.ts"]
 
-# ===== Production =====
 FROM gcr.io/distroless/base AS prod
 WORKDIR /app
+
 ENV NODE_ENV=production
 
-COPY --from=build /app/server ./server
-COPY --from=build /app/healthcheck ./healthcheck
+COPY --from=build /repo/apps/notifications/server ./server
+COPY --from=build /repo/apps/notifications/healthcheck ./healthcheck
 
 EXPOSE 3002
 CMD ["./server"]

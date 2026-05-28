@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { BackendError } from "@/backend/common/backend.error";
 import { listPhotosQueryDto } from "@/backend/dtos/photo.dto";
-import { photoController } from "@/backend/services/photos/controller";
+import { photoService } from "@/backend/services/photos/service";
 
 /*
   GET /api/photos?page=1&limit=10&filters=tag1,tag2&sort=recent|popular
@@ -15,9 +15,10 @@ export async function GET(req: Request) {
 			limit: searchParams.get("limit") ?? undefined,
 			sort: searchParams.get("sort") ?? undefined,
 			filters: searchParams.get("filters") ?? undefined,
+			userId: searchParams.get("userId") ?? undefined,
 		});
 
-		const result = await photoController.list(query);
+		const result = await photoService.list(query);
 		return NextResponse.json(result);
 	} catch (error) {
 		if (error instanceof ZodError) {
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
 				{ status: error.statusCode }
 			);
 		}
-
+		console.log("Error fetching photos:", error);
 		return NextResponse.json(
 			{
 				error: "Failed to fetch photos",

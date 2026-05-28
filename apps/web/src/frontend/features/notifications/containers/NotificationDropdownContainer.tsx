@@ -25,7 +25,7 @@ const NotificationDropdownContainer = () => {
 				notifications.map((notification, idx) => (
 					<NotificationItemContainer
 						isLast={idx === notifications.length - 1}
-						key={notification.id}
+						key={notification.notificationId}
 						notification={notification}
 					/>
 				))

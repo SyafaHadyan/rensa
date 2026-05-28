@@ -1,29 +1,46 @@
 "use client";
 
 import { useState } from "react";
-import ExploreTabsView from "../components/ExploreTabsView";
+import ExploreTabsView, { type TabItem } from "../components/ExploreTabsView";
 
 export interface ExploreTabsContainerProps {
+	activeTabId?: string;
 	className?: string;
+	defaultActiveTabId?: string;
+	name?: string;
+	onTabChange?: (tab: string) => void;
 	setActiveTab?: (tab: string) => void;
+	tabs?: TabItem[];
 }
 
 const ExploreTabsContainer: React.FC<ExploreTabsContainerProps> = ({
+	activeTabId,
 	className,
+	defaultActiveTabId = "tab1",
+	name,
+	onTabChange,
 	setActiveTab,
+	tabs,
 }) => {
-	const [activeTabId, setActiveTabId] = useState("tab1");
+	const [internalActiveTabId, setInternalActiveTabId] =
+		useState(defaultActiveTabId);
+	const selectedTabId = activeTabId ?? internalActiveTabId;
 
 	const handleTabChange = (tabId: string) => {
-		setActiveTabId(tabId);
+		if (activeTabId === undefined) {
+			setInternalActiveTabId(tabId);
+		}
+		onTabChange?.(tabId);
 		setActiveTab?.(tabId);
 	};
 
 	return (
 		<ExploreTabsView
-			activeTabId={activeTabId}
+			activeTabId={selectedTabId}
 			className={className}
+			name={name}
 			onTabChange={handleTabChange}
+			tabs={tabs}
 		/>
 	);
 };

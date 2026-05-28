@@ -1,3 +1,5 @@
+import { PhotoRepository } from "@rensa/db/queries/photo.repository";
+import { RollRepository } from "@rensa/db/queries/roll.repository";
 import type {
 	ListRollPhotosQueryDto,
 	PhotoRepositoryInterface,
@@ -10,14 +12,10 @@ import {
 	NotFoundError,
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
+import { notificationService } from "@/backend/services/notifications/service";
+import type { PaginatedPhotoListResult } from "@/backend/types/service.types";
 
-interface PaginatedRollPhotosResult {
-	currentPage: number;
-	hasMore: boolean;
-	photos: unknown[];
-	total: number;
-	totalPages: number;
-}
+export const DEFAULT_ROLL_NAME = "All Photos";
 
 export class RollService {
 	readonly photoRepository: PhotoRepositoryInterface;
@@ -39,13 +37,20 @@ export class RollService {
 		return { rolls };
 	}
 
-	create(payload: RollCreateDto, actorId?: string): Promise<unknown> {
+	create(
+		payload: Omit<RollCreateDto, "userId">,
+		actorId?: string
+	): Promise<unknown> {
 		if (!actorId) {
 			throw new UnauthorizedError();
 		}
-		if (payload.user_id !== actorId) {
-			throw new ForbiddenError("Cannot create rolls for another user");
-		}
+		return this.rollRepository.create({
+			...payload,
+			userId: actorId,
+		});
+	}
+
+	createForUser(payload: RollCreateDto): Promise<unknown> {
 		return this.rollRepository.create(payload);
 	}
 
@@ -62,7 +67,7 @@ export class RollService {
 		if (!roll) {
 			throw new NotFoundError("Roll not found");
 		}
-		return roll.user_id;
+		return roll.userId;
 	}
 
 	async getDefaultByUserId(actorId?: string): Promise<unknown> {
@@ -103,9 +108,17 @@ export class RollService {
 			throw new UnauthorizedError();
 		}
 
-		const ownerId = await this.getOwnerId(rollId);
-		if (ownerId !== actorId) {
+		const roll = await this.rollRepository.getById(rollId);
+		if (!roll) {
+			throw new NotFoundError("Roll not found");
+		}
+
+		if (roll.userId !== actorId) {
 			throw new ForbiddenError("Forbidden: You don't own this roll");
+		}
+
+		if (roll.name === DEFAULT_ROLL_NAME) {
+			throw new ForbiddenError("The default All Photos roll cannot be deleted");
 		}
 
 		const deletedRoll = await this.rollRepository.deleteById(rollId);
@@ -129,7 +142,7 @@ export class RollService {
 		);
 		return {
 			isSaved: rolls.length > 0,
-			rollIds: rolls.map((roll) => roll.roll_id),
+			rollIds: rolls.map((roll) => roll.rollId),
 			rolls,
 		};
 	}
@@ -152,7 +165,14 @@ export class RollService {
 			throw new NotFoundError("Photo not found");
 		}
 
-		return this.rollRepository.addPhotoToRoll(rollId, photoId);
+		const modifiedCount = await this.rollRepository.addPhotoToRoll(
+			rollId,
+			photoId
+		);
+		if (modifiedCount > 0) {
+			await this.notifyPhotoOwner(actorId, photoId);
+		}
+		return modifiedCount;
 	}
 
 	async removePhotoFromRoll(
@@ -173,7 +193,7 @@ export class RollService {
 	async listPhotos(
 		rollId: string,
 		query: ListRollPhotosQueryDto
-	): Promise<PaginatedRollPhotosResult> {
+	): Promise<PaginatedPhotoListResult> {
 		const roll = await this.rollRepository.getById(rollId);
 		if (!roll) {
 			throw new NotFoundError("Roll not found");
@@ -193,4 +213,30 @@ export class RollService {
 			total,
 		};
 	}
+
+	private async notifyPhotoOwner(
+		actorId: string,
+		photoId: string
+	): Promise<void> {
+		const recipientId = await this.photoRepository.getOwnerId(photoId);
+		if (!(recipientId && recipientId !== actorId)) {
+			return;
+		}
+
+		try {
+			await notificationService.create({
+				actorId,
+				photoId,
+				recipientId,
+				type: "photo-saved",
+			});
+		} catch (error) {
+			console.error("Failed to create roll save notification:", error);
+		}
+	}
 }
+
+const rollRepository = new RollRepository();
+const photoRepository = new PhotoRepository();
+
+export const rollService = new RollService(rollRepository, photoRepository);

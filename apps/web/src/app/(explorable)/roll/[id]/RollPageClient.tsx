@@ -5,6 +5,7 @@ import Heading from "@/frontend/components/Heading";
 import { EditRollProvider } from "@/frontend/providers/EditRollProvider";
 import RollPageMasonryGallerySection from "@/frontend/sections/RollPageMasonryGallerySection/RollPageMasonryGallerySection";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
+import type { SelectedRoll } from "@/frontend/types/roll";
 
 interface RollPageClientProps {
 	id: string;
@@ -20,7 +21,7 @@ export default function RollPageClient({
 	const { user } = useAuthStore();
 	const isOwner = user?.id === ownerId;
 	const [rollName, setRollName] = useState(name);
-	const handleOnRollUpdate = (roll: { rollId: string; name: string }) => {
+	const handleOnRollUpdate = (roll: SelectedRoll) => {
 		setRollName(roll.name);
 	};
 

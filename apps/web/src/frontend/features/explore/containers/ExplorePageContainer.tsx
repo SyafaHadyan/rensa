@@ -7,12 +7,16 @@ const ExplorePageContainer: React.FC = () => {
 	const [activeTabId, setActiveTabId] = useState("tab1");
 	const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-	const handleToggleFilter = (label: string) => {
-		const normalizedLabel = label.toLowerCase();
+	const handleToggleFilter = (filterId: string) => {
+		if (filterId === "all") {
+			setActiveFilters([]);
+			return;
+		}
+
 		setActiveFilters((previousFilters) =>
-			previousFilters.includes(normalizedLabel)
-				? previousFilters.filter((filter) => filter !== normalizedLabel)
-				: [...previousFilters, normalizedLabel]
+			previousFilters.includes(filterId)
+				? previousFilters.filter((filter) => filter !== filterId)
+				: [...previousFilters, filterId]
 		);
 	};
 

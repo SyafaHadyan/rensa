@@ -1,13 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
 import { cn } from "@/utils/cn";
+import ProfileAvatar from "../ProfileAvatar";
 
 interface ProfileButtonProps {
 	alt: string;
 	href?: string;
 	size?: "8" | "10" | "12" | "16" | "20"; // restrict to supported Tailwind sizes
-	src: string;
+	src?: string | null;
 }
 
 const ProfileButton: React.FC<ProfileButtonProps> = ({
@@ -27,15 +27,14 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({
 	return (
 		<Link
 			className={cn(
-				"relative cursor-pointer rounded-full transition-all duration-300 hover:opacity-50",
+				"cursor-pointer rounded-full transition-all duration-300 hover:opacity-50",
 				sizeClasses[size]
 			)}
 			href={href || "#"}
 		>
-			<Image
+			<ProfileAvatar
 				alt={alt}
-				className="aspect-square rounded-full object-cover"
-				fill
+				className="h-full w-full"
 				sizes="(max-width: 768px) 40px, (max-width: 1200px) 60px, 80px"
 				src={src}
 			/>

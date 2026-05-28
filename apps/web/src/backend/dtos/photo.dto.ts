@@ -3,16 +3,16 @@ import { paginationQueryDto, uuidDto } from "./common.dto";
 
 const populatedPhotoUserDto = z
 	.object({
-		user_id: uuidDto,
+		userId: uuidDto,
 		username: z.string().optional(),
-		avatar: z.string().optional(),
+		avatarUrl: z.string().optional(),
 	})
 	.passthrough();
 
 export const photoResponseDto = z
 	.object({
-		photo_id: uuidDto,
-		user_id: z.union([uuidDto, populatedPhotoUserDto]),
+		photoId: uuidDto,
+		userId: z.union([uuidDto, populatedPhotoUserDto]),
 		url: z.string().url(),
 		title: z.string(),
 		description: z.string().default(""),
@@ -21,13 +21,13 @@ export const photoResponseDto = z
 		color: z.string().default(""),
 		camera: z.string().default(""),
 		bookmarks: z.number().int().min(0).default(0),
-		created_at: z.string().optional(),
-		updated_at: z.string().optional(),
+		createdAt: z.string().optional(),
+		updatedAt: z.string().optional(),
 	})
 	.passthrough();
 
 export const createPhotoDto = z.object({
-	user_id: uuidDto,
+	userId: uuidDto,
 	url: z.string().url(),
 	title: z.string().min(1),
 	description: z.string().optional(),
@@ -39,7 +39,7 @@ export const createPhotoDto = z.object({
 
 export const updatePhotoDto = createPhotoDto
 	.omit({
-		user_id: true,
+		userId: true,
 		url: true,
 	})
 	.partial();
@@ -49,7 +49,8 @@ export const photoIdParamDto = z.object({
 });
 
 export const listPhotosQueryDto = paginationQueryDto.extend({
-	sort: z.enum(["recent", "popular"]).default("recent"),
+	sort: z.enum(["recent", "popular", "oldest"]).default("recent"),
+	userId: uuidDto.optional(),
 	filters: z
 		.string()
 		.transform((value) =>
@@ -61,9 +62,18 @@ export const listPhotosQueryDto = paginationQueryDto.extend({
 		.optional(),
 });
 
-export const photoBookmarkQueryDto = paginationQueryDto.extend({
-	userId: uuidDto,
-});
+export const photoBookmarkQueryDto = paginationQueryDto
+	.extend({
+		userId: uuidDto.optional(),
+	})
+	.refine((value) => value.userId, {
+		message: "userId is required",
+	})
+	.transform((value) => ({
+		limit: value.limit,
+		page: value.page,
+		userId: value.userId as string,
+	}));
 
 export type PhotoResponseDto = z.infer<typeof photoResponseDto>;
 export type CreatePhotoDto = z.infer<typeof createPhotoDto>;

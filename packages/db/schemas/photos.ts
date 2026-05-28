@@ -1,6 +1,7 @@
 import {
 	index,
 	integer,
+	jsonb,
 	pgTable,
 	text,
 	timestamp,
@@ -32,6 +33,7 @@ export const photoMetadata = pgTable("photo_metadata", {
 	photoMetadataId: uuid("photo_metadata_id")
 		.primaryKey()
 		.references(() => photos.photoId, { onDelete: "cascade" }),
+	exif: jsonb("exif").$type<Record<string, unknown>>(),
 	width: integer("width"),
 	height: integer("height"),
 	format: text("format"),
@@ -47,7 +49,8 @@ export interface ListPhotosQueryDto {
 	filters?: string[];
 	limit: number;
 	page: number;
-	sort: "recent" | "popular";
+	sort: "oldest" | "popular" | "recent";
+	userId?: string;
 }
 
 export interface PhotoResponseDto extends Passthrough {
@@ -55,20 +58,26 @@ export interface PhotoResponseDto extends Passthrough {
 	camera: string;
 	category: string;
 	color: string;
-	created_at?: string;
+	createdAt?: string;
 	description: string;
-	photo_id: string;
+	metadata?: {
+		exif?: Record<string, unknown>;
+		format?: string;
+		height?: number;
+		size?: number;
+		uploadedAt?: string;
+		width?: number;
+	};
+	photoId: string;
 	style: string;
 	title: string;
-	updated_at?: string;
+	updatedAt?: string;
 	url: string;
-	user_id:
-		| string
-		| ({
-				avatar?: string;
-				user_id: string;
-				username?: string;
-		  } & Passthrough);
+	user: {
+		username: string;
+		avatarUrl: string;
+		userId: string;
+	};
 }
 
 export interface ListPhotosResult {
@@ -102,6 +111,7 @@ export interface CreateUploadedPhotoDto {
 	category: string;
 	color: string;
 	description: string;
+	exif?: Record<string, unknown>;
 	format?: string;
 	height?: number;
 	size?: number;
@@ -119,6 +129,7 @@ export interface UploadedPhotoDto {
 	color: string | null;
 	createdAt?: Date | null;
 	description: string | null;
+	exif?: Record<string, unknown>;
 	format?: string;
 	height?: number;
 	photoId: string;

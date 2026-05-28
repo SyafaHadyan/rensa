@@ -1,12 +1,13 @@
+import { registerLimiter } from "@rensa/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { rollController } from "@/backend/services/rolls/controller";
-import { userController } from "@/backend/services/users/controller";
-import { registerLimiter } from "@/lib/rateLimiter";
+import { rollService } from "@/backend/services/rolls/service";
+import { userService } from "@/backend/services/users/service";
+import { sendVerificationEmail } from "@/frontend/services/email.service";
 
-const usersApplication = userController;
-const rollsApplication = rollController;
+const usersApplication = userService;
+const rollsApplication = rollService;
 
 /*
   POST /api/auth/register
@@ -14,26 +15,26 @@ const rollsApplication = rollController;
 */
 export async function POST(req: Request) {
 	try {
-		// const ip =
-		// 	req.headers.get("x-forwarded-for") ||
-		// 	req.headers.get("x-real-ip") ||
-		// 	"unknown";
+		const ip =
+			req.headers.get("x-forwarded-for") ||
+			req.headers.get("x-real-ip") ||
+			"unknown";
 
-		// const { success, remaining, limit, reset } =
-		// 	await registerLimiter.limit(ip);
-		// if (!success) {
-		// 	return NextResponse.json(
-		// 		{ message: "Too many registration attempts. Please try again later." },
-		// 		{
-		// 			status: 429,
-		// 			headers: {
-		// 				"X-RateLimit-Limit": limit.toString(),
-		// 				"X-RateLimit-Remaining": remaining.toString(),
-		// 				"X-RateLimit-Reset": reset.toString(),
-		// 			},
-		// 		}
-		// 	);
-		// }
+		const { success, remaining, limit, reset } =
+			await registerLimiter.limit(ip);
+		if (!success) {
+			return NextResponse.json(
+				{ message: "Too many registration attempts. Please try again later." },
+				{
+					status: 429,
+					headers: {
+						"X-RateLimit-Limit": limit.toString(),
+						"X-RateLimit-Remaining": remaining.toString(),
+						"X-RateLimit-Reset": reset.toString(),
+					},
+				}
+			);
+		}
 		const { username, email, password, confirmPassword } = await req.json();
 		if (password !== confirmPassword) {
 			return NextResponse.json(
@@ -54,23 +55,36 @@ export async function POST(req: Request) {
 			email,
 			password: hashedPassword,
 		});
-		await rollsApplication.create(
-			{
-				user_id: user.user_id,
-				name: "All Photos",
-				description: "This is your default roll.",
-			},
-			user.user_id
-		);
+		await rollsApplication.createForUser({
+			userId: user.userId,
+			name: "All Photos",
+			description: "This is your default roll.",
+		});
 
-		// try {
-		// 	await sendVerificationEmail(email);
-		// } catch (err) {
-		// 	console.error("Error sending verification email:", err);
-		// }
+		let verificationEmailSent = false;
+		let verificationUrl: string | undefined;
+		let verificationEmailError: string | undefined;
+		try {
+			const result = await sendVerificationEmail(email);
+			verificationEmailSent = true;
+			verificationUrl = result.verificationUrl;
+		} catch (err) {
+			console.error("Error sending verification email:", err);
+			verificationEmailError =
+				err instanceof Error
+					? err.message
+					: "Failed to send verification email";
+		}
 
 		return NextResponse.json(
-			{ message: "User registered successfully" },
+			{
+				message: verificationEmailSent
+					? "User registered successfully"
+					: "User registered, but verification email failed to send",
+				verificationEmailSent,
+				...(verificationEmailError ? { verificationEmailError } : {}),
+				...(verificationUrl ? { verificationUrl } : {}),
+			},
 			{ status: 201 }
 		);
 	} catch (err) {

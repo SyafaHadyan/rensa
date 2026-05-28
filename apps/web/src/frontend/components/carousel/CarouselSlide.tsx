@@ -36,6 +36,7 @@ const CarouselSlide: React.FC<CarouselSlideProps> = ({
 					alt="photo"
 					className="h-full w-full object-cover"
 					fill
+					sizes="100vw"
 					src={src}
 				/>
 			</div>

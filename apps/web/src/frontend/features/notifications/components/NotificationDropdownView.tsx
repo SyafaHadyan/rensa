@@ -26,17 +26,19 @@ const NotificationDropdownView = ({
 			</div>
 		)}
 		<IconDropdown className="h-100" closeOnItemClick={false} Tag={BellIcon}>
-			<Heading alignment="center" className="relative w-full py-6" size="m">
-				Notifications
+			<div className="relative w-full">
+				<Heading alignment="center" className="py-6" size="m">
+					Notifications
+				</Heading>
 				{hasNotifications && (
 					<button
-						className="absolute top-18 right-5 cursor-pointer text-gray-700 transition-colors duration-300 hover:text-gray-600"
+						className="absolute right-3 bottom-4 cursor-pointer text-gray-700 transition-colors duration-300 hover:text-gray-600"
 						onClick={onClearAllNotifications}
 					>
 						<Text size="xs">Clear all</Text>
 					</button>
 				)}
-			</Heading>
+			</div>
 			<ul className="no-scrollbar flex w-full flex-col items-center overflow-y-auto">
 				{children}
 			</ul>

@@ -21,7 +21,7 @@ export const photosOpenApiFragment: OpenApiFragment = {
 								example: {
 									photos: [
 										{
-											photo_id: "e6172de2-3f1f-430d-8d8f-b0b3248c6f23",
+											photoId: "e6172de2-3f1f-430d-8d8f-b0b3248c6f23",
 											title: "Sunset",
 											bookmarks: 4,
 										},

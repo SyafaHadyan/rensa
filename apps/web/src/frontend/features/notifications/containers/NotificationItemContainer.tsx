@@ -18,11 +18,11 @@ const NotificationItemContainer = ({
 	const { markNotificationAsRead } = useNotificationContext();
 
 	const handleVisible = useCallback(() => {
-		markNotificationAsRead(notification.id);
-	}, [markNotificationAsRead, notification.id]);
+		markNotificationAsRead(notification.notificationId);
+	}, [markNotificationAsRead, notification.notificationId]);
 
 	const ref = useReadOnVisible(
-		notification.id,
+		notification.notificationId,
 		notification.read,
 		handleVisible
 	);

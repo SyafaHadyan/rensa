@@ -1,12 +1,13 @@
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import Masonry from "react-masonry-css";
+import "@/frontend/components/MasonryGallery.css";
 import PhotoCard from "@/frontend/components/PhotoCard";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/types/photo";
 
 interface ExploreGalleryGridProps {
 	allowPhotoPageNavigation: boolean;
-	photos: PopulatedPhoto[];
+	photos: Photo[];
 }
 
 const getDynamicColumns = (photoCount: number): number => {
@@ -48,7 +49,7 @@ const ExploreGalleryGrid: React.FC<ExploreGalleryGridProps> = ({
 				columnClassName="my-masonry-grid_column"
 			>
 				{photos.map((photo) => {
-					const photoId = photo.photo_id.toString();
+					const photoId = photo.photoId.toString();
 					return (
 						<PhotoCard
 							closeAllDropdowns={() => setActiveDropdownId(null)}

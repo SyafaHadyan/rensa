@@ -32,7 +32,7 @@ const fetchNotifications = async (
 	const response = await api.get("/notifications", {
 		params: { recipientId, page, limit },
 	});
-	return response.data?.data ?? [];
+	return response.data?.notifications ?? [];
 };
 
 const clearUserNotifications = async (userId: string): Promise<boolean> => {
@@ -82,7 +82,7 @@ export function NotificationProvider({
 			}
 			return fetchNotifications(user.id);
 		},
-		enabled: !!accessToken && !!user?.id,
+		enabled: !!user?.id,
 		initialData: [],
 	});
 
@@ -126,15 +126,22 @@ export function NotificationProvider({
 
 		ws.onmessage = (event) => {
 			try {
-				const data = JSON.parse(event.data);
-				if (!(data.id && data.recipientId && data.type)) {
-					console.warn("Invalid notification data received:", data);
+				const notification = JSON.parse(event.data);
+
+				if (
+					!(
+						notification.notificationId &&
+						notification.recipientId &&
+						notification.type
+					)
+				) {
+					console.warn("Invalid notification data received:", notification);
 					return;
 				}
 				queryClient.setQueryData<NotificationData[]>(
 					["notifications", user?.id],
 					(oldNotifications = []) => {
-						const newList = [data, ...oldNotifications];
+						const newList = [notification, ...oldNotifications];
 						return newList.slice(0, MAX_NOTIFICATIONS);
 					}
 				);
@@ -193,7 +200,7 @@ export function NotificationProvider({
 
 			const current = queryClient.getQueryData<NotificationData[]>(key) || [];
 
-			const target = current.find((n) => n.id === id);
+			const target = current.find((n) => n.notificationId === id);
 
 			// already read → skip
 			if (!target || target.read) {
@@ -202,7 +209,7 @@ export function NotificationProvider({
 
 			// 🔥 optimistic update
 			queryClient.setQueryData<NotificationData[]>(key, (old = []) =>
-				old.map((n) => (n.id === id ? { ...n, read: true } : n))
+				old.map((n) => (n.notificationId === id ? { ...n, read: true } : n))
 			);
 
 			try {

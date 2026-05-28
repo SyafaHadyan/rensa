@@ -6,7 +6,7 @@ import {
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
 import { rollIdParamDto, rollUpdateDto } from "@/backend/dtos/roll.dto";
-import { rollController } from "@/backend/services/rolls/controller";
+import { rollService } from "@/backend/services/rolls/service";
 import { authOptions } from "@/lib/auth";
 
 /*
@@ -18,7 +18,7 @@ export async function GET(
 ) {
 	try {
 		const params = rollIdParamDto.parse(await context.params);
-		const roll = await rollController.getById(params.rollId);
+		const roll = await rollService.getById(params.rollId);
 		return NextResponse.json(
 			{ success: true, message: "Fetched roll successfully", data: roll },
 			{ status: 200 }
@@ -44,11 +44,7 @@ export async function PATCH(
 			throw new UnauthorizedError();
 		}
 
-		const updatedRoll = await rollController.update(
-			params.rollId,
-			body,
-			actorId
-		);
+		const updatedRoll = await rollService.update(params.rollId, body, actorId);
 		return NextResponse.json(
 			{
 				success: true,
@@ -77,7 +73,7 @@ export async function DELETE(
 			throw new UnauthorizedError();
 		}
 
-		const deletedRoll = await rollController.deleteById(params.rollId, actorId);
+		const deletedRoll = await rollService.deleteById(params.rollId, actorId);
 		return NextResponse.json(
 			{
 				success: true,

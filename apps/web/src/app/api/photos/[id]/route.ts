@@ -6,7 +6,7 @@ import {
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
 import { photoIdParamDto } from "@/backend/dtos/photo.dto";
-import { photoController } from "@/backend/services/photos/controller";
+import { photoService } from "@/backend/services/photos/service";
 import { authOptions } from "@/lib/auth";
 
 /*
@@ -18,7 +18,7 @@ export async function GET(
 ) {
 	try {
 		const params = photoIdParamDto.parse(await context.params);
-		const photo = await photoController.getById(params.id);
+		const photo = await photoService.getById(params.id);
 		return NextResponse.json({
 			success: true,
 			message: "Successfully fetched photo.",
@@ -44,7 +44,7 @@ export async function DELETE(
 			throw new UnauthorizedError();
 		}
 
-		await photoController.deleteById(params.id, actorId);
+		await photoService.deleteById(params.id, actorId);
 
 		return NextResponse.json({
 			success: true,

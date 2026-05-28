@@ -1,15 +1,13 @@
+import { loginLimiter } from "@rensa/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { rollController } from "@/backend/services/rolls/controller";
-import { userController } from "@/backend/services/users/controller";
-import { loginLimiter } from "@/lib/rateLimiter";
+import { userService } from "@/backend/services/users/service";
 
 /*
   POST /api/auth/login
   User login endpoint
 */
-const usersApplication = userController;
-const rollsApplication = rollController;
+const usersApplication = userService;
 export async function POST(req: Request) {
 	try {
 		const { email, password } = await req.json();
@@ -68,20 +66,6 @@ export async function POST(req: Request) {
 		// 		{ status: 401 }
 		// 	);
 		// }
-		// creates default "All Photos" roll
-		const defaultRoll = await rollsApplication.create(
-			{
-				name: "All Photos",
-				user_id: user.user_id,
-			},
-			user.user_id
-		);
-		if (!defaultRoll) {
-			return NextResponse.json(
-				{ success: false, message: "Error creating default roll" },
-				{ status: 500 }
-			);
-		}
 		// validate password
 		const isValid = await bcrypt.compare(password, user.password);
 		if (!isValid) {
@@ -96,7 +80,7 @@ export async function POST(req: Request) {
 			success: true,
 			message: "Login successful",
 			user: {
-				id: user.user_id,
+				id: user.userId,
 				name: user.username,
 				email: user.email,
 			},

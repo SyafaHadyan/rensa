@@ -1,10 +1,7 @@
 import cors from "@elysiajs/cors";
 import Elysia from "elysia";
 import { env } from "./config/env";
-import { connectDatabase } from "./database";
 import { apiController } from "./modules";
-
-await connectDatabase();
 
 export const app = new Elysia()
 	.use(
@@ -17,6 +14,6 @@ export const app = new Elysia()
 	)
 	.get("/health", () => ({ status: "ok" }))
 	.use(apiController)
-	.listen({ port: env.port }, () =>
+	.listen({ hostname: "0.0.0.0", port: env.port }, () =>
 		console.log(`Server is running on http://localhost:${env.port}`)
 	);

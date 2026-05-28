@@ -1,0 +1,19 @@
+{
+  "name": "@rensa/cache",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared cache infrastructure",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ioredis": "^5.10.1"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

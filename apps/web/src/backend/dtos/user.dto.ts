@@ -2,10 +2,10 @@ import { z } from "zod";
 import { uuidDto } from "./common.dto";
 
 export const userResponseDto = z.object({
-	user_id: uuidDto,
+	userId: uuidDto,
 	email: z.email(),
 	username: z.string(),
-	avatar: z.string().default(""),
+	avatarUrl: z.string().default(""),
 	bookmarks: z.array(uuidDto).default([]),
 	role: z.enum(["user", "admin"]),
 	verified: z.boolean().default(false),
@@ -15,7 +15,7 @@ export const userResponseDto = z.object({
 
 export const userUpdateDto = userResponseDto
 	.omit({
-		user_id: true,
+		userId: true,
 		email: true,
 		role: true,
 		bookmarks: true,
@@ -37,7 +37,7 @@ export const userRegisterDto = z.object({
 });
 
 export const userIdParamDto = z.object({
-	id: uuidDto,
+	userId: uuidDto,
 });
 
 export type UserWithPasswordResponseDto = z.infer<typeof userResponseDto> & {

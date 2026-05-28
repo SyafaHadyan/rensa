@@ -46,7 +46,7 @@ export interface RollCreateDto {
 	description?: string;
 	imageUrl?: string;
 	name: string;
-	user_id: string;
+	userId: string;
 }
 
 export interface RollUpdateDto {
@@ -66,9 +66,9 @@ export interface RollResponseDto extends Passthrough {
 	imageUrl: string;
 	name: string;
 	photos: string[];
-	roll_id: string;
+	rollId: string;
 	updatedAt?: string;
-	user_id: string;
+	userId: string;
 }
 
 export interface RollRepositoryInterface {
@@ -84,7 +84,7 @@ export interface RollRepositoryInterface {
 	listContainingPhoto(
 		userId: string,
 		photoId: string
-	): Promise<Array<{ name: string; roll_id: string }>>;
+	): Promise<Array<{ name: string; rollId: string }>>;
 	removePhotoFromRoll(rollId: string, photoId: string): Promise<void>;
 	update(
 		rollId: string,

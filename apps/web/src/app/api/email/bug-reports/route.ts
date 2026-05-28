@@ -1,11 +1,11 @@
 import { BugReportRepository } from "@rensa/db/queries/bug-report.repository";
 import type { BugReportSeverity, BugReportStatus } from "@rensa/db/schema";
+import { bugReportLimiter } from "@rensa/rate-limit";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { BugReportConfirmationEmail } from "@/frontend/components/emailTemplates/BugReportConfirmationEmail";
 import { BugReportTeamEmail } from "@/frontend/components/emailTemplates/BugReportTeamEmail";
 import { authOptions } from "@/lib/auth";
-import { bugReportLimiter } from "@/lib/rateLimiter";
 import getResend from "@/lib/resend";
 import { validateBugReportData } from "@/lib/validation";
 

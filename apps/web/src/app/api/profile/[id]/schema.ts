@@ -17,7 +17,7 @@ export const profileByIdOpenApiFragment: OpenApiFragment = {
 				],
 				responses: { 200: { description: "Profile found" } },
 			},
-			post: {
+			patch: {
 				tags: ["profile"],
 				summary: "Update profile",
 				parameters: [
@@ -36,13 +36,16 @@ export const profileByIdOpenApiFragment: OpenApiFragment = {
 						"application/json": {
 							schema: { $ref: "#/components/schemas/UpdateProfileDto" },
 							example: {
-								id: "0f2d8f3e-1dd7-4a52-9dd7-8cbffa4fd89f",
 								username: "updated-user",
-								email: "updated@rensa.site",
 							},
 						},
 					},
 				},
+				responses: { 200: { description: "Profile updated" } },
+			},
+			post: {
+				tags: ["profile"],
+				summary: "Update profile (compatibility alias)",
 				responses: { 200: { description: "Profile updated" } },
 			},
 		},
@@ -51,11 +54,9 @@ export const profileByIdOpenApiFragment: OpenApiFragment = {
 		schemas: {
 			UpdateProfileDto: {
 				type: "object",
-				required: ["id", "username", "email"],
+				required: ["username"],
 				properties: {
-					id: { type: "string", format: "uuid" },
 					username: { type: "string" },
-					email: { type: "string", format: "email" },
 					avatar: { type: "string", format: "binary" },
 				},
 			},

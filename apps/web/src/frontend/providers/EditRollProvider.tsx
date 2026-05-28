@@ -11,6 +11,7 @@ import { useToast } from "./ToastProvider";
 
 interface EditRollState {
 	callbackUrl?: string;
+	canDelete?: boolean;
 	name: string;
 	rollId: string;
 	type: "deleting" | "renaming" | "default";
@@ -77,6 +78,11 @@ export const EditRollProvider = ({
 		setIsDeleting(false);
 	};
 	const removeRoll = async (rollId: string, callbackUrl?: string) => {
+		if (roll?.canDelete === false) {
+			showToast("The All Photos roll cannot be deleted", "error");
+			return;
+		}
+
 		try {
 			await api.delete(`/rolls/${rollId}`);
 			showToast("Roll deleted successfully", "success");
@@ -163,7 +169,7 @@ export const EditRollProvider = ({
 										type === "default" ? "justify-between" : "justify-end"
 									)}
 								>
-									{type === "default" && (
+									{type === "default" && roll.canDelete !== false && (
 										<Button
 											className="bg-red-600 text-white hover:bg-red-700"
 											onClick={() => setIsDeleting(true)}

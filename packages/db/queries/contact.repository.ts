@@ -37,7 +37,7 @@ export class ContactRepository implements ContactRepositoryInterface {
 		}
 
 		return {
-			_id: row.contactId,
+			contactId: row.contactId,
 			name: row.name,
 			email: row.email,
 			subject: row.subject,
@@ -67,7 +67,7 @@ export class ContactRepository implements ContactRepositoryInterface {
 			.where(eq(contacts.status, query.status));
 
 		const mapped = rows.map((contact) => ({
-			_id: contact.contactId,
+			contactId: contact.contactId,
 			name: contact.name,
 			email: contact.email,
 			subject: contact.subject,

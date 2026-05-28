@@ -30,9 +30,12 @@ export class CommentRepository implements CommentRepositoryInterface {
 		}
 
 		return {
-			comment_id: row.commentId,
+			commentId: row.commentId,
 			photoId: row.photoId ?? "",
-			userId: row.userId ?? "",
+			user: {
+				userId: row.userId ?? "",
+				username: "",
+			},
 			text: row.text,
 			createdAt: toIso(row.createdAt),
 			updatedAt: toIso(row.updatedAt),
@@ -46,7 +49,7 @@ export class CommentRepository implements CommentRepositoryInterface {
 	}): Promise<ListCommentsResult> {
 		const rows = await db
 			.select({
-				avatar: users.avatar,
+				avatarUrl: users.avatarUrl,
 				commentId: comments.commentId,
 				createdAt: comments.createdAt,
 				photoId: comments.photoId,
@@ -67,28 +70,21 @@ export class CommentRepository implements CommentRepositoryInterface {
 			.from(comments)
 			.where(eq(comments.photoId, params.photoId));
 
-		const mapped = rows.map((row) => {
-			const user =
-				row.userId && row.username
-					? {
-							_id: row.userId,
-							username: row.username,
-							avatarUrl: row.avatar ?? undefined,
-						}
-					: (row.userId ?? "");
-
-			return {
-				comment_id: row.commentId,
-				photoId: row.photoId ?? "",
-				userId: user,
-				text: row.text,
-				createdAt: toIso(row.createdAt),
-				updatedAt: toIso(row.updatedAt),
-			};
-		});
+		const mapped = rows.map((row) => ({
+			commentId: row.commentId,
+			photoId: row.photoId ?? "",
+			user: {
+				userId: row.userId ?? "",
+				username: row.username ?? "",
+				avatarUrl: row.avatarUrl ?? undefined,
+			},
+			text: row.text,
+			createdAt: toIso(row.createdAt),
+			updatedAt: toIso(row.updatedAt),
+		}));
 
 		return {
-			comments: mapped as CommentResponseDto[],
+			comments: mapped,
 			total: Number(countRow?.total ?? 0),
 		};
 	}

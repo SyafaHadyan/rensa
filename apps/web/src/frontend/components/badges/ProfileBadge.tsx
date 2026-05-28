@@ -20,12 +20,7 @@ const ProfileBadge: React.FC<ProfileBadgeProps> = ({
 	href,
 }) => (
 	<span className={cn("inline-flex items-center gap-3", className)}>
-		<ProfileIconButton
-			alt={alt}
-			href={href}
-			size={size}
-			src={avatarUrl || "/profile.jpg"}
-		/>
+		<ProfileIconButton alt={alt} href={href} size={size} src={avatarUrl} />
 		<h2 className="font-figtree text-[13px] text-black-200">@{username}</h2>
 	</span>
 );

@@ -41,13 +41,13 @@ export class UserRepository implements UserRepositoryInterface {
 		}
 
 		return {
-			avatar: created.avatar ?? "",
+			avatarUrl: created.avatarUrl ?? "",
 			bookmarks: await this.getBookmarkPhotoIds(created.userId),
 			createdAt: toIso(created.createdAt),
 			email: created.email,
 			role: created.role ?? "user",
 			updatedAt: toIso(created.updatedAt),
-			user_id: created.userId,
+			userId: created.userId,
 			username: created.username,
 			verified: created.verified ?? false,
 		};
@@ -64,13 +64,13 @@ export class UserRepository implements UserRepositoryInterface {
 		}
 
 		return {
-			avatar: row.avatar ?? "",
+			avatarUrl: row.avatarUrl ?? "",
 			bookmarks: await this.getBookmarkPhotoIds(id),
 			createdAt: toIso(row.createdAt),
 			email: row.email,
 			role: row.role ?? "user",
 			updatedAt: toIso(row.updatedAt),
-			user_id: row.userId,
+			userId: row.userId,
 			username: row.username,
 			verified: row.verified ?? false,
 		};
@@ -87,14 +87,14 @@ export class UserRepository implements UserRepositoryInterface {
 		}
 
 		return {
-			avatar: row.avatar ?? "",
+			avatarUrl: row.avatarUrl ?? "",
 			bookmarks: await this.getBookmarkPhotoIds(row.userId),
 			createdAt: toIso(row.createdAt),
 			email: row.email,
 			password: row.password,
 			role: row.role ?? "user",
 			updatedAt: toIso(row.updatedAt),
-			user_id: row.userId,
+			userId: row.userId,
 			username: row.username,
 			verified: row.verified ?? false,
 		};
@@ -103,7 +103,7 @@ export class UserRepository implements UserRepositoryInterface {
 	async getProfileById(id: string): Promise<UserProfileDto | null> {
 		const [row] = await db
 			.select({
-				avatar: users.avatar,
+				avatarUrl: users.avatarUrl,
 				email: users.email,
 				userId: users.userId,
 				username: users.username,
@@ -116,15 +116,15 @@ export class UserRepository implements UserRepositoryInterface {
 		}
 
 		return {
-			avatar: row.avatar ?? undefined,
+			avatarUrl: row.avatarUrl ?? undefined,
 			email: row.email,
-			id: row.userId,
+			userId: row.userId,
 			username: row.username,
 		};
 	}
 
 	async updateProfile(params: {
-		avatar: string;
+		avatarUrl: string;
 		email: string;
 		userId: string;
 		username: string;
@@ -132,14 +132,14 @@ export class UserRepository implements UserRepositoryInterface {
 		const [row] = await db
 			.update(users)
 			.set({
-				avatar: params.avatar,
+				avatarUrl: params.avatarUrl,
 				email: params.email,
 				updatedAt: new Date(),
 				username: params.username,
 			})
 			.where(eq(users.userId, params.userId))
 			.returning({
-				avatar: users.avatar,
+				avatarUrl: users.avatarUrl,
 				email: users.email,
 				userId: users.userId,
 				username: users.username,
@@ -149,9 +149,9 @@ export class UserRepository implements UserRepositoryInterface {
 		}
 
 		return {
-			avatar: row.avatar ?? undefined,
+			avatarUrl: row.avatarUrl ?? undefined,
 			email: row.email,
-			id: row.userId,
+			userId: row.userId,
 			username: row.username,
 		};
 	}
@@ -184,34 +184,8 @@ export class UserRepository implements UserRepositoryInterface {
 			.where(
 				and(eq(users.email, params.email), eq(users.userId, params.userId))
 			)
-			.returning({ id: users.userId });
+			.returning({ userId: users.userId });
 
 		return Boolean(updated);
-	}
-
-	async updateBookmarks(
-		userId: string,
-		photoId: string,
-		action: "increment" | "decrement"
-	): Promise<UserResponseDto | null> {
-		if (action === "increment") {
-			await db
-				.insert(bookmarks)
-				.values({
-					photoId,
-					userId,
-				})
-				.onConflictDoNothing({
-					target: [bookmarks.photoId, bookmarks.userId],
-				});
-		} else {
-			await db
-				.delete(bookmarks)
-				.where(
-					and(eq(bookmarks.photoId, photoId), eq(bookmarks.userId, userId))
-				);
-		}
-
-		return this.getById(userId);
 	}
 }

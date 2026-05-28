@@ -24,9 +24,9 @@ async function checkTokenValidity(token?: string) {
 export default async function VerifiedPage({
 	searchParams,
 }: {
-	searchParams: { token?: string };
+	searchParams: Promise<{ token?: string }>;
 }) {
-	const { token } = searchParams;
+	const { token } = await searchParams;
 	const isValid = await checkTokenValidity(token);
 
 	if (!isValid) {

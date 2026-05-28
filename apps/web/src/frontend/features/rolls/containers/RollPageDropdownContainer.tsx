@@ -5,6 +5,8 @@ import { useEditRoll } from "@/frontend/providers/EditRollProvider";
 import { useToast } from "@/frontend/providers/ToastProvider";
 import RollPageDropdownView from "../components/RollPageDropdownView";
 
+const DEFAULT_ROLL_NAME = "All Photos";
+
 export interface RollPageDropdownContainerProps {
 	isOwner: boolean;
 	name: string;
@@ -20,6 +22,7 @@ const RollPageDropdownContainer: React.FC<RollPageDropdownContainerProps> = ({
 }) => {
 	const { openEditor } = useEditRoll();
 	const { showToast } = useToast();
+	const canDelete = name !== DEFAULT_ROLL_NAME;
 
 	const handleRename = () => {
 		openEditor({ rollId, name, type: "renaming" });
@@ -33,6 +36,7 @@ const RollPageDropdownContainer: React.FC<RollPageDropdownContainerProps> = ({
 
 	const handleDelete = () => {
 		openEditor({
+			canDelete,
 			rollId,
 			name,
 			type: "deleting",
@@ -42,6 +46,7 @@ const RollPageDropdownContainer: React.FC<RollPageDropdownContainerProps> = ({
 
 	return (
 		<RollPageDropdownView
+			canDelete={canDelete}
 			isOwner={isOwner}
 			onDelete={handleDelete}
 			onRename={handleRename}

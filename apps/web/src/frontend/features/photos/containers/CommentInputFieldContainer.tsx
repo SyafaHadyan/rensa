@@ -1,8 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
 import type React from "react";
 import { useState } from "react";
-import type { CommentType } from "@/frontend/sections/CommentSection";
 import { commentPhoto } from "@/frontend/services/photo-post.service";
+import { fetchProfile } from "@/frontend/services/profile.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
+import type { CommentType } from "@/frontend/types/comment";
 import CommentInputFieldView from "../components/CommentInputFieldView";
 
 export interface CommentInputFieldContainerProps {
@@ -16,6 +18,12 @@ const CommentInputFieldContainer: React.FC<CommentInputFieldContainerProps> = ({
 }) => {
 	const { user } = useAuthStore();
 	const [comment, setComment] = useState("");
+	const { data: profile } = useQuery({
+		queryKey: ["profile", user?.id],
+		queryFn: () => fetchProfile(user?.id ?? ""),
+		enabled: !!user?.id,
+		staleTime: 1000 * 60 * 5,
+	});
 
 	const handleSubmit = async () => {
 		if (!comment.trim()) {
@@ -24,19 +32,19 @@ const CommentInputFieldContainer: React.FC<CommentInputFieldContainerProps> = ({
 
 		const tempId = Math.random().toString(36).slice(2, 9);
 		const newComment: CommentType = {
-			comment_id: tempId,
+			commentId: tempId,
 			text: comment,
-			userId: {
-				_id: user?.id || "unknown",
+			user: {
+				userId: user?.id || "unknown",
 				username: user?.name || "Anonymous",
-				avatarUrl: user?.image || "/profile.jpg",
+				avatarUrl: profile?.avatarUrl || user?.image || undefined,
 			},
 			createdAt: new Date().toISOString(),
 		};
 
 		onAddComment(newComment);
 		setComment("");
-		await commentPhoto(newComment, id || "", user?.id);
+		await commentPhoto(newComment, id || "");
 	};
 
 	return (

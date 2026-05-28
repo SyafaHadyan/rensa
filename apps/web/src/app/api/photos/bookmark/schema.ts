@@ -20,10 +20,10 @@ export const photoBookmarkOpenApiFragment: OpenApiFragment = {
 				responses: { 200: { description: "Bookmarks listed" } },
 			},
 		},
-		"/api/photos/bookmark/[id]": {
-			post: {
+		"/api/photos/[id]/bookmark": {
+			get: {
 				tags: ["photos"],
-				summary: "Update bookmark",
+				summary: "Get bookmark status",
 				parameters: [
 					{
 						in: "path",
@@ -32,30 +32,44 @@ export const photoBookmarkOpenApiFragment: OpenApiFragment = {
 						schema: { type: "string", format: "uuid" },
 					},
 				],
-				requestBody: {
-					required: true,
-					content: {
-						"application/json": {
-							schema: { $ref: "#/components/schemas/BookmarkActionDto" },
-							example: {
-								userId: "0f2d8f3e-1dd7-4a52-9dd7-8cbffa4fd89f",
-								action: "increment",
-							},
-						},
+				responses: { 200: { description: "Bookmark status fetched" } },
+			},
+			put: {
+				tags: ["photos"],
+				summary: "Add bookmark",
+				parameters: [
+					{
+						in: "path",
+						name: "id",
+						required: true,
+						schema: { type: "string", format: "uuid" },
 					},
-				},
-				responses: { 200: { description: "Bookmark updated" } },
+				],
+				responses: { 200: { description: "Bookmark added" } },
+			},
+			delete: {
+				tags: ["photos"],
+				summary: "Remove bookmark",
+				parameters: [
+					{
+						in: "path",
+						name: "id",
+						required: true,
+						schema: { type: "string", format: "uuid" },
+					},
+				],
+				responses: { 200: { description: "Bookmark removed" } },
 			},
 		},
 	},
 	components: {
 		schemas: {
-			BookmarkActionDto: {
+			BookmarkStatusDto: {
 				type: "object",
-				required: ["userId", "action"],
+				required: ["bookmarkCount", "isBookmarked"],
 				properties: {
-					userId: { type: "string", format: "uuid" },
-					action: { type: "string", enum: ["increment", "decrement"] },
+					bookmarkCount: { type: "integer", minimum: 0 },
+					isBookmarked: { type: "boolean" },
 				},
 			},
 		},

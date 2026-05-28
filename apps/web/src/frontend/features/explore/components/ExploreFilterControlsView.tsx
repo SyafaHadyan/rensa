@@ -32,8 +32,10 @@ const ExploreFilterControlsView: React.FC<ExploreFilterControlsViewProps> = ({
 						)}
 					>
 						{list.items.map((item) => {
-							const normalizedLabel = item.label.toLowerCase();
-							const isActive = activeFilters.includes(normalizedLabel);
+							const isActive =
+								item.id === "all"
+									? activeFilters.length === 0
+									: activeFilters.includes(item.id);
 
 							return (
 								<div
@@ -42,10 +44,10 @@ const ExploreFilterControlsView: React.FC<ExploreFilterControlsViewProps> = ({
 								>
 									<button
 										className="relative mr-5 cursor-pointer pb-1 transition-colors duration-300 hover:text-gray-700"
-										onClick={() => onToggleFilter(item.label)}
+										onClick={() => onToggleFilter(item.id)}
 										type="button"
 									>
-										<span>{item.label}</span>
+										<span>{item.label.trim()}</span>
 										<span
 											className={cn(
 												"absolute bottom-0 left-0 h-0.5 w-full origin-left transform bg-orange-500 transition-transform duration-300",

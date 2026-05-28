@@ -1,19 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Comment from "@/frontend/components/Comment";
 import Heading from "@/frontend/components/Heading";
 import CommentInputField from "@/frontend/components/inputfields/CommentInputField";
+import { CommentsListFallback } from "@/frontend/features/photos/components/fallbacks";
+import type { CommentType } from "@/frontend/types/comment";
 import { api } from "@/lib/axios-client";
-
-export interface CommentType {
-	comment_id: string;
-	createdAt: string;
-	text: string;
-	userId: {
-		_id: string;
-		username: string;
-		avatarUrl?: string;
-	};
-}
 
 interface CommentSectionProps {
 	id?: string;
@@ -26,30 +17,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 
 	const bottomRef = useRef<HTMLDivElement>(null);
 
-	// -------- Fetch Comments --------
-	const fetchComments = async (photoId: string) => {
-		setLoading(true);
-		try {
-			const res = await api.get(`/photos/${photoId}/comments?offset=0`);
-			setComments(res.data.data.comments);
-			setHasMore(res.data.data.hasMore);
-		} catch (err) {
-			console.error("Error fetching comments:", err);
-		} finally {
-			setLoading(false);
-		}
-	};
-
 	// -------- Fetch More Comments --------
-	const fetchMoreComments = async (photoId: string) => {
-		if (!hasMore || loading) {
+	const fetchMoreComments = useCallback(async () => {
+		if (!(id && hasMore) || loading) {
 			return;
 		}
 
 		setLoading(true);
 		try {
 			const res = await api.get(
-				`/photos/${photoId}/comments?offset=${comments.length}`
+				`/photos/${id}/comments?offset=${comments.length}`
 			);
 
 			setComments((prev) => [...prev, ...res.data.data.comments]);
@@ -59,21 +36,52 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [comments.length, hasMore, id, loading]);
 
 	// -------- Reset & Fetch on Photo Change --------
 	useEffect(() => {
 		if (!id) {
+			setComments([]);
+			setHasMore(true);
 			return;
 		}
+
+		let ignore = false;
+
+		async function fetchInitialComments() {
+			setLoading(true);
+			try {
+				const res = await api.get(`/photos/${id}/comments?offset=0`);
+				if (ignore) {
+					return;
+				}
+
+				setComments(res.data.data.comments);
+				setHasMore(res.data.data.hasMore);
+			} catch (err) {
+				if (!ignore) {
+					console.error("Error fetching comments:", err);
+				}
+			} finally {
+				if (!ignore) {
+					setLoading(false);
+				}
+			}
+		}
+
 		setComments([]);
-		fetchComments(id);
-	}, [id, fetchComments]);
+		setHasMore(true);
+		fetchInitialComments();
+
+		return () => {
+			ignore = true;
+		};
+	}, [id]);
 
 	// -------- Scroll to latest comment --------
 	useEffect(() => {
 		bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-	}, []);
+	}, [comments.length]);
 
 	// -------- Add Comment (Optimistic UI) --------
 	const handleAddComment = (newComment: CommentType) => {
@@ -89,20 +97,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 			<div className="no-scrollbar mb-5 max-h-90 overflow-y-auto">
 				{comments.length > 0 ? (
 					comments.map((comment, idx) => (
-						<div className="relative" key={comment.comment_id}>
+						<div className="relative" key={comment.commentId}>
 							<Comment
-								avatarUrl={comment.userId.avatarUrl}
+								avatarUrl={comment.user.avatarUrl}
 								createdAt={comment.createdAt}
 								disableBorder={idx === comments.length - 1}
-								userId={comment.userId._id}
-								username={comment.userId.username}
+								userId={comment.user.userId}
+								username={comment.user.username}
 							>
 								{comment.text}
 							</Comment>
 							{hasMore && idx === comments.length - 1 && (
 								<div
 									className="absolute bottom-0 left-0 flex h-5 w-full cursor-pointer items-center justify-center bg-linear-to-t from-white/95 via-white/60 to-transparent backdrop-blur-[1px]"
-									onClick={() => !loading && fetchMoreComments(id!)}
+									onClick={fetchMoreComments}
 								>
 									{loading ? (
 										<div className="loading loading-spinner scale-75 text-primary" />
@@ -116,7 +124,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 						</div>
 					))
 				) : loading ? (
-					""
+					<CommentsListFallback />
 				) : (
 					<p className="font-figtree text-black-200 text-xs">
 						No comments yet. Be the first to comment!

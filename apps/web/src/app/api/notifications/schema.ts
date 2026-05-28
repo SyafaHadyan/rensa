@@ -28,9 +28,10 @@ export const notificationsOpenApiFragment: OpenApiFragment = {
 						"application/json": {
 							schema: { $ref: "#/components/schemas/CreateNotificationDto" },
 							example: {
+								actorId: "484cc46a-3ed4-4272-9a6b-7abd03c97c44",
+								photoId: "3ad70607-9f8b-4adc-884c-c3b9e15b71f3",
 								recipientId: "0f2d8f3e-1dd7-4a52-9dd7-8cbffa4fd89f",
-								type: "comment",
-								message: "Someone commented on your photo.",
+								type: "photo-bookmarked",
 							},
 						},
 					},
@@ -48,9 +49,8 @@ export const notificationsOpenApiFragment: OpenApiFragment = {
 					actorId: { type: "string", format: "uuid" },
 					photoId: { type: "string", format: "uuid" },
 					type: { type: "string" },
-					message: { type: "string" },
 				},
-				required: ["recipientId"],
+				required: ["actorId", "photoId", "recipientId", "type"],
 			},
 		},
 	},

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { notificationIdParamDto } from "@/backend/dtos/notification.dto";
-import { notificationController } from "@/backend/services/notifications/controller";
+import { notificationService } from "@/backend/services/notifications/service";
 
 export async function PUT(
 	_req: NextRequest,
@@ -9,7 +9,7 @@ export async function PUT(
 ) {
 	try {
 		const params = notificationIdParamDto.parse(await context.params);
-		await notificationController.markAsRead(params.id);
+		await notificationService.markAsRead(params.id);
 		return NextResponse.json(
 			{
 				success: true,
@@ -28,7 +28,7 @@ export async function DELETE(
 ) {
 	try {
 		const params = notificationIdParamDto.parse(await context.params);
-		await notificationController.clearByUserId(params.id);
+		await notificationService.clearByUserId(params.id);
 		return NextResponse.json(
 			{
 				success: true,

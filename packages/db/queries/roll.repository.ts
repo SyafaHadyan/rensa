@@ -51,8 +51,8 @@ export class RollRepository implements RollRepositoryInterface {
 		photoIds: string[]
 	): RollResponseDto {
 		return {
-			roll_id: roll.rollId,
-			user_id: roll.userId ?? "",
+			rollId: roll.rollId,
+			userId: roll.userId ?? "",
 			name: roll.name,
 			description: roll.description ?? "",
 			imageUrl: roll.imageUrl ?? DEFAULT_ROLL_IMAGE,
@@ -69,7 +69,7 @@ export class RollRepository implements RollRepositoryInterface {
 				description: payload.description ?? "",
 				imageUrl: payload.imageUrl ?? DEFAULT_ROLL_IMAGE,
 				name: payload.name,
-				userId: payload.user_id,
+				userId: payload.userId,
 			})
 			.returning();
 		if (!created) {
@@ -113,7 +113,7 @@ export class RollRepository implements RollRepositoryInterface {
 	async listContainingPhoto(
 		userId: string,
 		photoId: string
-	): Promise<Array<{ roll_id: string; name: string }>> {
+	): Promise<Array<{ name: string; rollId: string }>> {
 		const userRolls = await db
 			.select({
 				name: rolls.name,
@@ -146,7 +146,7 @@ export class RollRepository implements RollRepositoryInterface {
 		return userRolls
 			.filter((roll) => linkedRollIds.has(roll.rollId))
 			.map((roll) => ({
-				roll_id: roll.rollId,
+				rollId: roll.rollId,
 				name: roll.name,
 			}));
 	}
@@ -180,7 +180,7 @@ export class RollRepository implements RollRepositoryInterface {
 			return 0;
 		}
 
-		await db
+		const inserted = await db
 			.insert(rollPhotos)
 			.values({
 				photoId,
@@ -188,9 +188,10 @@ export class RollRepository implements RollRepositoryInterface {
 			})
 			.onConflictDoNothing({
 				target: [rollPhotos.rollId, rollPhotos.photoId],
-			});
+			})
+			.returning({ rollId: rollPhotos.rollId });
 
-		return 1;
+		return inserted.length;
 	}
 
 	async removePhotoFromRoll(rollId: string, photoId: string): Promise<void> {

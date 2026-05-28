@@ -1,15 +1,29 @@
 # Entity Relationship Diagram (ERD)
 
-Updated: 2026-04-13
+Updated: 2026-05-17
 
 ## Scope
 This ERD reflects the PostgreSQL + Drizzle model as the canonical and only
 supported persistence architecture.
 
 Primary sources:
-- `src/backend/db/schema.ts`
-- `src/backend/domains/*/infrastructure/*.repository.ts`
-- `src/backend/dtos/*.ts`
+- `packages/db/schemas/*.ts`
+- `packages/db/queries/*.ts`
+- `apps/web/src/backend/dtos/*.ts`
+
+## Naming Convention
+This diagram uses physical PostgreSQL column names, so fields are shown in
+`snake_case`. Application code, DTOs, frontend props, and API contracts use
+`camelCase` for the corresponding values.
+
+Example mapping:
+
+| Application field | Database column |
+| --- | --- |
+| `userId` | `user_id` |
+| `photoId` | `photo_id` |
+| `avatarUrl` | `avatar_url` |
+| `createdAt` | `created_at` |
 
 ## Canonical Relational ERD
 ```mermaid
@@ -19,7 +33,7 @@ erDiagram
       text username UK
       text email UK
       text password
-      text avatar
+      text avatar_url
       user_role role
       boolean verified
       timestamptz password_changed_at

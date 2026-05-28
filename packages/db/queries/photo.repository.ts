@@ -1,4 +1,4 @@
-import { count, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { bookmarks } from "../schemas/bookmarks";
 import type {
 	CreateUploadedPhotoDto,
@@ -9,9 +9,15 @@ import type {
 	UploadedPhotoDto,
 } from "../schemas/photos";
 import { photoMetadata, photos } from "../schemas/photos";
+import { users } from "../schemas/users";
 import db from "../src/db";
 
 type PhotoRow = typeof photos.$inferSelect;
+type PhotoMetadataRow = typeof photoMetadata.$inferSelect;
+type PhotoUser = Pick<
+	typeof users.$inferSelect,
+	"avatarUrl" | "userId" | "username"
+>;
 
 const toIso = (value: Date | null): string | undefined =>
 	value ? value.toISOString() : undefined;
@@ -42,11 +48,13 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 			payload.height !== undefined ||
 			payload.format !== undefined ||
 			payload.size !== undefined ||
-			payload.uploadedAt !== undefined
+			payload.uploadedAt !== undefined ||
+			payload.exif !== undefined
 		) {
 			await db
 				.insert(photoMetadata)
 				.values({
+					exif: payload.exif,
 					format: payload.format,
 					height: payload.height,
 					photoMetadataId: photo.photoId,
@@ -57,6 +65,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 				.onConflictDoUpdate({
 					target: photoMetadata.photoMetadataId,
 					set: {
+						exif: payload.exif,
 						format: payload.format,
 						height: payload.height,
 						size: payload.size,
@@ -68,6 +77,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 
 		return {
 			...photo,
+			exif: payload.exif,
 			format: payload.format,
 			height: payload.height,
 			size: payload.size,
@@ -106,14 +116,20 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		return bookmarkCountByPhotoId;
 	}
 
-	private mapToPhotoResponseDto(
+	private serializePhoto(
 		photo: PhotoRow,
-		bookmarksCount: number
+		bookmarksCount: number,
+		user?: PhotoUser | null,
+		metadata?: PhotoMetadataRow | null
 	): PhotoResponseDto {
 		return {
-			photo_id: photo.photoId,
-			user_id: photo.userId ?? "",
+			photoId: photo.photoId,
 			url: photo.url,
+			user: {
+				userId: photo.userId as string,
+				username: user?.username ?? "",
+				avatarUrl: user?.avatarUrl ?? "",
+			},
 			title: photo.title,
 			description: photo.description ?? "",
 			category: photo.category ?? "",
@@ -121,21 +137,64 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 			color: photo.color ?? "",
 			camera: photo.camera ?? "",
 			bookmarks: bookmarksCount,
-			created_at: toIso(photo.createdAt),
-			updated_at: toIso(photo.updatedAt),
+			createdAt: toIso(photo.createdAt),
+			updatedAt: toIso(photo.updatedAt),
+			...(metadata
+				? {
+						metadata: {
+							exif: metadata.exif ?? undefined,
+							format: metadata.format ?? undefined,
+							height: metadata.height ?? undefined,
+							size: metadata.size ?? undefined,
+							uploadedAt: toIso(metadata.uploadedAt),
+							width: metadata.width ?? undefined,
+						},
+					}
+				: {}),
 		};
+	}
+
+	private async getUsersByIds(
+		userIds: string[]
+	): Promise<Map<string, PhotoUser>> {
+		const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+		const usersById = new Map<string, PhotoUser>();
+		if (uniqueUserIds.length === 0) {
+			return usersById;
+		}
+
+		const userRows = await db
+			.select({
+				avatarUrl: users.avatarUrl,
+				userId: users.userId,
+				username: users.username,
+			})
+			.from(users)
+			.where(inArray(users.userId, uniqueUserIds));
+
+		for (const user of userRows) {
+			usersById.set(user.userId, user);
+		}
+
+		return usersById;
 	}
 
 	private async mapPhotosToResponseDtos(
 		photoRows: PhotoRow[]
 	): Promise<PhotoResponseDto[]> {
 		const photoIds = photoRows.map((photo) => photo.photoId);
+		const usersById = await this.getUsersByIds(
+			photoRows
+				.map((photo) => photo.userId)
+				.filter((value): value is string => Boolean(value))
+		);
 		const bookmarkCountByPhotoId =
 			await this.countBookmarksByPhotoIds(photoIds);
 		return photoRows.map((photo) =>
-			this.mapToPhotoResponseDto(
+			this.serializePhoto(
 				photo,
-				bookmarkCountByPhotoId.get(photo.photoId) ?? 0
+				bookmarkCountByPhotoId.get(photo.photoId) ?? 0,
+				photo.userId ? usersById.get(photo.userId) : null
 			)
 		);
 	}
@@ -167,6 +226,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		const conditions = filters.flatMap((filter) => {
 			const needle = `%${filter}%`;
 			return [
+				ilike(photos.camera, needle),
 				ilike(photos.category, needle),
 				ilike(photos.style, needle),
 				ilike(photos.color, needle),
@@ -177,7 +237,14 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 
 	async list(query: ListPhotosQueryDto): Promise<ListPhotosResult> {
 		const from = (query.page - 1) * query.limit;
-		const whereClause = this.buildFilterWhere(query.filters);
+		const filterWhereClause = this.buildFilterWhere(query.filters);
+		const ownerWhereClause = query.userId
+			? eq(photos.userId, query.userId)
+			: undefined;
+		const whereClause =
+			filterWhereClause && ownerWhereClause
+				? and(filterWhereClause, ownerWhereClause)
+				: (filterWhereClause ?? ownerWhereClause);
 		let photoRows: PhotoRow[] = [];
 
 		if (query.sort === "popular") {
@@ -200,7 +267,11 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 				.select()
 				.from(photos)
 				.where(whereClause)
-				.orderBy(desc(photos.createdAt))
+				.orderBy(
+					query.sort === "oldest"
+						? asc(photos.createdAt)
+						: desc(photos.createdAt)
+				)
 				.limit(query.limit)
 				.offset(from);
 		}
@@ -228,7 +299,18 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		}
 
 		const bookmarkCountByPhotoId = await this.countBookmarksByPhotoIds([id]);
-		return this.mapToPhotoResponseDto(row, bookmarkCountByPhotoId.get(id) ?? 0);
+		const [metadata] = await db
+			.select()
+			.from(photoMetadata)
+			.where(eq(photoMetadata.photoMetadataId, id))
+			.limit(1);
+		const usersById = await this.getUsersByIds(row.userId ? [row.userId] : []);
+		return this.serializePhoto(
+			row,
+			bookmarkCountByPhotoId.get(id) ?? 0,
+			row.userId ? usersById.get(row.userId) : null,
+			metadata
+		);
 	}
 
 	async getOwnerId(id: string): Promise<string | null> {

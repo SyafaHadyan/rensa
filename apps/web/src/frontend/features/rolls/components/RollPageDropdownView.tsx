@@ -6,6 +6,7 @@ import DropdownItem from "@/frontend/components/dropdowns/DropdownItem";
 import IconDropdown from "@/frontend/components/dropdowns/IconDropdown";
 
 interface RollPageDropdownViewProps {
+	canDelete: boolean;
 	isOwner: boolean;
 	onDelete: () => void;
 	onRename: () => void;
@@ -13,6 +14,7 @@ interface RollPageDropdownViewProps {
 }
 
 const RollPageDropdownView: React.FC<RollPageDropdownViewProps> = ({
+	canDelete,
 	isOwner,
 	onDelete,
 	onRename,
@@ -34,7 +36,7 @@ const RollPageDropdownView: React.FC<RollPageDropdownViewProps> = ({
 			<DropdownItem className="px-10" onClick={onShare}>
 				Share
 			</DropdownItem>
-			{isOwner && (
+			{isOwner && canDelete && (
 				<DropdownItem className="px-10" onClick={onDelete}>
 					Delete
 				</DropdownItem>

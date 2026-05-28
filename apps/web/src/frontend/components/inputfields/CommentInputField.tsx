@@ -2,7 +2,7 @@ import type React from "react";
 import CommentInputFieldContainer, {
 	type CommentInputFieldContainerProps,
 } from "@/frontend/features/photos/containers/CommentInputFieldContainer";
-import type { CommentType } from "@/frontend/sections/CommentSection";
+import type { CommentType } from "@/frontend/types/comment";
 
 export interface CommentInputFieldProps
 	extends CommentInputFieldContainerProps {

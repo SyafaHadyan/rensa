@@ -74,7 +74,7 @@ const IconDropdown: React.FC<IconDropdownProps> = ({
 							? "translate-y-0 scale-100 opacity-100"
 							: "pointer-events-none -translate-y-2 scale-95 opacity-0"
 					)}
-					onClickCapture={handleItemClick}
+					onClick={handleItemClick}
 				>
 					{children}
 				</ul>

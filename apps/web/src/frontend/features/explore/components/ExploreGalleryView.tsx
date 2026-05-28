@@ -1,5 +1,5 @@
 import type { InViewHookResponse } from "react-intersection-observer";
-import type { PopulatedPhoto } from "@/types/PopulatedPhoto";
+import type { Photo } from "@/frontend/types/photo";
 import ExploreGalleryGrid from "./ExploreGalleryGrid";
 
 interface ExploreGalleryViewProps {
@@ -7,7 +7,7 @@ interface ExploreGalleryViewProps {
 	errorMessage: string | null;
 	isFetchingNextPage: boolean;
 	isPending: boolean;
-	photos: PopulatedPhoto[];
+	photos: Photo[];
 	ref: InViewHookResponse["ref"];
 }
 

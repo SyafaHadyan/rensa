@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { BackendError } from "@/backend/common/backend.error";
 import { rollIdParamDto } from "@/backend/dtos/roll.dto";
-import { rollController } from "@/backend/services/rolls/controller";
+import { rollService } from "@/backend/services/rolls/service";
 
 export async function GET(
 	_req: Request,
@@ -10,11 +10,11 @@ export async function GET(
 ) {
 	try {
 		const params = rollIdParamDto.parse(await context.params);
-		const ownerId = await rollController.getOwnerId(params.rollId);
+		const ownerId = await rollService.getOwnerId(params.rollId);
 		return NextResponse.json({
 			success: true,
 			message: "Successfully fetched profile data from roll id",
-			data: { user_id: ownerId },
+			data: { userId: ownerId },
 		});
 	} catch (error) {
 		if (error instanceof ZodError) {

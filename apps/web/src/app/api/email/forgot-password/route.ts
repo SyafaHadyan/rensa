@@ -1,6 +1,6 @@
+import { forgotPasswordLimiter } from "@rensa/rate-limit";
 import { type NextRequest, NextResponse } from "next/server";
 import { sendPasswordResetEmail } from "@/frontend/services/email.service";
-import { forgotPasswordLimiter } from "@/lib/rateLimiter";
 /*
   POST /api/auth/forgot-password
   Send password reset email endpoint

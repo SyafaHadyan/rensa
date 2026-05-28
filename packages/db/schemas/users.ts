@@ -6,7 +6,7 @@ export const users = pgTable("users", {
 	username: text("username").notNull().unique(),
 	email: text("email").notNull().unique(),
 	password: text("password").notNull(),
-	avatar: text("avatar"),
+	avatarUrl: text("avatar_url"),
 	role: userRoleEnum("role").default("user"),
 	verified: boolean("verified").default(false),
 	passwordChangedAt: timestamp("password_changed_at", { withTimezone: true }),
@@ -21,13 +21,13 @@ export interface UserRegisterDto {
 }
 
 export interface UserResponseDto {
-	avatar: string;
+	avatarUrl: string;
 	bookmarks: string[];
 	createdAt?: string;
 	email: string;
 	role: "user" | "admin";
 	updatedAt?: string;
-	user_id: string;
+	userId: string;
 	username: string;
 	verified: boolean;
 }
@@ -46,13 +46,8 @@ export interface UserRepositoryInterface {
 		password: string;
 		userId: string;
 	}): Promise<boolean>;
-	updateBookmarks(
-		userId: string,
-		photoId: string,
-		action: "increment" | "decrement"
-	): Promise<UserResponseDto | null>;
 	updateProfile(params: {
-		avatar: string;
+		avatarUrl: string;
 		email: string;
 		userId: string;
 		username: string;
@@ -61,8 +56,8 @@ export interface UserRepositoryInterface {
 }
 
 export interface UserProfileDto {
-	avatar?: string;
+	avatarUrl?: string;
 	email: string;
-	id: string;
+	userId: string;
 	username: string;
 }

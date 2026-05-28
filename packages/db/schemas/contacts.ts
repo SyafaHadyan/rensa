@@ -26,7 +26,7 @@ interface Passthrough {
 export type ContactStatus = "new" | "read" | "responded";
 
 export interface ContactResponseDto extends Passthrough {
-	_id: string;
+	contactId: string;
 	createdAt?: string;
 	email: string;
 	ipAddress: string;

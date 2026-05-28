@@ -23,23 +23,20 @@ export const comments = pgTable(
 );
 
 export interface CommentResponseDto {
-	comment_id: string;
+	commentId: string;
 	createdAt?: string;
 	photoId: string;
 	text: string;
 	updatedAt?: string;
-	userId:
-		| string
-		| {
-				_id: string;
-				avatarUrl?: string;
-				username: string;
-		  };
+	user: {
+		userId: string;
+		username: string;
+		avatarUrl?: string;
+	};
 }
 
 export interface CreateCommentDto {
 	text: string;
-	userId?: string;
 }
 
 export interface ListCommentsResult {

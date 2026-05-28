@@ -1,8 +1,8 @@
 import { UserRepository } from "@rensa/db/queries/user.repository";
+import { resetPasswordLimiter } from "@rensa/rate-limit";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { type NextRequest, NextResponse } from "next/server";
-import { resetPasswordLimiter } from "@/lib/rateLimiter";
 
 const userRepository = new UserRepository();
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 				id: string;
 				email: string;
 			};
-		} catch (err) {
+		} catch {
 			return NextResponse.json(
 				{ success: false, message: "Invalid or expired token" },
 				{ status: 400 }
@@ -104,8 +104,7 @@ export async function POST(req: NextRequest) {
 			{ success: true, message: "Password reset successful" },
 			{ status: 200 }
 		);
-	} catch (error) {
-		console.error("Reset password error:", error);
+	} catch {
 		return NextResponse.json(
 			{ success: false, message: "Internal server error" },
 			{ status: 500 }

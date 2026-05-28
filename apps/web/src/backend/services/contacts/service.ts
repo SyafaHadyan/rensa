@@ -1,31 +1,22 @@
+import { ContactRepository } from "@rensa/db/queries/contact.repository";
 import type {
 	ContactRepositoryInterface,
 	CreateContactDto,
 	ListContactsQueryDto,
 } from "@rensa/db/schema";
+import { contactFormLimiter } from "@rensa/rate-limit";
 import {
 	TooManyRequestsError,
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
+import type {
+	ContactListResult,
+	ContactSubmitResult,
+} from "@/backend/types/service.types";
 import ContactAdminEmail from "@/frontend/components/emailTemplates/ContactAdminEmail";
 import ContactConfirmationEmail from "@/frontend/components/emailTemplates/ContactConfirmationEmail";
-import { contactFormLimiter } from "@/lib/rateLimiter";
 import getResend from "@/lib/resend";
 import { sanitizeInput } from "@/lib/validation";
-
-export interface ContactSubmitResult {
-	id: string;
-}
-
-export interface ContactListResult {
-	contacts: unknown[];
-	pagination: {
-		page: number;
-		limit: number;
-		total: number;
-		pages: number;
-	};
-}
 
 export class ContactService {
 	readonly contactRepository: ContactRepositoryInterface;
@@ -61,7 +52,7 @@ export class ContactService {
 			return;
 		});
 
-		return { id: contact._id };
+		return { id: contact.contactId };
 	}
 
 	async list(
@@ -114,3 +105,5 @@ export class ContactService {
 		});
 	}
 }
+
+export const contactService = new ContactService(new ContactRepository());

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { BackendError } from "@/backend/common/backend.error";
-import { rollController } from "@/backend/services/rolls/controller";
+import { rollService } from "@/backend/services/rolls/service";
 import { authOptions } from "@/lib/auth";
 
 /*
@@ -11,7 +11,7 @@ export async function GET() {
 	try {
 		const session = await getServerSession(authOptions);
 		const actorId = session?.user?.id;
-		const defaultRoll = await rollController.getDefaultByUserId(actorId);
+		const defaultRoll = await rollService.getDefaultByUserId(actorId);
 		return NextResponse.json(
 			{
 				success: true,

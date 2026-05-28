@@ -6,7 +6,7 @@ import {
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
 import { listRollsQueryDto, rollCreateDto } from "@/backend/dtos/roll.dto";
-import { rollController } from "@/backend/services/rolls/controller";
+import { rollService } from "@/backend/services/rolls/service";
 import { authOptions } from "@/lib/auth";
 
 /*
@@ -16,10 +16,11 @@ export async function GET(req: Request) {
 	try {
 		const { searchParams } = new URL(req.url);
 		const query = listRollsQueryDto.parse({
-			userId: searchParams.get("userId") ?? undefined,
+			userId:
+				searchParams.get("userId") ?? searchParams.get("userId") ?? undefined,
 			sort: searchParams.get("sort") ?? undefined,
 		});
-		const result = await rollController.listByUserId(query.userId, query.sort);
+		const result = await rollService.listByUserId(query.userId, query.sort);
 		return NextResponse.json(
 			{
 				success: true,
@@ -48,16 +49,13 @@ export async function POST(req: Request) {
 			description?: string;
 			imageUrl?: string;
 			name?: string;
-			userId?: string;
-			user_id?: string;
 		};
 		const body = rollCreateDto.parse({
 			name: rawBody.name,
 			description: rawBody.description,
 			imageUrl: rawBody.imageUrl,
-			user_id: rawBody.user_id ?? rawBody.userId,
 		});
-		const createdRoll = await rollController.create(body, actorId);
+		const createdRoll = await rollService.create(body, actorId);
 		return NextResponse.json(
 			{
 				success: true,

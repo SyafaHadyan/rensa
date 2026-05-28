@@ -1,9 +1,11 @@
+import { NotificationRepository } from "@rensa/db/queries/notification.repository";
 import type {
 	CreateNotificationDto,
 	ListNotificationsQueryDto,
 	NotificationRepositoryInterface,
 	NotificationResponseDto,
 } from "@rensa/db/schema";
+import { elysiaApi } from "@/lib/axios-server";
 
 export class NotificationService {
 	readonly notificationRepository: NotificationRepositoryInterface;
@@ -28,3 +30,9 @@ export class NotificationService {
 		await this.notificationRepository.clearByUserId(userId);
 	}
 }
+
+const notificationRepository = new NotificationRepository(elysiaApi);
+
+export const notificationService = new NotificationService(
+	notificationRepository
+);

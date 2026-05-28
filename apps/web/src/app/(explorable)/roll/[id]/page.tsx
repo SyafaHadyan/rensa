@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { fetchProfileByRollId } from "@/frontend/services/profile.service";
 import { fetchRollById } from "@/frontend/services/roll.service";
 import RollPageClient from "./RollPageClient";
 
@@ -52,17 +51,13 @@ export default async function RollPageWrapper({
 }) {
 	const { id } = await params;
 	let rollData: Awaited<ReturnType<typeof fetchRollById>> | null = null;
-	let ownerId: Awaited<ReturnType<typeof fetchProfileByRollId>> | null = null;
 	try {
-		[rollData, ownerId] = await Promise.all([
-			fetchRollById(id),
-			fetchProfileByRollId(id),
-		]);
+		rollData = await fetchRollById(id);
 	} catch {
 		redirect("/404");
 	}
 
-	if (!(rollData && ownerId)) {
+	if (!rollData?.userId) {
 		redirect("/404");
 	}
 
@@ -70,7 +65,7 @@ export default async function RollPageWrapper({
 		<RollPageClient
 			id={id}
 			name={rollData.name || "Unknown Roll"}
-			ownerId={ownerId}
+			ownerId={rollData.userId}
 		/>
 	);
 }
