@@ -85,14 +85,13 @@ process.on("exit", () => {
 	exiftool.end();
 });
 
-const PORT = process.env.PORT || 3003;
-app.listen(PORT, () => {
-	console.log("Server running at http://localhost:%d", PORT);
-	log("Server listening on port %d", PORT);
-	log("Debug logs enabled. Set DEBUG=rensa:* to see all logs");
-});
-// app.listen(PORT, "0.0.0.0", () => {
-//   console.log("Server running at http://localhost:%d", PORT);
-//   log("🎧 Server listening on port %d", PORT);
-//   log("🔍 Debug logs enabled. Set DEBUG=rensa:* to see all logs");
+// app.listen(PORT, () => {
+// 	console.log("Server running at http://localhost:%d", PORT);
+// 	log("Server listening on port %d", PORT);
+// 	log("Debug logs enabled. Set DEBUG=rensa:* to see all logs");
 // });
+app.listen(3003, "0.0.0.0", () => {
+	console.log("Server running at http://localhost:%d", 3003);
+	log("🎧 Server listening on port %d", 3003);
+	log("🔍 Debug logs enabled. Set DEBUG=rensa:* to see all logs");
+});
