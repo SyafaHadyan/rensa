@@ -1,7 +1,6 @@
 import { getRedis, redisConnected } from "@rensa/cache";
 import { NotificationDbRepository } from "@rensa/db/queries/notification.repository";
 import { UserRepository } from "@rensa/db/queries/user.repository";
-import { env } from "../../config/env";
 import { WebSocketService } from "../websocket/websocket.service";
 import {
 	isNotificationType,
@@ -15,14 +14,12 @@ const redis = getRedis({
 	defaultUrl: "redis://localhost:6379",
 	globalKey: "notifications",
 	logLifecycle: true,
-	url: env.redisUrl,
 });
 
 const isRedisConnected = () =>
 	redisConnected({
 		defaultUrl: "redis://localhost:6379",
 		globalKey: "notifications",
-		url: env.redisUrl,
 	});
 
 class NotificationServiceError extends Error {
