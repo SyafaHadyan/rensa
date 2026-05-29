@@ -43,7 +43,7 @@ COPY packages/db packages/db
 EXPOSE 3002
 CMD ["bun", "run", "--cwd", "apps/notifications", "src/index.ts"]
 
-FROM gcr.io/distroless/base AS prod
+FROM debian:bookworm-slim AS prod
 WORKDIR /app
 
 ENV NODE_ENV=production
