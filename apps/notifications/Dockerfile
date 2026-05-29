@@ -43,10 +43,7 @@ COPY packages/db packages/db
 EXPOSE 3002
 CMD ["bun", "run", "--cwd", "apps/notifications", "src/index.ts"]
 
-FROM gcr.io/distroless/base-debian12 AS prod
-
-COPY --from=build /usr/lib/x86_64-linux-gnu/libssl.so.3 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/x86_64-linux-gnu/
+FROM node:20-bookworm-slim AS prod
 
 WORKDIR /app
 
