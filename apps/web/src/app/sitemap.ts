@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-	const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rensa.site";
+	const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rensa.site";
 	const now = new Date();
 
 	const routes = [

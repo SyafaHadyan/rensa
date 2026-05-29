@@ -50,7 +50,6 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=replace-with-a-secret
 
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
 
 EXPRESS_BASE_URL=http://localhost:3003
