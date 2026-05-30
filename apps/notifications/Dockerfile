@@ -23,11 +23,13 @@ WORKDIR /repo/apps/notifications
 
 RUN bun build \
   --compile \
+  --target=bun-linux-x64-baseline \
   --outfile server \
   src/index.ts
 
 RUN bun build \
   --compile \
+  --target=bun-linux-x64-baseline \
   --outfile healthcheck \
   src/healthcheck.ts
 
