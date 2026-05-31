@@ -18,6 +18,11 @@ export const comments = pgTable(
 	},
 	(table) => [
 		index("idx_comments_photo").on(table.photoId),
+		index("idx_comments_photo_created_comment_id").on(
+			table.photoId,
+			table.createdAt,
+			table.commentId
+		),
 		index("idx_comments_user").on(table.userId),
 	]
 );
@@ -41,6 +46,7 @@ export interface CreateCommentDto {
 
 export interface ListCommentsResult {
 	comments: CommentResponseDto[];
+	nextCursor?: string;
 	total: number;
 }
 
@@ -51,6 +57,7 @@ export interface CommentRepositoryInterface {
 		userId: string;
 	}): Promise<CommentResponseDto>;
 	listByPhotoId(params: {
+		cursor?: string;
 		limit: number;
 		offset: number;
 		photoId: string;

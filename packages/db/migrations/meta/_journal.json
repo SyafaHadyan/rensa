@@ -22,6 +22,13 @@
       "when": 1779009000000,
       "tag": "0002_rename_notification_id_and_avatar_url",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779020000000,
+      "tag": "0003_cursor_pagination_indexes",
+      "breakpoints": true
     }
   ]
 }

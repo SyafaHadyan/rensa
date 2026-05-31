@@ -35,12 +35,14 @@ export async function GET(req: Request) {
 			userId: searchParams.get("userId") ?? undefined,
 			page: searchParams.get("page") ?? undefined,
 			limit: searchParams.get("limit") ?? undefined,
+			cursor: searchParams.get("cursor") ?? undefined,
 		});
 
 		const result = await photoService.listBookmarkedByUser(
 			query.userId,
 			query.page,
-			query.limit
+			query.limit,
+			query.cursor
 		);
 
 		return NextResponse.json(result);

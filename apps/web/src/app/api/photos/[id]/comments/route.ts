@@ -56,11 +56,13 @@ export async function GET(
 		const query = listCommentsQueryDto.parse({
 			offset: searchParams.get("offset") ?? undefined,
 			limit: searchParams.get("limit") ?? undefined,
+			cursor: searchParams.get("cursor") ?? undefined,
 		});
 		const result = await commentService.listByPhotoId(
 			params.id,
 			query.offset,
-			query.limit
+			query.limit,
+			query.cursor
 		);
 
 		return NextResponse.json(

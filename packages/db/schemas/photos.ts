@@ -26,7 +26,15 @@ export const photos = pgTable(
 		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 	},
-	(table) => [index("idx_photos_user").on(table.userId)]
+	(table) => [
+		index("idx_photos_user").on(table.userId),
+		index("idx_photos_created_photo_id").on(table.createdAt, table.photoId),
+		index("idx_photos_user_created_photo_id").on(
+			table.userId,
+			table.createdAt,
+			table.photoId
+		),
+	]
 );
 
 export const photoMetadata = pgTable("photo_metadata", {
@@ -46,6 +54,7 @@ interface Passthrough {
 }
 
 export interface ListPhotosQueryDto {
+	cursor?: string;
 	filters?: string[];
 	limit: number;
 	page: number;
@@ -81,6 +90,7 @@ export interface PhotoResponseDto extends Passthrough {
 }
 
 export interface ListPhotosResult {
+	nextCursor?: string;
 	photos: PhotoResponseDto[];
 	total: number;
 }
@@ -97,7 +107,8 @@ export interface PhotoRepositoryInterface {
 	listBookmarkedByUser(
 		userId: string,
 		page: number,
-		limit: number
+		limit: number,
+		cursor?: string
 	): Promise<ListPhotosResult>;
 	listByIds(
 		ids: string[],

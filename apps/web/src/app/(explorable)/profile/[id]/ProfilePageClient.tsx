@@ -79,7 +79,7 @@ export default function ProfilePageClient({
 		queryFn: ({ pageParam }) =>
 			fetchCreatedPhotosByUserId(
 				profile.id,
-				pageParam as number,
+				pageParam as number | string,
 				filter === "oldest" ? "oldest" : "recent"
 			),
 		enabled: activeTabId === "created",

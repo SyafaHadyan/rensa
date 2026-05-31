@@ -15,7 +15,7 @@ const PhotoRecommendationsSection: React.FC = () => {
 		useSuspenseInfiniteQuery<FetchPhotosResponse>({
 			queryKey: ["photo-page-recommendations"],
 			queryFn: ({ pageParam }) =>
-				fetchExplorePhotos(pageParam as number, undefined, "recent"),
+				fetchExplorePhotos(pageParam as number | string, undefined, "recent"),
 			getNextPageParam: (lastPage) => lastPage.nextPage,
 			initialPageParam: 1,
 			staleTime: 1000 * 60 * 5,

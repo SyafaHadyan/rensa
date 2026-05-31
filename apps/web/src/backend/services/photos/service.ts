@@ -25,13 +25,15 @@ export class PhotoService {
 	}
 
 	async list(query: ListPhotosQueryDto): Promise<PaginatedPhotoListResult> {
-		const { photos, total } = await this.photoRepository.list(query);
+		const { nextCursor, photos, total } =
+			await this.photoRepository.list(query);
 		const totalPages = Math.ceil(total / query.limit);
 		return {
 			photos,
 			currentPage: query.page,
 			totalPages,
-			hasMore: query.page < totalPages,
+			hasMore: query.cursor ? Boolean(nextCursor) : query.page < totalPages,
+			nextCursor,
 			total,
 		};
 	}
@@ -82,19 +84,23 @@ export class PhotoService {
 	async listBookmarkedByUser(
 		userId: string,
 		page: number,
-		limit: number
+		limit: number,
+		cursor?: string
 	): Promise<PaginatedPhotoListResult> {
-		const { photos, total } = await this.photoRepository.listBookmarkedByUser(
-			userId,
-			page,
-			limit
-		);
+		const { nextCursor, photos, total } =
+			await this.photoRepository.listBookmarkedByUser(
+				userId,
+				page,
+				limit,
+				cursor
+			);
 		const totalPages = Math.ceil(total / limit);
 		return {
 			photos,
 			currentPage: page,
 			totalPages,
-			hasMore: page < totalPages,
+			hasMore: cursor ? Boolean(nextCursor) : page < totalPages,
+			nextCursor,
 			total,
 		};
 	}

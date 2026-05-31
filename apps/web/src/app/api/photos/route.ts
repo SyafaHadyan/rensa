@@ -13,6 +13,7 @@ export async function GET(req: Request) {
 		const query = listPhotosQueryDto.parse({
 			page: searchParams.get("page") ?? undefined,
 			limit: searchParams.get("limit") ?? undefined,
+			cursor: searchParams.get("cursor") ?? undefined,
 			sort: searchParams.get("sort") ?? undefined,
 			filters: searchParams.get("filters") ?? undefined,
 			userId: searchParams.get("userId") ?? undefined,
