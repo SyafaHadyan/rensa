@@ -8,6 +8,9 @@ import type {
 import { ForbiddenError, NotFoundError } from "@/backend/common/backend.error";
 import type { PaginatedPhotoListResult } from "@/backend/types/service.types";
 import cloudinary, { getCloudinaryPublicIdFromUrl } from "@/lib/cloudinary";
+import { withTimeout } from "@/lib/timeout";
+
+const CLOUDINARY_DESTROY_TIMEOUT_MS = 10_000;
 
 export class PhotoService {
 	readonly photoRepository: PhotoRepositoryInterface;
@@ -61,9 +64,13 @@ export class PhotoService {
 
 		const publicId = getCloudinaryPublicIdFromUrl(photo.url);
 		if (publicId) {
-			const result = await cloudinary.uploader.destroy(publicId, {
-				resource_type: "image",
-			});
+			const result = await withTimeout(
+				cloudinary.uploader.destroy(publicId, {
+					resource_type: "image",
+				}),
+				CLOUDINARY_DESTROY_TIMEOUT_MS,
+				"Cloudinary photo delete timed out"
+			);
 			if (result.result !== "ok" && result.result !== "not found") {
 				throw new Error(`Failed to delete Cloudinary asset: ${result.result}`);
 			}

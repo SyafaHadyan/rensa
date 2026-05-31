@@ -16,7 +16,10 @@ import type {
 import ContactAdminEmail from "@/frontend/components/emailTemplates/ContactAdminEmail";
 import ContactConfirmationEmail from "@/frontend/components/emailTemplates/ContactConfirmationEmail";
 import getResend from "@/lib/resend";
+import { withTimeout } from "@/lib/timeout";
 import { sanitizeInput } from "@/lib/validation";
+
+const CONTACT_EMAIL_TIMEOUT_MS = 10_000;
 
 export class ContactService {
 	readonly contactRepository: ContactRepositoryInterface;
@@ -82,27 +85,35 @@ export class ContactService {
 		subject: string;
 	}): Promise<void> {
 		const resend = await getResend();
-		await resend.emails.send({
-			from: process.env.CONTACT_NOTIFICATION_EMAIL || "",
-			to: process.env.ADMIN_EMAIL || "",
-			subject: contact.subject,
-			react: ContactAdminEmail({
-				senderEmail: contact.email,
-				senderName: contact.name,
+		await withTimeout(
+			resend.emails.send({
+				from: process.env.CONTACT_NOTIFICATION_EMAIL || "",
+				to: process.env.ADMIN_EMAIL || "",
 				subject: contact.subject,
-				message: contact.message,
+				react: ContactAdminEmail({
+					senderEmail: contact.email,
+					senderName: contact.name,
+					subject: contact.subject,
+					message: contact.message,
+				}),
 			}),
-		});
+			CONTACT_EMAIL_TIMEOUT_MS,
+			"Contact admin email timed out"
+		);
 
-		await resend.emails.send({
-			from: process.env.NO_REPLY_EMAIL || "",
-			to: contact.email,
-			subject: `New Contact Form Submission: ${contact.subject}`,
-			react: ContactConfirmationEmail({
-				name: contact.name,
-				subject: contact.subject,
+		await withTimeout(
+			resend.emails.send({
+				from: process.env.NO_REPLY_EMAIL || "",
+				to: contact.email,
+				subject: `New Contact Form Submission: ${contact.subject}`,
+				react: ContactConfirmationEmail({
+					name: contact.name,
+					subject: contact.subject,
+				}),
 			}),
-		});
+			CONTACT_EMAIL_TIMEOUT_MS,
+			"Contact confirmation email timed out"
+		);
 	}
 }
 

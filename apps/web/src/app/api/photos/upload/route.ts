@@ -13,6 +13,7 @@ import { userService } from "@/backend/services/users/service";
 import { authOptions } from "@/lib/auth";
 import { fastApi } from "@/lib/axios-server";
 import cloudinary, { validateCloudinaryUrl } from "@/lib/cloudinary";
+import { withTimeout } from "@/lib/timeout";
 import { sanitizeInput } from "@/lib/validation";
 import {
 	isAcceptedPhotoUploadFile,
@@ -23,6 +24,7 @@ import {
 
 const photoRepository = new PhotoRepository();
 const CLOUDINARY_UPLOAD_TIMEOUT_MS = 45_000;
+const CLOUDINARY_DESTROY_TIMEOUT_MS = 10_000;
 
 type UploadExif = Record<string, unknown> & {
 	Brand?: unknown;
@@ -326,7 +328,11 @@ export async function POST(req: Request) {
 		if (!validateCloudinaryUrl(secureUrl)) {
 			try {
 				const publicId = uploadRes.public_id;
-				await cloudinary.uploader.destroy(publicId);
+				await withTimeout(
+					cloudinary.uploader.destroy(publicId),
+					CLOUDINARY_DESTROY_TIMEOUT_MS,
+					"Cloudinary invalid upload cleanup timed out"
+				);
 			} catch (deleteError) {
 				console.error("Failed to delete invalid upload:", deleteError);
 			}

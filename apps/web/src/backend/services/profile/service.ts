@@ -12,6 +12,7 @@ import cloudinary, {
 	getCloudinaryPublicIdFromUrl,
 	validateCloudinaryUrl,
 } from "@/lib/cloudinary";
+import { withTimeout } from "@/lib/timeout";
 import {
 	isAcceptedProfileAvatarFile,
 	PROFILE_AVATAR_MAX_INPUT_SIZE_BYTES,
@@ -27,6 +28,7 @@ interface UpdateProfileParams {
 }
 
 const PROFILE_AVATAR_UPLOAD_TIMEOUT_MS = 30_000;
+const PROFILE_AVATAR_DESTROY_TIMEOUT_MS = 10_000;
 
 const isUniqueConstraintError = (error: unknown): boolean => {
 	if (typeof error !== "object" || error === null) {
@@ -107,7 +109,7 @@ export class ProfileService {
 		} catch (error) {
 			if (avatarUpload) {
 				try {
-					await cloudinary.uploader.destroy(avatarUpload.publicId);
+					await this.destroyAvatarAsset(avatarUpload.publicId);
 				} catch {
 					// Preserve the original database/update error.
 				}
@@ -152,7 +154,7 @@ export class ProfileService {
 		});
 
 		if (!validateCloudinaryUrl(uploadRes.secure_url)) {
-			await cloudinary.uploader.destroy(uploadRes.public_id);
+			await this.destroyAvatarAsset(uploadRes.public_id);
 			throw new ValidationError("Invalid avatar upload URL");
 		}
 
@@ -172,7 +174,15 @@ export class ProfileService {
 			return;
 		}
 
-		await cloudinary.uploader.destroy(publicId);
+		await this.destroyAvatarAsset(publicId);
+	}
+
+	private async destroyAvatarAsset(publicId: string): Promise<void> {
+		await withTimeout(
+			cloudinary.uploader.destroy(publicId),
+			PROFILE_AVATAR_DESTROY_TIMEOUT_MS,
+			"Cloudinary avatar cleanup timed out"
+		);
 	}
 }
 
