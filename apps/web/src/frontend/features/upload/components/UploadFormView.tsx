@@ -4,6 +4,7 @@ import InputDropdown from "@/frontend/components/inputfields/InputDropdown";
 import TagsInputField from "@/frontend/components/inputfields/TagsInputField";
 import TextAreaInput from "@/frontend/components/inputfields/TextAreaInput";
 import type { CameraSettings } from "@/frontend/features/upload/configs/cameraDatas";
+import { cameraFieldOptions } from "@/frontend/features/upload/configs/cameraFieldDatas";
 import CameraSettingsFormContainer from "../containers/CameraSettingsFormContainer";
 
 interface UploadFormViewProps {
@@ -107,6 +108,7 @@ const UploadFormView: React.FC<UploadFormViewProps> = ({
 					/>
 					<CameraSettingsFormContainer
 						cameraModels={cameraModelOptions}
+						fieldOptions={cameraFieldOptions[selectedCamera] ?? {}}
 						handleSettings={setSettings}
 						settings={settings}
 					/>

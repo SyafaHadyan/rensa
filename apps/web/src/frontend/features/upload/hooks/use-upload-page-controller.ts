@@ -134,8 +134,7 @@ export function useUploadPageController() {
 			return;
 		}
 
-		const detectedExif = await exifDetection.detectAndApplyExif();
-		const exifForUpload = detectedExif ?? form.exif;
+		const exifForUpload = exifDetection.settings ?? form.exif;
 		const tagsWithBrand = [...form.tags, exifForUpload.Brand.toLowerCase()];
 		const formData = new FormData();
 
