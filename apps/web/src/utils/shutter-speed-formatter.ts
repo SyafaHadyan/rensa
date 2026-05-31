@@ -65,7 +65,7 @@ export function formatShutterSpeed(value: unknown): unknown {
 
 	const decimalValue = Number(match[1]);
 	if (Number.isInteger(decimalValue)) {
-		return normalizedValue;
+		return `${decimalValue}${match[2] ?? ""}`;
 	}
 
 	const fraction = approximateFraction(decimalValue);
@@ -73,5 +73,5 @@ export function formatShutterSpeed(value: unknown): unknown {
 		return normalizedValue;
 	}
 
-	return `${fraction}${match[2]?.trim() ?? ""}`;
+	return `${fraction}${match[2] ?? ""}`;
 }
