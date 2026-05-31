@@ -1,30 +1,22 @@
-import type { CameraSettings } from "@/frontend/features/upload/configs/cameraDatas";
-import type { NormalizedMetadataValue } from "@/frontend/features/upload/utils/metadata-normalizer";
+import type {
+	NormalizedMetadata,
+	NormalizedMetadataValue,
+} from "@/frontend/features/upload/utils/metadata-normalizer";
 import CameraSettingsFormView from "../components/CameraSettingsFormView";
 
 export interface CameraSettingsFormContainerProps {
-	cameraModels: string[];
-	fieldOptions: Record<string, string[]>;
-	handleSettings: (settings: CameraSettings) => void;
-	settings: CameraSettings;
+	handleSettings: (settings: NormalizedMetadata) => void;
+	settings: NormalizedMetadata;
 }
 
 const CameraSettingsFormContainer: React.FC<
 	CameraSettingsFormContainerProps
-> = ({ settings, cameraModels, fieldOptions, handleSettings }) => {
+> = ({ settings, handleSettings }) => {
 	const updateSetting = (key: string, value: NormalizedMetadataValue) => {
 		handleSettings({
-			...(settings as unknown as Record<string, NormalizedMetadataValue>),
+			...settings,
 			[key]: value,
-		} as unknown as CameraSettings);
-	};
-
-	const handleModelChange = (model: string) => {
-		updateSetting("Model", model);
-	};
-
-	const handleOptionChange = (key: string, value: string) => {
-		updateSetting(key, value);
+		});
 	};
 
 	const handleTextChange = (key: string, value: string) => {
@@ -36,11 +28,9 @@ const CameraSettingsFormContainer: React.FC<
 	};
 
 	const handleRemoveField = (key: string) => {
-		const nextSettings = {
-			...(settings as unknown as Record<string, NormalizedMetadataValue>),
-		};
+		const nextSettings = { ...settings };
 		delete nextSettings[key];
-		handleSettings(nextSettings as unknown as CameraSettings);
+		handleSettings(nextSettings);
 	};
 
 	const handleAddField = (key: string, value: string) => {
@@ -54,12 +44,8 @@ const CameraSettingsFormContainer: React.FC<
 
 	return (
 		<CameraSettingsFormView
-			cameraModels={cameraModels}
-			fieldOptions={fieldOptions}
 			onAddField={handleAddField}
-			onModelChange={handleModelChange}
 			onNumberChange={handleNumberChange}
-			onOptionChange={handleOptionChange}
 			onRemoveField={handleRemoveField}
 			onTextChange={handleTextChange}
 			settings={settings}

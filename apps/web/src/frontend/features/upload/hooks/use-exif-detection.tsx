@@ -1,10 +1,6 @@
 import { useCallback, useState } from "react";
 import {
-	type CameraSettings,
-	defaultCameraSettings,
-} from "@/frontend/features/upload/configs/cameraDatas";
-import { brandModels } from "@/frontend/features/upload/configs/cameraModelDatas";
-import {
+	type NormalizedMetadata,
 	normalizeCameraMetadata,
 	type RawMetadata,
 	type RawMetadataValue,
@@ -13,21 +9,9 @@ import { api } from "@/lib/axios-client";
 
 type DetectedMetadata = Record<string, RawMetadataValue>;
 
-const DEFAULT_BRAND: CameraSettings["Brand"] = "Fujifilm";
-
-export function useExifDetection(
-	file: File | null,
-	handleExifChange: (
-		field: string,
-		value: number | object | string | CameraSettings
-	) => void
-) {
+export function useExifDetection(file: File | null) {
 	const [isDetecting, setIsDetecting] = useState(false);
-	const [settings, setSettings] = useState<CameraSettings>(
-		defaultCameraSettings.Fujifilm
-	);
-	const [selectedCamera, setSelectedCamera] =
-		useState<CameraSettings["Brand"]>(DEFAULT_BRAND);
+	const [settings, setSettings] = useState<NormalizedMetadata>({});
 
 	const detectMetadata =
 		useCallback(async (): Promise<DetectedMetadata | null> => {
@@ -54,37 +38,19 @@ export function useExifDetection(
 		}, [file]);
 
 	const autoFillSettings = useCallback(
-		(detectedMetadata: DetectedMetadata): CameraSettings => {
+		(detectedMetadata: DetectedMetadata): NormalizedMetadata => {
 			const normalizedMetadata = normalizeCameraMetadata(
-				detectedMetadata as RawMetadata,
-				{
-					brandModels,
-					defaultBrand: DEFAULT_BRAND,
-					supportedBrands: Object.keys(
-						defaultCameraSettings
-					) as CameraSettings["Brand"][],
-				}
+				detectedMetadata as RawMetadata
 			);
-			const brand = normalizedMetadata.Brand as CameraSettings["Brand"];
-			const nextSettings = normalizedMetadata as unknown as CameraSettings;
 
-			setSelectedCamera(brand);
-			handleExifChange("Brand", brand);
-
-			for (const [key, value] of Object.entries(normalizedMetadata)) {
-				if (key !== "Brand") {
-					handleExifChange(key, value);
-				}
-			}
-
-			setSettings(nextSettings);
-			return nextSettings;
+			setSettings(normalizedMetadata);
+			return normalizedMetadata;
 		},
-		[handleExifChange]
+		[]
 	);
 
 	const detectAndApplyExif =
-		useCallback(async (): Promise<CameraSettings | null> => {
+		useCallback(async (): Promise<NormalizedMetadata | null> => {
 			const metadata = await detectMetadata();
 			if (metadata) {
 				return autoFillSettings(metadata);
@@ -97,8 +63,6 @@ export function useExifDetection(
 		detectMetadata,
 		autoFillSettings,
 		settings,
-		selectedCamera,
-		setSelectedCamera,
 		detectAndApplyExif,
 		setSettings,
 	};

@@ -1,32 +1,22 @@
 import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
 import type React from "react";
 import { useState } from "react";
-import { SearchDropdown } from "@/frontend/components/dropdowns/SearchDropdown";
 import BaseInputField from "@/frontend/components/inputfields/BaseInputField";
-import InputDropdown from "@/frontend/components/inputfields/InputDropdown";
 import NumberInputField from "@/frontend/components/inputfields/NumberInputField";
-import type { CameraSettings } from "@/frontend/features/upload/configs/cameraDatas";
+import type { NormalizedMetadata } from "@/frontend/features/upload/utils/metadata-normalizer";
 import { formatLabel } from "@/utils/label-formatter";
 
 export interface CameraSettingsFormViewProps {
-	cameraModels: string[];
-	fieldOptions: Record<string, string[]>;
 	onAddField: (key: string, value: string) => void;
-	onModelChange: (model: string) => void;
 	onNumberChange: (key: string, value: number) => void;
-	onOptionChange: (key: string, value: string) => void;
 	onRemoveField: (key: string) => void;
 	onTextChange: (key: string, value: string) => void;
-	settings: CameraSettings;
+	settings: NormalizedMetadata;
 }
 
 const CameraSettingsFormView: React.FC<CameraSettingsFormViewProps> = ({
 	settings,
-	cameraModels,
-	fieldOptions,
 	onAddField,
-	onModelChange,
-	onOptionChange,
 	onNumberChange,
 	onRemoveField,
 	onTextChange,
@@ -56,47 +46,6 @@ const CameraSettingsFormView: React.FC<CameraSettingsFormViewProps> = ({
 		<section aria-label="Detailed camera settings" className="mt-4 w-full">
 			<div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
 				{Object.entries(settings).map(([key, value]) => {
-					const options = fieldOptions[key];
-
-					if (key === "Brand") {
-						return null;
-					}
-
-					if (key === "Model") {
-						return (
-							<div className="flex items-end gap-2" key={key}>
-								<div className="min-w-0 flex-1">
-									<SearchDropdown
-										cameraModels={cameraModels}
-										label={formatLabel(key)}
-										onSelect={onModelChange}
-										value={(settings.Model as string) ?? ""}
-									/>
-								</div>
-								{renderRemoveButton(key)}
-							</div>
-						);
-					}
-
-					if (options && options.length > 0) {
-						return (
-							<div className="flex items-end gap-2" key={key}>
-								<div className="min-w-0 flex-1">
-									<InputDropdown
-										initialValue={String(value ?? "")}
-										label={formatLabel(key)}
-										onChange={(event) => {
-											onOptionChange(key, event.currentTarget.innerText);
-										}}
-										placeholder={`Select ${formatLabel(key)}`}
-										values={options}
-									/>
-								</div>
-								{renderRemoveButton(key)}
-							</div>
-						);
-					}
-
 					if (typeof value === "number") {
 						return (
 							<div className="flex items-end gap-2" key={key}>
