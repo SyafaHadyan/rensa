@@ -39,7 +39,7 @@ const UploadFormView: React.FC<UploadFormViewProps> = ({
 }) => (
 	<form
 		aria-label="Upload photo details"
-		className="no-scrollbar mt-10 mb-25 flex w-[80%] flex-col gap-5 overflow-y-scroll rounded-3xl bg-white-200 p-10 text-primary shadow-lg md:h-190 lg:h-175"
+		className="no-scrollbar mt-8 mb-20 flex w-full max-w-full flex-col gap-5 overflow-y-auto rounded-2xl bg-white-200 p-4 text-primary shadow-lg sm:p-6 md:mt-10 md:mb-25 md:h-190 md:w-[80%] md:rounded-3xl md:p-10 lg:h-175"
 		onSubmit={(event) => {
 			event.preventDefault();
 		}}
@@ -79,7 +79,7 @@ const UploadFormView: React.FC<UploadFormViewProps> = ({
 			values={colorOptions}
 		/>
 		<hr className="my-2 w-full border-white-700" />
-		<fieldset className="flex flex-col items-center justify-center">
+		<fieldset className="flex w-full flex-col items-stretch justify-center">
 			<legend className="mb-2 font-figtree text-[13px] text-black-200">
 				Camera settings
 			</legend>

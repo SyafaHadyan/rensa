@@ -44,11 +44,14 @@ const CameraSettingsFormView: React.FC<CameraSettingsFormViewProps> = ({
 
 	return (
 		<section aria-label="Detailed camera settings" className="mt-4 w-full">
-			<div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
+			<div className="grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
 				{Object.entries(settings).map(([key, value]) => {
 					if (typeof value === "number") {
 						return (
-							<div className="flex items-end gap-2" key={key}>
+							<div
+								className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+								key={key}
+							>
 								<div className="min-w-0 flex-1">
 									<NumberInputField
 										label={formatLabel(key)}
@@ -66,7 +69,10 @@ const CameraSettingsFormView: React.FC<CameraSettingsFormViewProps> = ({
 					}
 
 					return (
-						<div className="flex items-end gap-2" key={key}>
+						<div
+							className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+							key={key}
+						>
 							<div className="min-w-0 flex-1">
 								<BaseInputField
 									label={formatLabel(key)}
@@ -83,7 +89,7 @@ const CameraSettingsFormView: React.FC<CameraSettingsFormViewProps> = ({
 				})}
 			</div>
 
-			<div className="mt-6 grid w-full grid-cols-1 gap-3 rounded-2xl border border-gray-300 bg-white-100 p-4 md:grid-cols-[1fr_1fr_auto]">
+			<div className="mt-6 grid w-full grid-cols-1 gap-3 rounded-2xl border border-gray-300 bg-white-100 p-4 lg:grid-cols-[1fr_1fr_auto]">
 				<BaseInputField
 					label="Field"
 					onChange={(event) => setNewFieldKey(event.target.value)}
@@ -98,7 +104,7 @@ const CameraSettingsFormView: React.FC<CameraSettingsFormViewProps> = ({
 				/>
 				<button
 					aria-label="Add metadata field"
-					className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 self-end rounded-full bg-primary px-4 font-figtree text-white transition-opacity hover:opacity-90 md:h-16 md:w-16"
+					className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 self-end rounded-full bg-primary px-4 font-figtree text-white transition-opacity hover:opacity-90 lg:h-16 lg:w-16"
 					onClick={handleAddField}
 					title="Add metadata field"
 					type="button"
