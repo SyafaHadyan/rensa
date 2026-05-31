@@ -1,4 +1,5 @@
 import { detectValueinString } from "@/utils/value-detections";
+import { formatShutterSpeed } from "@/utils/shutter-speed-formatter";
 
 export type RawMetadataValue = boolean | number | object | string | null;
 export type RawMetadata = Record<string, RawMetadataValue | undefined>;
@@ -283,6 +284,9 @@ function normalizePrimitiveValue(
 	}
 
 	if (typeof value === "number") {
+		if (key === "ShutterSpeed") {
+			return formatShutterSpeed(value) as NormalizedMetadataValue;
+		}
 		if (key === "Aperture" && typeof value === "number") {
 			return `f/${value}`;
 		}
@@ -303,6 +307,9 @@ function normalizePrimitiveValue(
 
 	if (key === "Aperture" && !normalizedValue.startsWith("f/")) {
 		return `f/${normalizedValue}`;
+	}
+	if (key === "ShutterSpeed") {
+		return formatShutterSpeed(normalizedValue) as NormalizedMetadataValue;
 	}
 	if (key === "FocalLength" && /^\d+(\.\d+)?$/.test(normalizedValue)) {
 		return `${normalizedValue}mm`;

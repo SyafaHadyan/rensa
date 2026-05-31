@@ -2,12 +2,20 @@ import { CameraIcon } from "@phosphor-icons/react";
 import type React from "react";
 import type { PhotoMetadata } from "@/frontend/types/photo";
 import { formatLabel } from "@/utils/label-formatter";
+import { formatShutterSpeed } from "@/utils/shutter-speed-formatter";
 
 interface RecipeListProps {
 	metadata?: PhotoMetadata;
 }
 
 const cameraIdentityKeys = new Set(["Brand", "Model"]);
+
+function formatMetadataValue(key: string, value: unknown) {
+	if (key === "ShutterSpeed") {
+		return String(formatShutterSpeed(value));
+	}
+	return String(value);
+}
 
 const RecipeList: React.FC<RecipeListProps> = ({ metadata }) => (
 	<div>
@@ -47,7 +55,9 @@ const RecipeList: React.FC<RecipeListProps> = ({ metadata }) => (
 										{Object.entries(value).map(([subKey, subValue]) => (
 											<div key={subKey}>
 												<p className="text-[13px]">{formatLabel(subKey)}</p>
-												<p className="text-[13px]">{String(subValue)}</p>
+												<p className="text-[13px]">
+													{formatMetadataValue(subKey, subValue)}
+												</p>
 											</div>
 										))}
 									</div>
@@ -59,7 +69,7 @@ const RecipeList: React.FC<RecipeListProps> = ({ metadata }) => (
 								<h1 className="text-[13px] text-white-700">
 									{formatLabel(key)}
 								</h1>
-								<p className="text-[13px]">{String(value)}</p>
+								<p className="text-[13px]">{formatMetadataValue(key, value)}</p>
 							</div>
 						);
 					})}
