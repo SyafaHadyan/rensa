@@ -7,9 +7,11 @@ import { BugReportConfirmationEmail } from "@/frontend/components/emailTemplates
 import { BugReportTeamEmail } from "@/frontend/components/emailTemplates/BugReportTeamEmail";
 import { authOptions } from "@/lib/auth";
 import getResend from "@/lib/resend";
+import { withTimeout } from "@/lib/timeout";
 import { validateBugReportData } from "@/lib/validation";
 
 const bugReportRepository = new BugReportRepository();
+const BUG_REPORT_EMAIL_TIMEOUT_MS = 10_000;
 
 /**
  * POST /api/bug-reports
@@ -117,57 +119,61 @@ export async function POST(req: Request) {
 	}
 
 	const reportId = bugReport.bugReportId;
+	let emailSent = true;
 
 	try {
 		const resend = await getResend();
-		await resend.emails.send({
-			from: "bug_reports@rensa.site",
-			to: process.env.DEV_TEAM_EMAIL || process.env.ADMIN_EMAIL || "",
-			subject: `New Bug Report: ${bugReport.title}`,
-			react: BugReportTeamEmail({
-				title: validatedTitle,
-				email: validatedEmail,
-				description: validatedDescription,
-				stepsToReproduce: validatedSteps,
-				actualBehavior: validatedActual,
-				expectedBehavior: validatedExpected,
-				severity,
-				reportId,
-				submittedAt:
-					bugReport.createdAt?.toISOString() ?? new Date().toISOString(),
-			}),
-		});
-		await resend.emails.send({
-			from: process.env.NO_REPLY_EMAIL || "",
-			to: bugReport.email,
-			subject: `Bug Report Received: ${bugReport.title}`,
-			react: BugReportConfirmationEmail({
-				title: bugReport.title,
-				reportId,
-			}),
-		});
-		return NextResponse.json(
-			{
-				success: true,
-				message: "Thank you for reporting this bug! We appreciate your help.",
-				data: {
-					id: reportId,
+		await withTimeout(
+			resend.emails.send({
+				from: "bug_reports@rensa.site",
+				to: process.env.DEV_TEAM_EMAIL || process.env.ADMIN_EMAIL || "",
+				subject: `New Bug Report: ${bugReport.title}`,
+				react: BugReportTeamEmail({
+					title: validatedTitle,
+					email: validatedEmail,
+					description: validatedDescription,
+					stepsToReproduce: validatedSteps,
+					actualBehavior: validatedActual,
+					expectedBehavior: validatedExpected,
 					severity,
-				},
-			},
-			{ status: 201 }
+					reportId,
+					submittedAt:
+						bugReport.createdAt?.toISOString() ?? new Date().toISOString(),
+				}),
+			}),
+			BUG_REPORT_EMAIL_TIMEOUT_MS,
+			"Bug report team email timed out"
+		);
+		await withTimeout(
+			resend.emails.send({
+				from: process.env.NO_REPLY_EMAIL || "",
+				to: bugReport.email,
+				subject: `Bug Report Received: ${bugReport.title}`,
+				react: BugReportConfirmationEmail({
+					title: bugReport.title,
+					reportId,
+				}),
+			}),
+			BUG_REPORT_EMAIL_TIMEOUT_MS,
+			"Bug report confirmation email timed out"
 		);
 	} catch (err) {
 		console.error("Error sending bug report to team:", err);
-		return NextResponse.json(
-			{
-				success: false,
-				message:
-					"There was an error processing your bug report. Please try again later.",
-			},
-			{ status: 500 }
-		);
+		emailSent = false;
 	}
+
+	return NextResponse.json(
+		{
+			success: true,
+			message: "Thank you for reporting this bug! We appreciate your help.",
+			data: {
+				id: reportId,
+				severity,
+				emailSent,
+			},
+		},
+		{ status: 201 }
+	);
 }
 
 /**

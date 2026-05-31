@@ -44,8 +44,13 @@ async function checkNotificationKey(notificationKey: string) {
 		return false;
 	}
 
-	const exists = await redis.get(notificationKey);
-	return exists !== null;
+	try {
+		const exists = await redis.get(notificationKey);
+		return exists !== null;
+	} catch (error) {
+		console.error("Redis duplicate check failed:", error);
+		return false;
+	}
 }
 
 async function setNotificationKey(notificationKey: string) {
@@ -54,8 +59,13 @@ async function setNotificationKey(notificationKey: string) {
 		return false;
 	}
 
-	await redis.set(notificationKey, "1", "EX", 60);
-	return true;
+	try {
+		await redis.set(notificationKey, "1", "EX", 60);
+		return true;
+	} catch (error) {
+		console.error("Redis duplicate key set failed:", error);
+		return false;
+	}
 }
 
 async function populateNotificationActor(
