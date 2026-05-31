@@ -1,23 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLoading } from "@/frontend/features/common/hooks/use-loading";
-import {
-	type CameraSettings,
-	defaultCameraSettings,
-} from "@/frontend/features/upload/configs/cameraDatas";
 import { useExifDetection } from "@/frontend/features/upload/hooks/use-exif-detection";
 import { useFileUpload } from "@/frontend/features/upload/hooks/use-file-upload";
 import { uploadFormData } from "@/frontend/services/upload.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
 
 interface UploadFormState {
-	camera: string;
 	category: string;
 	color: string;
 	description: string;
-	exif: CameraSettings;
 	style: string;
 	tags: string[];
 	title: string;
@@ -30,8 +24,6 @@ const createInitialFormState = (): UploadFormState => ({
 	category: "",
 	style: "",
 	color: "",
-	camera: "",
-	exif: defaultCameraSettings.Fujifilm,
 });
 
 export function useUploadPageController() {
@@ -43,32 +35,13 @@ export function useUploadPageController() {
 	const [form, setForm] = useState<UploadFormState>(createInitialFormState());
 	const lastDetectedFileKeyRef = useRef<string | null>(null);
 
-	const handleExifChange = useCallback(
-		(
-			field: string,
-			value: number | object | string | CameraSettings["Brand"]
-		) => {
-			if (field === "Brand") {
-				const nextExif =
-					defaultCameraSettings[value as CameraSettings["Brand"]];
-				setForm((prev) => ({ ...prev, exif: nextExif }));
-				return;
-			}
-
-			setForm((prev) => ({ ...prev, exif: { ...prev.exif, [field]: value } }));
-		},
-		[]
-	);
-
-	const exifDetection = useExifDetection(
-		fileUpload.uploadedFile,
-		handleExifChange
-	);
-	const { detectAndApplyExif } = exifDetection;
+	const exifDetection = useExifDetection(fileUpload.uploadedFile);
+	const { detectAndApplyExif, setSettings: setExifSettings } = exifDetection;
 
 	useEffect(() => {
 		if (!fileUpload.uploadedFile) {
 			lastDetectedFileKeyRef.current = null;
+			setExifSettings({});
 			return;
 		}
 
@@ -79,7 +52,7 @@ export function useUploadPageController() {
 
 		lastDetectedFileKeyRef.current = nextFileKey;
 		detectAndApplyExif().catch(() => undefined);
-	}, [detectAndApplyExif, fileUpload.uploadedFile]);
+	}, [detectAndApplyExif, fileUpload.uploadedFile, setExifSettings]);
 
 	const handleChange = (field: string, value: string | string[]) => {
 		setForm((prev) => ({ ...prev, [field]: value }));
@@ -100,6 +73,7 @@ export function useUploadPageController() {
 
 	const handleCancel = () => {
 		fileUpload.handleCancel();
+		setExifSettings({});
 		setForm(createInitialFormState());
 		setError("");
 	};
@@ -134,9 +108,12 @@ export function useUploadPageController() {
 			return;
 		}
 
-		const detectedExif = await exifDetection.detectAndApplyExif();
-		const exifForUpload = detectedExif ?? form.exif;
-		const tagsWithBrand = [...form.tags, exifForUpload.Brand.toLowerCase()];
+		const exifForUpload = exifDetection.settings;
+		const brandTag =
+			typeof exifForUpload.Brand === "string" && exifForUpload.Brand.trim()
+				? [exifForUpload.Brand.toLowerCase()]
+				: [];
+		const tagsWithBrand = [...form.tags, ...brandTag];
 		const formData = new FormData();
 
 		if (fileUpload.uploadedFile) {
@@ -148,7 +125,6 @@ export function useUploadPageController() {
 		formData.append("category", form.category.toLowerCase());
 		formData.append("style", form.style.toLowerCase());
 		formData.append("color", form.color.toLowerCase());
-		formData.append("camera", form.camera.toLowerCase());
 		formData.append("tags", JSON.stringify(tagsWithBrand));
 		formData.append("exif", JSON.stringify(exifForUpload));
 
@@ -173,7 +149,6 @@ export function useUploadPageController() {
 		fileUpload,
 		form,
 		exifDetection,
-		handleExifChange,
 		handleChange,
 		handleTagsChange,
 		handleCancel,

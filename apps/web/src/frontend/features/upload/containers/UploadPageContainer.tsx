@@ -10,7 +10,6 @@ const UploadPageContainer: React.FC = () => {
 		fileUpload,
 		form,
 		exifDetection,
-		handleExifChange,
 		handleChange,
 		handleTagsChange,
 		handleCancel,
@@ -36,12 +35,9 @@ const UploadPageContainer: React.FC = () => {
 			}}
 			error={error}
 			formProps={{
-				handleExifChange,
 				handleTags: handleTagsChange,
 				isDetecting: exifDetection.isDetecting,
 				onChange: handleChange,
-				selectedCamera: exifDetection.selectedCamera,
-				setSelectedCamera: exifDetection.setSelectedCamera,
 				setSettings: exifDetection.setSettings,
 				settings: exifDetection.settings,
 				tags: form.tags,

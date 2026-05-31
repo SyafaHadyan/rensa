@@ -3,25 +3,21 @@ import BaseInputField from "@/frontend/components/inputfields/BaseInputField";
 import InputDropdown from "@/frontend/components/inputfields/InputDropdown";
 import TagsInputField from "@/frontend/components/inputfields/TagsInputField";
 import TextAreaInput from "@/frontend/components/inputfields/TextAreaInput";
-import type { CameraSettings } from "@/frontend/features/upload/configs/cameraDatas";
+import type { NormalizedMetadata } from "@/frontend/features/upload/utils/metadata-normalizer";
 import CameraSettingsFormContainer from "../containers/CameraSettingsFormContainer";
 
 interface UploadFormViewProps {
-	cameraBrandOptions: string[];
-	cameraModelOptions: string[];
 	categoryOptions: string[];
 	colorOptions: string[];
 	handleTags: (value: string | string[]) => void;
 	isDetecting: boolean;
-	onBrandChange: (brand: CameraSettings["Brand"]) => void;
 	onCategoryChange: (category: string) => void;
 	onColorChange: (color: string) => void;
 	onDescriptionChange: (description: string) => void;
 	onStyleChange: (style: string) => void;
 	onTitleChange: (title: string) => void;
-	selectedCamera: CameraSettings["Brand"];
-	setSettings: (settings: CameraSettings) => void;
-	settings: CameraSettings;
+	setSettings: (settings: NormalizedMetadata) => void;
+	settings: NormalizedMetadata;
 	styleOptions: string[];
 	tags: string[];
 }
@@ -37,11 +33,7 @@ const UploadFormView: React.FC<UploadFormViewProps> = ({
 	categoryOptions,
 	styleOptions,
 	colorOptions,
-	cameraBrandOptions,
 	isDetecting,
-	onBrandChange,
-	selectedCamera,
-	cameraModelOptions,
 	setSettings,
 	settings,
 }) => (
@@ -94,23 +86,10 @@ const UploadFormView: React.FC<UploadFormViewProps> = ({
 			{isDetecting ? (
 				<div className="loading loading-spinner loading-xl mt-5 text-primary" />
 			) : (
-				<>
-					<InputDropdown
-						label="Camera Brand"
-						onChange={(event) =>
-							onBrandChange(
-								event.currentTarget.innerText as CameraSettings["Brand"]
-							)
-						}
-						placeholder={selectedCamera}
-						values={cameraBrandOptions}
-					/>
-					<CameraSettingsFormContainer
-						cameraModels={cameraModelOptions}
-						handleSettings={setSettings}
-						settings={settings}
-					/>
-				</>
+				<CameraSettingsFormContainer
+					handleSettings={setSettings}
+					settings={settings}
+				/>
 			)}
 		</fieldset>
 	</form>

@@ -1,82 +1,113 @@
+import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
 import type React from "react";
-import { SearchDropdown } from "@/frontend/components/dropdowns/SearchDropdown";
-import InputDropdown from "@/frontend/components/inputfields/InputDropdown";
+import { useState } from "react";
+import BaseInputField from "@/frontend/components/inputfields/BaseInputField";
 import NumberInputField from "@/frontend/components/inputfields/NumberInputField";
-import type { CameraSettings } from "@/frontend/features/upload/configs/cameraDatas";
-import { cameraFieldOptions } from "@/frontend/features/upload/configs/cameraFieldDatas";
+import type { NormalizedMetadata } from "@/frontend/features/upload/utils/metadata-normalizer";
+import { formatLabel } from "@/utils/label-formatter";
 
 export interface CameraSettingsFormViewProps {
-	cameraModels: string[];
-	onModelChange: (model: string) => void;
-	onNumberChange: (key: keyof CameraSettings, value: number) => void;
-	onOptionChange: (key: keyof CameraSettings, value: string) => void;
-	settings: CameraSettings;
+	onAddField: (key: string, value: string) => void;
+	onNumberChange: (key: string, value: number) => void;
+	onRemoveField: (key: string) => void;
+	onTextChange: (key: string, value: string) => void;
+	settings: NormalizedMetadata;
 }
 
 const CameraSettingsFormView: React.FC<CameraSettingsFormViewProps> = ({
 	settings,
-	cameraModels,
-	onModelChange,
-	onOptionChange,
+	onAddField,
 	onNumberChange,
-}) => (
-	<section aria-label="Detailed camera settings" className="mt-4 w-full">
-		<div className="grid w-full grid-cols-2 gap-5">
-			{Object.entries(settings).map(([key, value]) => {
-				const typedKey = key as keyof CameraSettings;
-				const brand = settings.Brand;
-				const options = cameraFieldOptions[brand]?.[key];
+	onRemoveField,
+	onTextChange,
+}) => {
+	const [newFieldKey, setNewFieldKey] = useState("");
+	const [newFieldValue, setNewFieldValue] = useState("");
 
-				if (key === "Brand") {
-					return null;
-				}
+	const handleAddField = () => {
+		onAddField(newFieldKey, newFieldValue);
+		setNewFieldKey("");
+		setNewFieldValue("");
+	};
 
-				if (key === "Model") {
+	const renderRemoveButton = (key: string) => (
+		<button
+			aria-label={`Remove ${formatLabel(key)}`}
+			className="mb-1 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-200 text-black-200 transition-colors hover:bg-red-50 hover:text-red-700"
+			onClick={() => onRemoveField(key)}
+			title={`Remove ${formatLabel(key)}`}
+			type="button"
+		>
+			<TrashIcon size={18} />
+		</button>
+	);
+
+	return (
+		<section aria-label="Detailed camera settings" className="mt-4 w-full">
+			<div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
+				{Object.entries(settings).map(([key, value]) => {
+					if (typeof value === "number") {
+						return (
+							<div className="flex items-end gap-2" key={key}>
+								<div className="min-w-0 flex-1">
+									<NumberInputField
+										label={formatLabel(key)}
+										onChange={(event) => {
+											onNumberChange(key, Number(event.target.value));
+										}}
+										placeholder={`Enter ${formatLabel(key)}`}
+										type="number"
+										value={value}
+									/>
+								</div>
+								{renderRemoveButton(key)}
+							</div>
+						);
+					}
+
 					return (
-						<SearchDropdown
-							cameraModels={cameraModels}
-							key={key}
-							label={key}
-							onSelect={onModelChange}
-							value={(settings.Model as string) ?? ""}
-						/>
+						<div className="flex items-end gap-2" key={key}>
+							<div className="min-w-0 flex-1">
+								<BaseInputField
+									label={formatLabel(key)}
+									onChange={(event) => {
+										onTextChange(key, event.target.value);
+									}}
+									placeholder={`Enter ${formatLabel(key)}`}
+									value={String(value ?? "")}
+								/>
+							</div>
+							{renderRemoveButton(key)}
+						</div>
 					);
-				}
+				})}
+			</div>
 
-				if (options && options.length > 0) {
-					return (
-						<InputDropdown
-							initialValue={settings[typedKey] as string}
-							key={key}
-							label={key}
-							onChange={(event) => {
-								onOptionChange(typedKey, event.currentTarget.innerText);
-							}}
-							placeholder={`Select ${key}`}
-							values={options}
-						/>
-					);
-				}
-
-				if (typeof value === "number") {
-					return (
-						<NumberInputField
-							key={key}
-							label={key}
-							onChange={(event) => {
-								onNumberChange(typedKey, Number(event.target.value));
-							}}
-							placeholder={`Enter ${key}`}
-							type="number"
-							value={settings[typedKey] as number}
-						/>
-					);
-				}
-
-				return null;
-			})}
-		</div>
-	</section>
-);
+			<div className="mt-6 grid w-full grid-cols-1 gap-3 rounded-2xl border border-gray-300 bg-white-100 p-4 md:grid-cols-[1fr_1fr_auto]">
+				<BaseInputField
+					label="Field"
+					onChange={(event) => setNewFieldKey(event.target.value)}
+					placeholder="Lens"
+					value={newFieldKey}
+				/>
+				<BaseInputField
+					label="Value"
+					onChange={(event) => setNewFieldValue(event.target.value)}
+					placeholder="23mm f/2"
+					value={newFieldValue}
+				/>
+				<button
+					aria-label="Add metadata field"
+					className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 self-end rounded-full bg-primary px-4 font-figtree text-white transition-opacity hover:opacity-90 md:h-16 md:w-16"
+					onClick={handleAddField}
+					title="Add metadata field"
+					type="button"
+				>
+					<PlusIcon size={20} weight="bold" />
+				</button>
+			</div>
+		</section>
+	);
+};
 
 export default CameraSettingsFormView;

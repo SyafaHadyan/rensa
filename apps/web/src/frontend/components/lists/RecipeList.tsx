@@ -1,6 +1,7 @@
 import { CameraIcon } from "@phosphor-icons/react";
 import type React from "react";
 import type { PhotoMetadata } from "@/frontend/types/photo";
+import { formatLabel } from "@/utils/label-formatter";
 
 interface RecipeListProps {
 	metadata?: PhotoMetadata;
@@ -19,10 +20,12 @@ const RecipeList: React.FC<RecipeListProps> = ({ metadata }) => (
 					if (Array.isArray(value)) {
 						return (
 							<div key={key}>
-								<h1 className="text-[13px] text-white-700">{key}</h1>
+								<h1 className="text-[13px] text-white-700">
+									{formatLabel(key)}
+								</h1>
 								<p className="text-[13px]">
-									{value.map((item, index) => (
-										<span className="mr-2" key={index}>
+									{value.map((item) => (
+										<span className="mr-2" key={String(item)}>
 											{String(item)}
 										</span>
 									))}
@@ -30,14 +33,16 @@ const RecipeList: React.FC<RecipeListProps> = ({ metadata }) => (
 							</div>
 						);
 					}
-					if (typeof value === "object") {
+					if (value && typeof value === "object") {
 						return (
 							<div key={key}>
-								<h1 className="text-[13px] text-white-700">{key}</h1>
+								<h1 className="text-[13px] text-white-700">
+									{formatLabel(key)}
+								</h1>
 								<div className="text-[13px]">
 									{Object.entries(value).map(([subKey, subValue]) => (
 										<div key={subKey}>
-											<p className="text-[13px]">{subKey}</p>
+											<p className="text-[13px]">{formatLabel(subKey)}</p>
 											<p className="text-[13px]">{String(subValue)}</p>
 										</div>
 									))}
@@ -47,7 +52,7 @@ const RecipeList: React.FC<RecipeListProps> = ({ metadata }) => (
 					}
 					return (
 						<div key={key}>
-							<h1 className="text-[13px] text-white-700">{key}</h1>
+							<h1 className="text-[13px] text-white-700">{formatLabel(key)}</h1>
 							<p className="text-[13px]">{String(value)}</p>
 						</div>
 					);
