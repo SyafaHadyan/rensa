@@ -70,6 +70,7 @@ export const photoBookmarkQueryDto = paginationQueryDto
 		message: "userId is required",
 	})
 	.transform((value) => ({
+		cursor: value.cursor,
 		limit: value.limit,
 		page: value.page,
 		userId: value.userId as string,

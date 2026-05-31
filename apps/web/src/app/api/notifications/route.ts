@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
 			recipientId: searchParams.get("recipientId") ?? undefined,
 			page: searchParams.get("page") ?? undefined,
 			limit: searchParams.get("limit") ?? undefined,
+			cursor: searchParams.get("cursor") ?? undefined,
 		});
 		const notifications = await notificationService.list(query);
 

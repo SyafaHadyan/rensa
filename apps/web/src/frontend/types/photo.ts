@@ -33,6 +33,7 @@ export interface Photo {
 export interface BackendPhotosResponse {
 	currentPage: number;
 	hasMore: boolean;
+	nextCursor?: string;
 	photos: Photo[];
 	total: number;
 	totalPages: number;
@@ -42,6 +43,6 @@ export type ExplorePhotoSource = "db";
 
 export interface FetchPhotosResponse {
 	data: Photo[];
-	nextPage: number | undefined;
+	nextPage: number | string | undefined;
 	source?: ExplorePhotoSource;
 }

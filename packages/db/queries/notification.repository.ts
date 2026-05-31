@@ -1,3 +1,4 @@
+import { and, count, desc, eq, lt, or } from "drizzle-orm";
 import type {
 	CreateNotificationDto,
 	ListNotificationsQueryDto,
@@ -6,9 +7,12 @@ import type {
 	NotificationRepositoryInterface,
 	NotificationResponseDto,
 } from "../schemas/notifications";
-
 import { notifications } from "../schemas/notifications";
-import db, { count, desc, eq } from "../src/db";
+import db from "../src/db";
+import {
+	decodeTimestampCursor,
+	encodeTimestampCursor,
+} from "../src/pagination-cursor";
 
 interface NotificationsApiResponse {
 	data?: {
@@ -111,17 +115,52 @@ type CreateNotificationInput = Pick<
 
 export class NotificationDbRepository {
 	async findByRecipient(params: {
+		cursor?: string;
 		limit: number;
 		offset: number;
 		recipientId: string;
 	}): Promise<Notification[]> {
+		const decodedCursor = decodeTimestampCursor(params.cursor);
+		const cursorWhereClause = decodedCursor
+			? or(
+					lt(notifications.createdAt, decodedCursor.timestamp),
+					and(
+						eq(notifications.createdAt, decodedCursor.timestamp),
+						lt(notifications.notificationId, decodedCursor.id)
+					)
+				)
+			: undefined;
+		const whereClause = and(
+			...(
+				[
+					eq(notifications.recipientId, params.recipientId),
+					cursorWhereClause,
+				] as const
+			).filter(Boolean)
+		);
+
 		return await db
 			.select()
 			.from(notifications)
-			.where(eq(notifications.recipientId, params.recipientId))
-			.orderBy(desc(notifications.createdAt))
-			.limit(params.limit)
-			.offset(params.offset);
+			.where(whereClause)
+			.orderBy(
+				desc(notifications.createdAt),
+				desc(notifications.notificationId)
+			)
+			.limit(params.cursor ? params.limit + 1 : params.limit)
+			.offset(params.cursor ? 0 : params.offset);
+	}
+
+	getNextCursor(rows: Notification[], limit: number): string | undefined {
+		if (rows.length <= limit) {
+			return;
+		}
+
+		const lastVisibleRow = rows[limit - 1];
+		return encodeTimestampCursor(
+			lastVisibleRow?.createdAt ?? null,
+			lastVisibleRow?.notificationId ?? ""
+		);
 	}
 
 	async countByRecipient(recipientId: string): Promise<number> {

@@ -51,9 +51,9 @@ const MasonryGallerySection: React.FC<MasonryGallerySectionProps> = ({
 			userId,
 		],
 		queryFn: ({ pageParam }): Promise<FetchPhotosResponse> => {
-			const page = pageParam as number;
+			const page = pageParam as number | string;
 			if (rollId) {
-				return fetchPhotosFromRoll(rollId, page, filters, sort);
+				return fetchPhotosFromRoll(rollId, Number(page), filters, sort);
 			}
 			if (useDatabase) {
 				return fetchPhotosFromDB(page, filters, sort);

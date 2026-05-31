@@ -1,6 +1,7 @@
 export interface PaginatedPhotoListResult {
 	currentPage: number;
 	hasMore: boolean;
+	nextCursor?: string;
 	photos: unknown[];
 	total: number;
 	totalPages: number;
@@ -9,6 +10,7 @@ export interface PaginatedPhotoListResult {
 export interface CommentListResult {
 	comments: unknown[];
 	hasMore: boolean;
+	nextCursor?: string;
 	total: number;
 }
 

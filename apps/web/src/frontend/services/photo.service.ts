@@ -5,13 +5,15 @@ import type {
 import { api } from "@/lib/axios-client";
 
 export const fetchPhotosFromDB = async (
-	page: number,
+	page: number | string,
 	filters: string[] | undefined,
 	sort: "oldest" | "popular" | "recent" = "recent",
 	userId?: string
 ): Promise<FetchPhotosResponse> => {
+	const isCursor = typeof page === "string";
 	const params: Record<string, number | string | undefined> = {
-		page,
+		cursor: isCursor ? page : undefined,
+		page: isCursor ? undefined : page,
 		limit: 10,
 		sort,
 		filters: filters?.join(","),
@@ -22,17 +24,21 @@ export const fetchPhotosFromDB = async (
 
 	return {
 		data: res.data.photos,
-		nextPage: res.data.hasMore ? page + 1 : undefined,
+		nextPage:
+			res.data.nextCursor ??
+			(res.data.hasMore && !isCursor ? page + 1 : undefined),
 	};
 };
 
 export const fetchBookmarkedPhotosFromDB = async (
 	userId: string,
-	page: number
+	page: number | string
 ): Promise<FetchPhotosResponse> => {
+	const isCursor = typeof page === "string";
 	const params: Record<string, number | string | undefined> = {
 		userId,
-		page,
+		cursor: isCursor ? page : undefined,
+		page: isCursor ? undefined : page,
 		limit: 10,
 	};
 
@@ -42,7 +48,9 @@ export const fetchBookmarkedPhotosFromDB = async (
 
 	return {
 		data: res.data.photos,
-		nextPage: res.data.hasMore ? page + 1 : undefined,
+		nextPage:
+			res.data.nextCursor ??
+			(res.data.hasMore && !isCursor ? page + 1 : undefined),
 	};
 };
 
@@ -68,7 +76,7 @@ export const fetchPhotosFromRoll = async (
 };
 
 export const fetchExplorePhotos = async (
-	page: number,
+	page: number | string,
 	filters: string[] | undefined,
 	sort: "popular" | "recent" = "recent"
 ): Promise<FetchPhotosResponse> => {
@@ -78,7 +86,7 @@ export const fetchExplorePhotos = async (
 
 export const fetchCreatedPhotosByUserId = async (
 	userId: string,
-	page: number,
+	page: number | string,
 	sort: "oldest" | "recent" = "recent"
 ): Promise<FetchPhotosResponse> => {
 	const response = await fetchPhotosFromDB(page, undefined, sort, userId);

@@ -14,6 +14,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 	const [comments, setComments] = useState<CommentType[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
+	const [nextCursor, setNextCursor] = useState<string | undefined>();
 
 	const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -25,18 +26,22 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 
 		setLoading(true);
 		try {
-			const res = await api.get(
-				`/photos/${id}/comments?offset=${comments.length}`
-			);
+			const res = await api.get(`/photos/${id}/comments`, {
+				params: {
+					cursor: nextCursor,
+					offset: nextCursor ? undefined : comments.length,
+				},
+			});
 
 			setComments((prev) => [...prev, ...res.data.data.comments]);
 			setHasMore(res.data.data.hasMore);
+			setNextCursor(res.data.data.nextCursor);
 		} catch (err) {
 			console.error("Error fetching more comments:", err);
 		} finally {
 			setLoading(false);
 		}
-	}, [comments.length, hasMore, id, loading]);
+	}, [comments.length, hasMore, id, loading, nextCursor]);
 
 	// -------- Reset & Fetch on Photo Change --------
 	useEffect(() => {
@@ -58,6 +63,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 
 				setComments(res.data.data.comments);
 				setHasMore(res.data.data.hasMore);
+				setNextCursor(res.data.data.nextCursor);
 			} catch (err) {
 				if (!ignore) {
 					console.error("Error fetching comments:", err);
@@ -71,6 +77,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ id }) => {
 
 		setComments([]);
 		setHasMore(true);
+		setNextCursor(undefined);
 		fetchInitialComments();
 
 		return () => {

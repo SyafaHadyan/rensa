@@ -27,6 +27,7 @@ export const listNotificationsQueryDto = paginationQueryDto
 		message: "recipientId is required",
 	})
 	.transform((value) => ({
+		cursor: value.cursor,
 		limit: value.limit,
 		page: value.page,
 		recipientId: value.recipientId as string,

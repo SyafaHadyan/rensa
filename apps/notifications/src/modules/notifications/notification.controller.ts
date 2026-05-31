@@ -69,12 +69,14 @@ export const notificationController = new Elysia({ prefix: "/notifications" })
 				recipientId: user.id,
 				page: query.page,
 				limit: query.limit,
+				cursor: query.cursor,
 			});
 		},
 		{
 			query: t.Object({
 				page: t.Optional(t.Numeric()),
 				limit: t.Optional(t.Numeric()),
+				cursor: t.Optional(t.String()),
 			}),
 		}
 	)

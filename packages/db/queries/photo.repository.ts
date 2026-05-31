@@ -1,4 +1,15 @@
-import { and, asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	count,
+	desc,
+	eq,
+	gt,
+	ilike,
+	inArray,
+	lt,
+	or,
+} from "drizzle-orm";
 import { bookmarks } from "../schemas/bookmarks";
 import type {
 	CreateUploadedPhotoDto,
@@ -11,6 +22,10 @@ import type {
 import { photoMetadata, photos } from "../schemas/photos";
 import { users } from "../schemas/users";
 import db from "../src/db";
+import {
+	decodeTimestampCursor,
+	encodeTimestampCursor,
+} from "../src/pagination-cursor";
 
 type PhotoRow = typeof photos.$inferSelect;
 type PhotoMetadataRow = typeof photoMetadata.$inferSelect;
@@ -235,17 +250,66 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		return or(...conditions);
 	}
 
+	private buildPhotoCursorWhere(
+		sort: "oldest" | "popular" | "recent",
+		cursor?: string
+	) {
+		const decodedCursor = decodeTimestampCursor(cursor);
+		if (!(decodedCursor && sort !== "popular")) {
+			return;
+		}
+
+		if (sort === "oldest") {
+			return or(
+				gt(photos.createdAt, decodedCursor.timestamp),
+				and(
+					eq(photos.createdAt, decodedCursor.timestamp),
+					gt(photos.photoId, decodedCursor.id)
+				)
+			);
+		}
+
+		return or(
+			lt(photos.createdAt, decodedCursor.timestamp),
+			and(
+				eq(photos.createdAt, decodedCursor.timestamp),
+				lt(photos.photoId, decodedCursor.id)
+			)
+		);
+	}
+
+	private buildBookmarkCursorWhere(cursor?: string) {
+		const decodedCursor = decodeTimestampCursor(cursor);
+		if (!decodedCursor) {
+			return;
+		}
+
+		return or(
+			lt(bookmarks.createdAt, decodedCursor.timestamp),
+			and(
+				eq(bookmarks.createdAt, decodedCursor.timestamp),
+				lt(bookmarks.bookmarkId, decodedCursor.id)
+			)
+		);
+	}
+
 	async list(query: ListPhotosQueryDto): Promise<ListPhotosResult> {
 		const from = (query.page - 1) * query.limit;
 		const filterWhereClause = this.buildFilterWhere(query.filters);
+		const cursorWhereClause = this.buildPhotoCursorWhere(
+			query.sort,
+			query.cursor
+		);
 		const ownerWhereClause = query.userId
 			? eq(photos.userId, query.userId)
 			: undefined;
-		const whereClause =
-			filterWhereClause && ownerWhereClause
-				? and(filterWhereClause, ownerWhereClause)
-				: (filterWhereClause ?? ownerWhereClause);
+		const whereClause = and(
+			...(
+				[filterWhereClause, ownerWhereClause, cursorWhereClause] as const
+			).filter(Boolean)
+		);
 		let photoRows: PhotoRow[] = [];
+		let nextCursor: string | undefined;
 
 		if (query.sort === "popular") {
 			const popularRows = await db
@@ -268,12 +332,24 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 				.from(photos)
 				.where(whereClause)
 				.orderBy(
-					query.sort === "oldest"
-						? asc(photos.createdAt)
-						: desc(photos.createdAt)
+					...(query.sort === "oldest"
+						? [asc(photos.createdAt), asc(photos.photoId)]
+						: [desc(photos.createdAt), desc(photos.photoId)])
 				)
-				.limit(query.limit)
-				.offset(from);
+				.limit(query.limit + 1);
+
+			const hasMore = photoRows.length > query.limit;
+			if (hasMore) {
+				photoRows = photoRows.slice(0, query.limit);
+			}
+
+			const lastPhoto = photoRows.at(-1);
+			nextCursor = hasMore
+				? encodeTimestampCursor(
+						lastPhoto?.createdAt ?? null,
+						lastPhoto?.photoId ?? ""
+					)
+				: undefined;
 		}
 
 		const [countRow] = await db
@@ -283,6 +359,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 
 		const photosResult = await this.mapPhotosToResponseDtos(photoRows);
 		return {
+			nextCursor,
 			photos: photosResult,
 			total: Number(countRow?.total ?? 0),
 		};
@@ -372,27 +449,50 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 	async listBookmarkedByUser(
 		userId: string,
 		page: number,
-		limit: number
+		limit: number,
+		cursor?: string
 	): Promise<ListPhotosResult> {
 		const from = (page - 1) * limit;
+		const cursorWhereClause = this.buildBookmarkCursorWhere(cursor);
+		const whereClause = and(
+			...([eq(bookmarks.userId, userId), cursorWhereClause] as const).filter(
+				Boolean
+			)
+		);
 
 		const bookmarkRows = await db
-			.select({ photoId: bookmarks.photoId })
+			.select({
+				bookmarkId: bookmarks.bookmarkId,
+				createdAt: bookmarks.createdAt,
+				photoId: bookmarks.photoId,
+			})
 			.from(bookmarks)
-			.where(eq(bookmarks.userId, userId))
-			.orderBy(desc(bookmarks.createdAt))
-			.limit(limit)
-			.offset(from);
+			.where(whereClause)
+			.orderBy(desc(bookmarks.createdAt), desc(bookmarks.bookmarkId))
+			.limit(cursor ? limit + 1 : limit)
+			.offset(cursor ? 0 : from);
 		const [countRow] = await db
 			.select({ total: count() })
 			.from(bookmarks)
 			.where(eq(bookmarks.userId, userId));
+		const hasMore = bookmarkRows.length > limit;
+		const visibleBookmarkRows = hasMore
+			? bookmarkRows.slice(0, limit)
+			: bookmarkRows;
 
-		const photoIds = bookmarkRows
+		const photoIds = visibleBookmarkRows
 			.map((row) => row.photoId)
 			.filter((value): value is string => Boolean(value));
+		const lastBookmark = visibleBookmarkRows.at(-1);
+		const nextCursor = hasMore
+			? encodeTimestampCursor(
+					lastBookmark?.createdAt ?? null,
+					lastBookmark?.bookmarkId ?? ""
+				)
+			: undefined;
 		if (photoIds.length === 0) {
 			return {
+				nextCursor,
 				photos: [],
 				total: Number(countRow?.total ?? 0),
 			};
@@ -402,6 +502,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 
 		const photosResult = await this.mapPhotosToResponseDtos(photoRows);
 		return {
+			nextCursor,
 			photos: photosResult,
 			total: Number(countRow?.total ?? photosResult.length),
 		};

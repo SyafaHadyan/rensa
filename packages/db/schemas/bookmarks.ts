@@ -18,6 +18,11 @@ export const bookmarks = pgTable(
 	(table) => [
 		unique("bookmarks_photo_id_user_id_unique").on(table.photoId, table.userId),
 		index("idx_bookmarks_photo").on(table.photoId),
+		index("idx_bookmarks_user_created_bookmark_id").on(
+			table.userId,
+			table.createdAt,
+			table.bookmarkId
+		),
 	]
 );
 

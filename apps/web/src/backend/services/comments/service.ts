@@ -55,17 +55,21 @@ export class CommentService {
 	async listByPhotoId(
 		photoId: string,
 		offset: number,
-		limit: number
+		limit: number,
+		cursor?: string
 	): Promise<CommentListResult> {
-		const { comments, total } = await this.commentRepository.listByPhotoId({
-			photoId,
-			offset,
-			limit,
-		});
+		const { comments, nextCursor, total } =
+			await this.commentRepository.listByPhotoId({
+				cursor,
+				photoId,
+				offset,
+				limit,
+			});
 
 		return {
 			comments,
-			hasMore: offset + comments.length < total,
+			hasMore: cursor ? Boolean(nextCursor) : offset + comments.length < total,
+			nextCursor,
 			total,
 		};
 	}

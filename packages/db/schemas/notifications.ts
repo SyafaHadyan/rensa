@@ -36,6 +36,9 @@ export const notifications = pgTable(
 			table.createdAt
 		),
 		createdAtIdx: index("notifications_created_at_idx").on(table.createdAt),
+		recipientReadCreatedNotificationIdx: index(
+			"notifications_recipient_read_created_id_idx"
+		).on(table.recipientId, table.read, table.createdAt, table.notificationId),
 	})
 );
 
@@ -66,6 +69,7 @@ export interface NotificationResponseDto extends Passthrough {
 }
 
 export interface ListNotificationsQueryDto {
+	cursor?: string;
 	limit: number;
 	page: number;
 	recipientId: string;

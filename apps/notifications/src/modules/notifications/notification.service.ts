@@ -84,6 +84,7 @@ async function populateNotificationActor(
 
 export const NotificationService = {
 	async fetchNotifications(query: {
+		cursor?: string;
 		recipientId: string;
 		page?: number;
 		limit?: number;
@@ -94,15 +95,23 @@ export const NotificationService = {
 
 		const [notifications, total] = await Promise.all([
 			notificationRepository.findByRecipient({
+				cursor: query.cursor,
 				recipientId: query.recipientId,
 				limit,
 				offset,
 			}),
 			notificationRepository.countByRecipient(query.recipientId),
 		]);
+		const nextCursor = notificationRepository.getNextCursor(
+			notifications,
+			limit
+		);
+		const visibleNotifications = nextCursor
+			? notifications.slice(0, limit)
+			: notifications;
 
 		const populatedNotifications = await Promise.all(
-			notifications.map((notification) =>
+			visibleNotifications.map((notification) =>
 				populateNotificationActor(notification)
 			)
 		);
@@ -115,7 +124,8 @@ export const NotificationService = {
 				notifications: populatedNotifications,
 				page,
 				total,
-				hasMore: page * limit < total,
+				hasMore: query.cursor ? Boolean(nextCursor) : page * limit < total,
+				nextCursor,
 			},
 		};
 	},

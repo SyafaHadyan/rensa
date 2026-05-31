@@ -33,7 +33,7 @@ const ExploreGalleryContainer: React.FC<ExploreGalleryContainerProps> = ({
 	} = useInfiniteQuery<FetchPhotosResponse>({
 		queryKey: ["explore-photos", filters, sort],
 		queryFn: ({ pageParam }) => {
-			const page = pageParam as number;
+			const page = pageParam as number | string;
 			const result = fetchExplorePhotos(page, filters, sort);
 			return result;
 		},

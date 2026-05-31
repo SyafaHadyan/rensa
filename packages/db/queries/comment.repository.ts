@@ -1,4 +1,4 @@
-import { asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, gt, or } from "drizzle-orm";
 import type {
 	CommentRepositoryInterface,
 	CommentResponseDto,
@@ -7,6 +7,10 @@ import type {
 import { comments } from "../schemas/comments";
 import { users } from "../schemas/users";
 import db from "../src/db";
+import {
+	decodeTimestampCursor,
+	encodeTimestampCursor,
+} from "../src/pagination-cursor";
 
 const toIso = (value: Date | null): string | undefined =>
 	value ? value.toISOString() : undefined;
@@ -43,10 +47,26 @@ export class CommentRepository implements CommentRepositoryInterface {
 	}
 
 	async listByPhotoId(params: {
+		cursor?: string;
 		photoId: string;
 		offset: number;
 		limit: number;
 	}): Promise<ListCommentsResult> {
+		const decodedCursor = decodeTimestampCursor(params.cursor);
+		const cursorWhereClause = decodedCursor
+			? or(
+					gt(comments.createdAt, decodedCursor.timestamp),
+					and(
+						eq(comments.createdAt, decodedCursor.timestamp),
+						gt(comments.commentId, decodedCursor.id)
+					)
+				)
+			: undefined;
+		const whereClause = and(
+			...(
+				[eq(comments.photoId, params.photoId), cursorWhereClause] as const
+			).filter(Boolean)
+		);
 		const rows = await db
 			.select({
 				avatarUrl: users.avatarUrl,
@@ -60,17 +80,19 @@ export class CommentRepository implements CommentRepositoryInterface {
 			})
 			.from(comments)
 			.leftJoin(users, eq(comments.userId, users.userId))
-			.where(eq(comments.photoId, params.photoId))
-			.orderBy(asc(comments.createdAt))
-			.limit(params.limit)
-			.offset(params.offset);
+			.where(whereClause)
+			.orderBy(asc(comments.createdAt), asc(comments.commentId))
+			.limit(params.cursor ? params.limit + 1 : params.limit)
+			.offset(params.cursor ? 0 : params.offset);
 
 		const [countRow] = await db
 			.select({ total: count() })
 			.from(comments)
 			.where(eq(comments.photoId, params.photoId));
 
-		const mapped = rows.map((row) => ({
+		const hasMore = rows.length > params.limit;
+		const visibleRows = hasMore ? rows.slice(0, params.limit) : rows;
+		const mapped = visibleRows.map((row) => ({
 			commentId: row.commentId,
 			photoId: row.photoId ?? "",
 			user: {
@@ -85,6 +107,12 @@ export class CommentRepository implements CommentRepositoryInterface {
 
 		return {
 			comments: mapped,
+			nextCursor: hasMore
+				? encodeTimestampCursor(
+						visibleRows.at(-1)?.createdAt ?? null,
+						visibleRows.at(-1)?.commentId ?? ""
+					)
+				: undefined,
 			total: Number(countRow?.total ?? 0),
 		};
 	}
