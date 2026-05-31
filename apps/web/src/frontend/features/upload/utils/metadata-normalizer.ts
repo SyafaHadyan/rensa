@@ -6,25 +6,205 @@ export type NormalizedMetadataValue = number | string;
 export type NormalizedMetadata = Record<string, NormalizedMetadataValue>;
 
 const metadataAliases: Record<string, string[]> = {
-	Brand: ["Make", "CameraMake", "Manufacturer"],
-	Model: ["Model", "CameraModel", "UniqueCameraModel"],
+	Brand: [
+		"Make",
+		"CameraMake",
+		"Camera Make",
+		"CameraManufacturer",
+		"Camera Manufacturer",
+		"DeviceMake",
+		"Device Make",
+		"DeviceManufacturer",
+		"Device Manufacturer",
+		"ExifIFD:Make",
+		"IFD0:Make",
+		"ImageMake",
+		"Manufacturer",
+		"NativeMake",
+		"TIFF:Make",
+	],
+	Model: [
+		"Model",
+		"Camera",
+		"CameraModel",
+		"Camera Model",
+		"CameraModelName",
+		"Camera Model Name",
+		"CameraType",
+		"Camera Type",
+		"DeviceModel",
+		"Device Model",
+		"ExifIFD:Model",
+		"IFD0:Model",
+		"ImageModel",
+		"NativeModel",
+		"TIFF:Model",
+		"UniqueCameraModel",
+		"Unique Camera Model",
+	],
 	ISO: ["ISO", "ISOSpeedRatings", "PhotographicSensitivity"],
 	Aperture: ["FNumber", "Aperture", "ApertureValue"],
 	ShutterSpeed: ["ExposureTime", "ShutterSpeed", "ShutterSpeedValue"],
 	FocalLength: ["FocalLength", "FocalLengthIn35mmFormat"],
 	Lens: ["Lens", "LensModel", "LensInfo", "LensType"],
-	WhiteBalance: ["WhiteBalance", "WBMode"],
-	DynamicRange: ["DynamicRange"],
-	FilmMode: ["FilmMode", "FilmSimulation", "FilmSimulationMode"],
-	CreativeLook: ["CreativeLook", "CreativeStyle"],
-	PictureStyle: ["PictureStyle"],
-	PictureControl: ["PictureControl"],
-	PhotoStyle: ["PhotoStyle"],
-	PictureMode: ["PictureMode"],
-	ImageControl: ["ImageControl"],
-	ImageProfile: ["ImageProfile"],
-	CustomImage: ["CustomImage"],
-	FilmStyle: ["FilmStyle"],
+	WhiteBalance: [
+		"WhiteBalance",
+		"White Balance",
+		"WhiteBalanceSetting",
+		"White Balance Setting",
+		"WB",
+		"WBMode",
+	],
+	DynamicRange: [
+		"DynamicRange",
+		"Dynamic Range",
+		"DRange",
+		"DR",
+		"FujiFilm:DynamicRange",
+	],
+	FilmMode: [
+		"FilmMode",
+		"Film Mode",
+		"FilmSimulation",
+		"Film Simulation",
+		"FilmSimulationMode",
+		"Film Simulation Mode",
+		"FujiFilm:FilmMode",
+		"FujiFilm:FilmSimulation",
+	],
+	CreativeLook: [
+		"CreativeLook",
+		"Creative Look",
+		"CreativeStyle",
+		"Creative Style",
+		"Sony:CreativeLook",
+		"Sony:CreativeStyle",
+	],
+	PictureStyle: [
+		"PictureStyle",
+		"Picture Style",
+		"BasePictureStyle",
+		"Base Picture Style",
+		"Canon:PictureStyle",
+		"UserDef1PictureStyle",
+		"UserDef2PictureStyle",
+		"UserDef3PictureStyle",
+	],
+	PictureControl: [
+		"PictureControl",
+		"Picture Control",
+		"PictureControlName",
+		"Picture Control Name",
+		"Nikon:PictureControl",
+	],
+	PhotoStyle: [
+		"PhotoStyle",
+		"Photo Style",
+		"PhotoStyleName",
+		"Photo Style Name",
+		"Lumix:PhotoStyle",
+		"Panasonic:PhotoStyle",
+	],
+	PictureMode: [
+		"PictureMode",
+		"Picture Mode",
+		"ArtFilter",
+		"Art Filter",
+		"Olympus:PictureMode",
+	],
+	ImageControl: [
+		"ImageControl",
+		"Image Control",
+		"ImageControlName",
+		"Image Control Name",
+		"Ricoh:ImageControl",
+	],
+	ImageProfile: [
+		"ImageProfile",
+		"Image Profile",
+		"CameraProfile",
+		"Camera Profile",
+		"ColorMode",
+		"Color Mode",
+		"ColorProfile",
+		"Color Profile",
+		"PictureProfile",
+		"Picture Profile",
+		"ProfileName",
+		"Profile Name",
+	],
+	CustomImage: [
+		"CustomImage",
+		"Custom Image",
+		"CustomImageMode",
+		"Custom Image Mode",
+		"ImageTone",
+		"Image Tone",
+		"Pentax:CustomImage",
+	],
+	FilmStyle: [
+		"FilmStyle",
+		"Film Style",
+		"FilmStyleMode",
+		"Film Style Mode",
+		"Leica:FilmStyle",
+	],
+	GrainEffect: ["GrainEffect", "Grain Effect", "Grain", "FujiFilm:GrainEffect"],
+	ColorChromeEffect: [
+		"ColorChromeEffect",
+		"Color Chrome Effect",
+		"ChromeEffect",
+		"Chrome Effect",
+		"FujiFilm:ColorChromeEffect",
+	],
+	ColorChromeFXBlue: [
+		"ColorChromeFXBlue",
+		"Color Chrome FX Blue",
+		"ColorChromeEffectBlue",
+		"Color Chrome Effect Blue",
+		"FujiFilm:ColorChromeFXBlue",
+	],
+	HighlightTone: [
+		"HighlightTone",
+		"Highlight Tone",
+		"Highlights",
+		"Highlight",
+		"FujiFilm:HighlightTone",
+	],
+	ShadowTone: [
+		"ShadowTone",
+		"Shadow Tone",
+		"Shadows",
+		"Shadow",
+		"FujiFilm:ShadowTone",
+	],
+	Color: ["Color", "ColorSetting", "Color Setting", "FujiFilm:Color"],
+	Clarity: ["Clarity", "ClaritySetting", "Clarity Setting"],
+	Contrast: ["Contrast", "ContrastSetting", "Contrast Setting"],
+	Saturation: ["Saturation", "SaturationSetting", "Saturation Setting"],
+	Sharpness: ["Sharpness", "SharpnessSetting", "Sharpness Setting"],
+	NoiseReduction: [
+		"NoiseReduction",
+		"Noise Reduction",
+		"NoiseReductionSetting",
+		"Noise Reduction Setting",
+		"HighISONoiseReduction",
+		"High ISO Noise Reduction",
+	],
+	FilterEffect: [
+		"FilterEffect",
+		"Filter Effect",
+		"ColorFilter",
+		"Color Filter",
+	],
+	ToningEffect: [
+		"ToningEffect",
+		"Toning Effect",
+		"Toning",
+		"Tone",
+		"PictureTone",
+		"Picture Tone",
+	],
 };
 
 const knownBrandNames = [
@@ -40,11 +220,51 @@ const knownBrandNames = [
 	"Pentax",
 ];
 
-function getFirstAliasValue(rawMetadata: RawMetadata, aliases: string[]) {
-	for (const alias of aliases) {
-		const value = rawMetadata[alias];
-		if (value !== undefined && value !== null && value !== "") {
+function normalizeMetadataKey(key: string) {
+	return key.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function isRecord(value: unknown): value is RawMetadata {
+	return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function getDirectAliasValue(
+	rawMetadata: RawMetadata,
+	aliases: string[]
+): RawMetadataValue | undefined {
+	const aliasKeys = new Set(aliases.map(normalizeMetadataKey));
+
+	for (const [key, value] of Object.entries(rawMetadata)) {
+		if (
+			aliasKeys.has(normalizeMetadataKey(key)) &&
+			value !== undefined &&
+			value !== null &&
+			value !== ""
+		) {
 			return value;
+		}
+	}
+	return;
+}
+
+function getFirstAliasValue(
+	rawMetadata: RawMetadata,
+	aliases: string[]
+): RawMetadataValue | undefined {
+	const directValue = getDirectAliasValue(rawMetadata, aliases);
+	if (directValue !== undefined) {
+		return directValue;
+	}
+
+	for (const value of Object.values(rawMetadata)) {
+		if (isRecord(value)) {
+			const nestedValue: RawMetadataValue | undefined = getFirstAliasValue(
+				value,
+				aliases
+			);
+			if (nestedValue !== undefined) {
+				return nestedValue;
+			}
 		}
 	}
 	return;
