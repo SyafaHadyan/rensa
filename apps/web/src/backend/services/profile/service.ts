@@ -26,6 +26,8 @@ interface UpdateProfileParams {
 	username: string;
 }
 
+const PROFILE_AVATAR_UPLOAD_TIMEOUT_MS = 30_000;
+
 const isUniqueConstraintError = (error: unknown): boolean => {
 	if (typeof error !== "object" || error === null) {
 		return false;
@@ -146,6 +148,7 @@ export class ProfileService {
 			folder: `user_profile/${params.userId}`,
 			quality: "auto",
 			resource_type: "image",
+			timeout: PROFILE_AVATAR_UPLOAD_TIMEOUT_MS,
 		});
 
 		if (!validateCloudinaryUrl(uploadRes.secure_url)) {

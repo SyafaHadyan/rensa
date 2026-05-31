@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import EmailVerificationTemplate from "@/frontend/components/emailTemplates/EmailVerificationTemplate";
 import { PasswordResetEmail } from "@/frontend/components/emailTemplates/PasswordResetEmail";
 import getResend from "@/lib/resend";
+import { withTimeout } from "@/lib/timeout";
 
 interface EmailSendResult {
 	id?: string;
@@ -45,6 +46,8 @@ const assertEmailSent = (result: {
 	return result.data?.id;
 };
 
+const EMAIL_SEND_TIMEOUT_MS = 10_000;
+
 export const sendVerificationEmail = async (
 	email: string
 ): Promise<EmailSendResult> => {
@@ -64,12 +67,16 @@ export const sendVerificationEmail = async (
 	const verificationUrl = `${appUrl}/verified?token=${token}`;
 
 	const resend = await getResend();
-	const result = await resend.emails.send({
-		from: getEmailFrom(),
-		to: email,
-		subject: "Verify your email address",
-		react: EmailVerificationTemplate({ verificationLink: verificationUrl }),
-	});
+	const result = await withTimeout(
+		resend.emails.send({
+			from: getEmailFrom(),
+			to: email,
+			subject: "Verify your email address",
+			react: EmailVerificationTemplate({ verificationLink: verificationUrl }),
+		}),
+		EMAIL_SEND_TIMEOUT_MS,
+		"Email provider timed out while sending verification email."
+	);
 
 	return {
 		id: assertEmailSent(result),
@@ -94,11 +101,15 @@ export const sendPasswordResetEmail = async (email: string): Promise<void> => {
 	const resetLink = `${appUrl}/reset-password?token=${token}`;
 
 	const resend = await getResend();
-	const result = await resend.emails.send({
-		from: getEmailFrom(),
-		to: email,
-		subject: "Password Reset Request",
-		react: PasswordResetEmail({ resetLink }),
-	});
+	const result = await withTimeout(
+		resend.emails.send({
+			from: getEmailFrom(),
+			to: email,
+			subject: "Password Reset Request",
+			react: PasswordResetEmail({ resetLink }),
+		}),
+		EMAIL_SEND_TIMEOUT_MS,
+		"Email provider timed out while sending password reset email."
+	);
 	assertEmailSent(result);
 };

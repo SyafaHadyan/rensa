@@ -22,6 +22,13 @@ import {
 } from "@/shared/configs/photo-upload.config";
 
 const photoRepository = new PhotoRepository();
+const CLOUDINARY_UPLOAD_TIMEOUT_MS = 45_000;
+
+type UploadExif = Record<string, unknown> & {
+	Brand?: unknown;
+};
+
+type ModerationResponse = Record<string, { Label?: string }>;
 
 export async function compressImageUnder10MB(buffer: Buffer): Promise<Buffer> {
 	let quality = PHOTO_UPLOAD_COMPRESSION_START_QUALITY;
@@ -173,7 +180,7 @@ export async function POST(req: Request) {
 
 			// Sanitize and validate each tag
 			tags = rawTags
-				.map((tag: any) => {
+				.map((tag: unknown) => {
 					if (typeof tag !== "string") {
 						return null;
 					}
@@ -204,7 +211,7 @@ export async function POST(req: Request) {
 		}
 
 		// Parse and validate EXIF data
-		let exif: any = {};
+		let exif: UploadExif = {};
 		let camera = "";
 		try {
 			const rawExif = JSON.parse(formData.get("exif") as string);
@@ -258,27 +265,54 @@ export async function POST(req: Request) {
 		const formPhoto = new FormData();
 		formPhoto.append("file", file);
 
-		const res = await fastApi.post("/nsfw/predict", formPhoto, {
-			headers: {
-				"Content-Type": "multipart/form-data",
-			},
-		});
-		const key = Object.keys(res.data)[0];
-		if (res.data[key].Label === "NSFW") {
+		let moderationResult: ModerationResponse;
+		try {
+			const res = await fastApi.post("/nsfw/predict", formPhoto, {
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+			});
+			moderationResult = res.data as ModerationResponse;
+		} catch (moderationError) {
+			console.error("NSFW moderation failed:", moderationError);
+			return NextResponse.json(
+				{
+					success: false,
+					error:
+						"Image safety check is temporarily unavailable. Please try again.",
+				},
+				{ status: 503 }
+			);
+		}
+		const key = Object.keys(moderationResult)[0];
+		if (key && moderationResult[key]?.Label === "NSFW") {
 			return NextResponse.json(
 				{ success: false, error: "NSFW content detected. Upload rejected." },
 				{ status: 400 }
 			);
 		}
 
-		const uploadRes = await cloudinary.uploader.upload(base64File, {
-			folder: `user_uploads/${userId}`,
-			resource_type: "image",
-			image_metadata: true,
-			quality: "auto",
-			fetch_format: "auto",
-			transformation: [{ width: 2000, crop: "limit" }],
-		});
+		let uploadRes;
+		try {
+			uploadRes = await cloudinary.uploader.upload(base64File, {
+				folder: `user_uploads/${userId}`,
+				resource_type: "image",
+				image_metadata: true,
+				quality: "auto",
+				fetch_format: "auto",
+				timeout: CLOUDINARY_UPLOAD_TIMEOUT_MS,
+				transformation: [{ width: 2000, crop: "limit" }],
+			});
+		} catch (uploadError) {
+			console.error("Cloudinary upload failed:", uploadError);
+			return NextResponse.json(
+				{
+					success: false,
+					error: "Image upload failed. Please try again.",
+				},
+				{ status: 502 }
+			);
+		}
 
 		const {
 			secure_url: secureUrl,

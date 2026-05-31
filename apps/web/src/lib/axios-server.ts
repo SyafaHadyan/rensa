@@ -6,6 +6,7 @@ import { authOptions } from "./auth";
 const expressApi = axios.create({
 	baseURL: process.env.EXPRESS_BASE_URL,
 	withCredentials: true,
+	timeout: 10_000,
 	headers: {
 		"Content-Type": "application/json",
 	},
@@ -13,6 +14,7 @@ const expressApi = axios.create({
 const elysiaApi = axios.create({
 	baseURL: process.env.ELYSIA_BASE_URL,
 	withCredentials: true,
+	timeout: 5000,
 	headers: {
 		"Content-Type": "application/json",
 	},
@@ -33,6 +35,7 @@ const createNotificationsToken = (userId: string): string | null => {
 
 const fastApi = axios.create({
 	baseURL: process.env.FAST_API_BASE_URL,
+	timeout: 5000,
 	withCredentials: true,
 	headers: {
 		"Content-Type": "application/json",

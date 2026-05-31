@@ -1,5 +1,5 @@
-import { detectValueinString } from "@/utils/value-detections";
 import { formatShutterSpeed } from "@/utils/shutter-speed-formatter";
+import { detectValueinString } from "@/utils/value-detections";
 
 export type RawMetadataValue = boolean | number | object | string | null;
 export type RawMetadata = Record<string, RawMetadataValue | undefined>;
