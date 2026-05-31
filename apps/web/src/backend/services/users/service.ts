@@ -6,10 +6,24 @@ import type {
 	UserWithPasswordResponseDto,
 } from "@rensa/db/schema";
 import {
+	ConflictError,
 	ForbiddenError,
 	NotFoundError,
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
+
+const isUniqueConstraintError = (error: unknown): boolean => {
+	if (typeof error !== "object" || error === null) {
+		return false;
+	}
+
+	const maybeError = error as { code?: unknown; constraint?: unknown };
+	return (
+		maybeError.code === "23505" ||
+		(typeof maybeError.constraint === "string" &&
+			maybeError.constraint.includes("username"))
+	);
+};
 
 export class UserService {
 	readonly userRepository: UserRepositoryInterface;
@@ -36,8 +50,22 @@ export class UserService {
 		return this.userRepository.getByEmail(email);
 	}
 	async create(payload: UserRegisterDto): Promise<UserResponseDto> {
-		const user = await this.userRepository.create(payload);
-		return user;
+		const existingUsername = await this.userRepository.getByUsername(
+			payload.username
+		);
+		if (existingUsername) {
+			throw new ConflictError("Username already exists");
+		}
+
+		try {
+			const user = await this.userRepository.create(payload);
+			return user;
+		} catch (error) {
+			if (isUniqueConstraintError(error)) {
+				throw new ConflictError("Username already exists");
+			}
+			throw error;
+		}
 	}
 }
 

@@ -2,6 +2,7 @@ import { registerLimiter } from "@rensa/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { BackendError } from "@/backend/common/backend.error";
 import { rollService } from "@/backend/services/rolls/service";
 import { userService } from "@/backend/services/users/service";
 import { sendVerificationEmail } from "@/frontend/services/email.service";
@@ -94,6 +95,12 @@ export async function POST(req: Request) {
 			return NextResponse.json(
 				{ message: `Invalid input data: ${err.message}` },
 				{ status: 400 }
+			);
+		}
+		if (err instanceof BackendError) {
+			return NextResponse.json(
+				{ code: err.code, message: err.message },
+				{ status: err.statusCode }
 			);
 		}
 		return NextResponse.json(

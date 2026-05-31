@@ -17,6 +17,13 @@ export class ValidationError extends BackendError {
 	}
 }
 
+export class ConflictError extends BackendError {
+	constructor(message = "Resource already exists") {
+		super(message, 409, "CONFLICT");
+		this.name = "ConflictError";
+	}
+}
+
 export class UnauthorizedError extends BackendError {
 	constructor(message = "Unauthorized") {
 		super(message, 401, "UNAUTHORIZED");

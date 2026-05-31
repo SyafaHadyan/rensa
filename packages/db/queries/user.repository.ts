@@ -100,6 +100,29 @@ export class UserRepository implements UserRepositoryInterface {
 		};
 	}
 
+	async getByUsername(username: string): Promise<UserResponseDto | null> {
+		const [row] = await db
+			.select()
+			.from(users)
+			.where(eq(users.username, username))
+			.limit(1);
+		if (!row) {
+			return null;
+		}
+
+		return {
+			avatarUrl: row.avatarUrl ?? "",
+			bookmarks: await this.getBookmarkPhotoIds(row.userId),
+			createdAt: toIso(row.createdAt),
+			email: row.email,
+			role: row.role ?? "user",
+			updatedAt: toIso(row.updatedAt),
+			userId: row.userId,
+			username: row.username,
+			verified: row.verified ?? false,
+		};
+	}
+
 	async getProfileById(id: string): Promise<UserProfileDto | null> {
 		const [row] = await db
 			.select({
