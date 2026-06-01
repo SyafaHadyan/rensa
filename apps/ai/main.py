@@ -1,8 +1,5 @@
 from fastapi import APIRouter, FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
-import shutil
-import uuid
-import os
 
 from nsfw_detector.model import Model
 
@@ -21,16 +18,9 @@ async def health():
 @router.post("/nsfw/predict")
 async def predict_image(file: UploadFile = File(...)):
     try:
-        # Save uploaded file temporarily
-        temp_filename = f"temp_{uuid.uuid4()}.jpg"
-        with open(temp_filename, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        image_bytes = await file.read()
 
-        # Run prediction
-        result = nsfw_model.predict(temp_filename)
-
-        # Delete temp file
-        os.remove(temp_filename)
+        result = nsfw_model.predict_bytes(image_bytes)
 
         return JSONResponse(result)
 

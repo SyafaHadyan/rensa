@@ -1,8 +1,11 @@
-import { fastApi } from "@/lib/axios-server";
 import { ValidationError } from "@/backend/common/backend.error";
+import { fastApi } from "@/lib/axios-server";
 import { PhotoModerationUnavailableError } from "./photo-upload.errors";
 
-type ModerationResponse = Record<string, { Label?: string }>;
+interface ModerationResponse {
+	label?: string;
+	score?: number;
+}
 
 function toArrayBuffer(buffer: Buffer): ArrayBuffer {
 	const arrayBuffer = new ArrayBuffer(buffer.length);
@@ -35,8 +38,7 @@ export class PhotoModerationService {
 			throw new PhotoModerationUnavailableError();
 		}
 
-		const key = Object.keys(moderationResult)[0];
-		if (key && moderationResult[key]?.Label === "NSFW") {
+		if (moderationResult.label === "NSFW") {
 			throw new ValidationError("NSFW content detected. Upload rejected.");
 		}
 	}

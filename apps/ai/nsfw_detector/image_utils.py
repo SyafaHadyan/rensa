@@ -1,4 +1,5 @@
 import logging
+from io import BytesIO
 import numpy as np
 
 from PIL import Image as pil_image
@@ -23,6 +24,13 @@ if pil_image is not None:
 # loads an image and performs the transformations 
 def load_image(path,image_size=240, dtype="float32"):
     img = pil_image.open(path).convert("RGB")  # Fix RGBA→RGB
+    return transform_image(img, image_size, dtype)
+
+def load_image_bytes(image_bytes, image_size=240, dtype="float32"):
+    img = pil_image.open(BytesIO(image_bytes)).convert("RGB")
+    return transform_image(img, image_size, dtype)
+
+def transform_image(img, image_size=240, dtype="float32"):
     img = img.resize((image_size, image_size))
     
     x = np.asarray(img, dtype=dtype)

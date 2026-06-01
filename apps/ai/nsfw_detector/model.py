@@ -2,7 +2,7 @@ import os
 import pydload
 import numpy as np
 import onnxruntime
-from .image_utils import load_images
+from .image_utils import load_image_bytes, load_images
 
 # sigmoid function
 def sig(x):
@@ -90,6 +90,21 @@ class Model:
             else:
                 images_preds[loaded_image_path] = { 'Label': 'SFW', 'Score': model_preds[i]}
         return images_preds
+
+    def predict_bytes(self, image_bytes, image_size=240):
+        image = load_image_bytes(image_bytes, image_size)
+        loaded_images = np.asarray([image])
+
+        model_preds = self.nsfw_model.run(
+            [self.nsfw_model.get_outputs()[0].name],
+            {self.nsfw_model.get_inputs()[0].name: loaded_images},
+        )[0]
+        score = float(sig(np.ravel(model_preds)[0]))
+
+        return {
+            "label": "NSFW" if score > 0.5 else "SFW",
+            "score": score,
+        }
 
 
 if __name__ == "__main__":

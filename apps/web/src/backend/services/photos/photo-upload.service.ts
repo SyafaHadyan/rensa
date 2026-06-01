@@ -82,16 +82,19 @@ export class PhotoUploadService {
 		});
 
 		const compressionStartedAt = performance.now();
-		const compressedBuffer =
-			await this.imageProcessing.compressImageUnderTargetSize(buffer);
+		const [compressedBuffer, moderationBuffer] = await Promise.all([
+			this.imageProcessing.createUploadImage(buffer),
+			this.imageProcessing.createModerationImage(buffer),
+		]);
 		logUploadStage(params.uploadId, "compress_image", compressionStartedAt, {
 			inputBytes: buffer.length,
+			moderationBytes: moderationBuffer.length,
 			outputBytes: compressedBuffer.length,
 		});
 
 		const moderationStartedAt = performance.now();
 		await this.moderation.assertAllowedImage({
-			buffer: compressedBuffer,
+			buffer: moderationBuffer,
 			filename: payload.file.name,
 		});
 		logUploadStage(params.uploadId, "moderate_image", moderationStartedAt);
