@@ -1,7 +1,8 @@
 import { AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import Masonry from "react-masonry-css";
-import "@/frontend/components/MasonryGallery.css";
+import "@/frontend/components/MasonryGallery/MasonryGallery.css";
+import { useResponsiveMasonryColumns } from "@/frontend/components/MasonryGallery/useResponsiveMasonryColumns";
 import PhotoCard from "@/frontend/components/PhotoCard";
 import type { Photo } from "@/frontend/types/photo";
 
@@ -10,62 +11,48 @@ interface ExploreGalleryGridProps {
 	photos: Photo[];
 }
 
-const getDynamicColumns = (photoCount: number): number => {
-	if (photoCount <= 1) {
-		return 1;
-	}
-	if (photoCount === 2) {
-		return 2;
-	}
-	if (photoCount === 3) {
-		return 3;
-	}
-	if (photoCount === 4) {
-		return 4;
-	}
-	return 5;
-};
-
 const ExploreGalleryGrid: React.FC<ExploreGalleryGridProps> = ({
 	allowPhotoPageNavigation,
 	photos,
 }) => {
 	const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
 
-	const breakpointColumns = {
-		default: getDynamicColumns(photos.length),
-		1920: Math.min(getDynamicColumns(photos.length), 5),
-		1600: Math.min(getDynamicColumns(photos.length), 4),
-		1280: Math.min(getDynamicColumns(photos.length), 3),
-		900: Math.min(getDynamicColumns(photos.length), 2),
-		640: 2,
-	};
+	const { columns, containerRef } = useResponsiveMasonryColumns({
+		maxColumns: Math.max(photos.length, 1),
+	});
 
 	return (
 		<AnimatePresence mode="popLayout">
-			<Masonry
-				breakpointCols={breakpointColumns}
-				className="my-masonry-grid max-w-auto"
-				columnClassName="my-masonry-grid_column"
-			>
-				{photos.map((photo) => {
-					const photoId = photo.photoId.toString();
-					return (
-						<PhotoCard
-							closeAllDropdowns={() => setActiveDropdownId(null)}
-							id={allowPhotoPageNavigation ? photoId : null}
-							isDropdownOpen={activeDropdownId === photoId}
-							key={photoId}
-							onToggleDropdown={() =>
-								setActiveDropdownId((previousId) =>
-									previousId === photoId ? null : photoId
-								)
-							}
-							photo={photo}
-						/>
-					);
-				})}
-			</Masonry>
+			<div className="w-full" ref={containerRef}>
+				<Masonry
+					breakpointCols={columns}
+					className="my-masonry-grid max-w-auto"
+					columnClassName="my-masonry-grid_column"
+					style={
+						{
+							"--masonry-column-count": columns,
+						} as CSSProperties
+					}
+				>
+					{photos.map((photo) => {
+						const photoId = photo.photoId.toString();
+						return (
+							<PhotoCard
+								closeAllDropdowns={() => setActiveDropdownId(null)}
+								id={allowPhotoPageNavigation ? photoId : null}
+								isDropdownOpen={activeDropdownId === photoId}
+								key={photoId}
+								onToggleDropdown={() =>
+									setActiveDropdownId((previousId) =>
+										previousId === photoId ? null : photoId
+									)
+								}
+								photo={photo}
+							/>
+						);
+					})}
+				</Masonry>
+			</div>
 		</AnimatePresence>
 	);
 };

@@ -1,0 +1,8 @@
+.my-masonry-grid {
+	display: flex;
+	width: min(
+		100%,
+		calc(var(--masonry-column-count, 1) * var(--masonry-column-width, 256px))
+	);
+	max-width: 100%;
+}
