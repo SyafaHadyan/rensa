@@ -1,5 +1,5 @@
-import os
-import pydload
+from pathlib import Path
+
 import numpy as np
 import onnxruntime
 from .image_utils import load_image_bytes, load_images
@@ -20,19 +20,12 @@ class Model:
         """
         model = Classifier()
         """
-        url = "https://github.com/gsarridis/NSFW-Detection-Pytorch/releases/download/pretrained_models_v2/2022_06_20_11_01_42.onnx"
-        home = os.path.expanduser("~")
-        model_folder = os.path.join(home, ".NSFWModel/")
-        if not os.path.exists(model_folder):
-            os.mkdir(model_folder)
+        model_path = Path(__file__).resolve().parent / "models" / "model.onnx"
 
-        model_path = os.path.join(model_folder, os.path.basename(url))
+        if not model_path.exists():
+            raise FileNotFoundError(f"NSFW model file not found: {model_path}")
 
-        if not os.path.exists(model_path):
-            print("Downloading the checkpoint to", model_path)
-            pydload.dload(url, save_to_path=model_path, max_time=None)
-
-        self.nsfw_model = onnxruntime.InferenceSession(model_path)
+        self.nsfw_model = onnxruntime.InferenceSession(str(model_path))
 
 
 
