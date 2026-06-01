@@ -2,8 +2,8 @@ import { photoUploadLimiter } from "@rensa/rate-limit";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { BackendError } from "@/backend/common/backend.error";
-import { logUploadStage } from "@/backend/services/photos/photo-upload-logger";
 import { photoUploadService } from "@/backend/services/photos/photo-upload.service";
+import { logUploadStage } from "@/backend/services/photos/photo-upload-logger";
 import { authOptions } from "@/lib/auth";
 
 /*
@@ -49,7 +49,6 @@ export async function POST(req: Request) {
 
 		const uploadedPhoto = await photoUploadService.upload({
 			formData,
-			sessionEmail: session.user.email,
 			sessionUserId: session.user.id,
 			uploadId,
 		});

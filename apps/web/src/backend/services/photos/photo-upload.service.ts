@@ -1,6 +1,8 @@
 import { PhotoRepository } from "@rensa/db/queries/photo.repository";
-import { UnauthorizedError, ValidationError } from "@/backend/common/backend.error";
-import { userService } from "@/backend/services/users/service";
+import {
+	UnauthorizedError,
+	ValidationError,
+} from "@/backend/common/backend.error";
 import { sanitizeInput } from "@/lib/validation";
 import {
 	isAcceptedPhotoUploadFile,
@@ -8,10 +10,10 @@ import {
 	PHOTO_UPLOAD_MAX_INPUT_SIZE_MB,
 } from "@/shared/configs/photo-upload.config";
 import { photoImageProcessingService } from "./photo-image-processing.service";
-import { logUploadStage } from "./photo-upload-logger";
-import { PhotoPersistenceError } from "./photo-upload.errors";
 import { photoModerationService } from "./photo-moderation.service";
 import { photoStorageService } from "./photo-storage.service";
+import { PhotoPersistenceError } from "./photo-upload.errors";
+import { logUploadStage } from "./photo-upload-logger";
 
 type UploadExif = Record<string, unknown> & {
 	Brand?: unknown;
@@ -62,15 +64,10 @@ export class PhotoUploadService {
 
 	async upload(params: {
 		formData: FormData;
-		sessionEmail?: string | null;
 		sessionUserId: string;
 		uploadId: string;
 	}): Promise<UploadedPhotoResult> {
-		const appUser = params.sessionEmail
-			? await userService.getByEmail(params.sessionEmail)
-			: null;
-		const userId = appUser?.userId ?? params.sessionUserId;
-		if (!appUser) {
+		if (!params.sessionUserId) {
 			throw new UnauthorizedError(
 				"Authenticated user was not found. Please log out and log in again."
 			);
@@ -102,7 +99,7 @@ export class PhotoUploadService {
 		const cloudinaryStartedAt = performance.now();
 		const uploadRes = await this.storage.uploadPhoto({
 			buffer: compressedBuffer,
-			userId,
+			userId: params.sessionUserId,
 		});
 		logUploadStage(params.uploadId, "cloudinary_upload", cloudinaryStartedAt, {
 			uploadBytes: compressedBuffer.length,
@@ -132,7 +129,7 @@ export class PhotoUploadService {
 				title: payload.title,
 				uploadedAt: new Date(createdAt),
 				url: secureUrl,
-				userId,
+				userId: params.sessionUserId,
 				width,
 			});
 		} catch (error) {
@@ -142,7 +139,7 @@ export class PhotoUploadService {
 
 		return {
 			photoId: photo.photoId,
-			userId,
+			userId: params.sessionUserId,
 			url: photo.url,
 			title: photo.title,
 			description: photo.description,
