@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useEffect } from "react";
-import "@/frontend/components/MasonryGallery.css";
+import "@/frontend/components/MasonryGallery/MasonryGallery.css";
 import {
 	type InfiniteData,
 	useInfiniteQuery,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import "@/frontend/components/MasonryGallery.css";
+import "@/frontend/components/MasonryGallery/MasonryGallery.css";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import MasonryGalleryGrid from "@/frontend/sections/MasonryGallerySection/MasonryGalleryGrid";

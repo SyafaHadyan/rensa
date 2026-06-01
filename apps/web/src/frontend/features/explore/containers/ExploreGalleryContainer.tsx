@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import "@/frontend/components/MasonryGallery.css";
+import "@/frontend/components/MasonryGallery/MasonryGallery.css";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { fetchExplorePhotos } from "@/frontend/services/photo.service";

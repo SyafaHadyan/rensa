@@ -47,6 +47,7 @@ const PhotoCardView: React.FC<PhotoCardViewProps> = ({
 			exit={{ opacity: 0 }}
 			initial={{ opacity: 0 }}
 			layout
+			style={{ width: "calc(100% - 1.5rem)" }}
 			transition={{ duration: 0.35, ease: "easeOut" }}
 		>
 			<Link className="block" href={id ? `/photo/${id}` : "#"} prefetch={false}>
