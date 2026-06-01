@@ -12,24 +12,25 @@ export const useResponsiveMasonryColumns = ({
 	minColumnWidth = DEFAULT_COLUMN_WIDTH,
 }: UseResponsiveMasonryColumnsOptions) => {
 	const containerRef = useRef<HTMLDivElement | null>(null);
-	const [columns, setColumns] = useState(() => Math.min(Math.max(maxColumns, 1), 5));
+	const minColumns = Math.min(Math.max(maxColumns, 1), 2);
+	const [columns, setColumns] = useState(minColumns);
 
 	const updateColumns = useCallback(() => {
 		const container = containerRef.current;
 
 		if (!container) {
-			setColumns(Math.max(maxColumns, 1));
+			setColumns(minColumns);
 			return;
 		}
 
 		const width = container.getBoundingClientRect().width;
 		const nextColumns = Math.max(
-			1,
+			minColumns,
 			Math.min(maxColumns, Math.floor(width / minColumnWidth))
 		);
 
 		setColumns(nextColumns);
-	}, [maxColumns, minColumnWidth]);
+	}, [maxColumns, minColumnWidth, minColumns]);
 
 	useEffect(() => {
 		const container = containerRef.current;
