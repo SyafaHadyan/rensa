@@ -1,3 +1,4 @@
+import { EMAIL_JOB_NAMES, enqueueEmailJob } from "@rensa/queue";
 import { registerLimiter } from "@rensa/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
@@ -5,7 +6,6 @@ import { ZodError } from "zod";
 import { BackendError } from "@/backend/common/backend.error";
 import { rollService } from "@/backend/services/rolls/service";
 import { userService } from "@/backend/services/users/service";
-import { sendVerificationEmail } from "@/frontend/services/email.service";
 
 const usersApplication = userService;
 const rollsApplication = rollService;
@@ -63,28 +63,26 @@ export async function POST(req: Request) {
 		});
 
 		let verificationEmailSent = false;
-		let verificationUrl: string | undefined;
 		let verificationEmailError: string | undefined;
 		try {
-			const result = await sendVerificationEmail(email);
+			await enqueueEmailJob(EMAIL_JOB_NAMES.sendVerification, { email });
 			verificationEmailSent = true;
-			verificationUrl = result.verificationUrl;
 		} catch (err) {
-			console.error("Error sending verification email:", err);
+			console.error("Error queueing verification email:", err);
 			verificationEmailError =
 				err instanceof Error
 					? err.message
-					: "Failed to send verification email";
+					: "Failed to queue verification email";
 		}
 
 		return NextResponse.json(
 			{
 				message: verificationEmailSent
 					? "User registered successfully"
-					: "User registered, but verification email failed to send",
+					: "User registered, but verification email failed to queue",
+				verificationEmailQueued: verificationEmailSent,
 				verificationEmailSent,
 				...(verificationEmailError ? { verificationEmailError } : {}),
-				...(verificationUrl ? { verificationUrl } : {}),
 			},
 			{ status: 201 }
 		);

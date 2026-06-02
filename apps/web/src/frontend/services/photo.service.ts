@@ -1,6 +1,7 @@
 import type {
 	BackendPhotosResponse,
 	FetchPhotosResponse,
+	PhotoUploadStatus,
 } from "@/frontend/types/photo";
 import { api } from "@/lib/axios-client";
 
@@ -95,6 +96,13 @@ export const fetchCreatedPhotosByUserId = async (
 
 export const fetchPhotoById = async (photoId: string) => {
 	const res = await api.get(`/photos/${photoId}`);
+	return res.data.data;
+};
+
+export const fetchPhotoUploadStatus = async (
+	photoId: string
+): Promise<PhotoUploadStatus> => {
+	const res = await api.get(`/photos/uploads/${photoId}/status`);
 	return res.data.data;
 };
 

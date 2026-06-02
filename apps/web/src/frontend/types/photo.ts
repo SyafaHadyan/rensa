@@ -30,6 +30,21 @@ export interface Photo {
 	user: PhotoUser;
 }
 
+export type PhotoProcessingStatus = "pending" | "ready" | "failed";
+
+export interface UploadedPhoto extends Photo {
+	processingError?: string | null;
+	processingStatus?: PhotoProcessingStatus;
+}
+
+export interface PhotoUploadStatus {
+	metadata?: PhotoMetadata;
+	photoId: string;
+	processingError: string | null;
+	processingStatus: PhotoProcessingStatus;
+	url?: string;
+}
+
 export interface BackendPhotosResponse {
 	currentPage: number;
 	hasMore: boolean;

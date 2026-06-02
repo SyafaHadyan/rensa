@@ -6,15 +6,20 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "docker compose -f docker-compose-development.yaml up --build",
     "dev:all": "turbo run dev --parallel",
     "dev:web": "pnpm --filter @rensa/web dev",
     "dev:notifications": "pnpm --filter @rensa/notifications dev",
+    "dev:workers": "pnpm --filter @rensa/workers dev",
     "dev:exif": "pnpm --filter @rensa/exif dev",
     "dev:ai": "pnpm --filter @rensa/ai dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
     "check": "ultracite check",
     "fix": "ultracite fix",
     "prepare": "lefthook install"
@@ -24,9 +29,12 @@
     "@biomejs/biome": "^2.4.13",
     "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
+    "@vitest/coverage-v8": "^4.1.8",
+    "jsdom": "^29.1.1",
     "lefthook": "^2.1.6",
-    "typescript": "catalog:",
     "turbo": "latest",
-    "ultracite": "^7.3.2"
+    "typescript": "catalog:",
+    "ultracite": "^7.3.2",
+    "vitest": "^4.1.8"
   }
 }

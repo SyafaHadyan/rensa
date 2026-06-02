@@ -1,3 +1,4 @@
+import cloudinary, { getCloudinaryPublicIdFromUrl } from "@rensa/cloudinary";
 import { PhotoRepository } from "@rensa/db/queries/photo.repository";
 import { UserRepository } from "@rensa/db/queries/user.repository";
 import type {
@@ -7,7 +8,6 @@ import type {
 } from "@rensa/db/schema";
 import { ForbiddenError, NotFoundError } from "@/backend/common/backend.error";
 import type { PaginatedPhotoListResult } from "@/backend/types/service.types";
-import cloudinary, { getCloudinaryPublicIdFromUrl } from "@/lib/cloudinary";
 import { withTimeout } from "@/lib/timeout";
 
 const CLOUDINARY_DESTROY_TIMEOUT_MS = 10_000;

@@ -1,6 +1,9 @@
 import { Queue } from "bullmq";
-import type IORedis from "ioredis";
-import { closeQueueConnection, getQueueConnection } from "./connection";
+import {
+	closeQueueConnection,
+	getQueueConnection,
+	type QueueRedisConnection,
+} from "./connection";
 import { QUEUE_NAMES } from "./names";
 
 export interface RensaQueues {
@@ -12,7 +15,7 @@ export interface RensaQueues {
 let queues: RensaQueues | undefined;
 
 export const createRensaQueues = (
-	queueConnection: IORedis = getQueueConnection()
+	queueConnection: QueueRedisConnection = getQueueConnection()
 ): RensaQueues => ({
 	emails: new Queue(QUEUE_NAMES.emails, { connection: queueConnection }),
 	notifications: new Queue(QUEUE_NAMES.notifications, {

@@ -5,12 +5,12 @@ import type {
 	CreateCommentDto,
 	PhotoRepositoryInterface,
 } from "@rensa/db/schema";
+import { enqueueNotificationJob } from "@rensa/queue";
 import {
 	NotFoundError,
 	UnauthorizedError,
 	ValidationError,
 } from "@/backend/common/backend.error";
-import { notificationService } from "@/backend/services/notifications/service";
 import type { CommentListResult } from "@/backend/types/service.types";
 
 export class CommentService {
@@ -84,7 +84,7 @@ export class CommentService {
 		}
 
 		try {
-			await notificationService.create({
+			await enqueueNotificationJob({
 				actorId,
 				photoId,
 				recipientId,

@@ -1,29 +1,31 @@
-import IORedis from "ioredis";
+import { closeRedis, getRedis, type RedisClient } from "@rensa/cache";
 
-let connection: IORedis | undefined;
+const QUEUE_REDIS_GLOBAL_KEY = "rensa:queue";
 
 const resolveRedisUrl = () =>
 	process.env.TEST_REDIS_URL || process.env.REDIS_URL;
 
 export const getQueueConnection = () => {
-	if (connection) {
-		return connection;
-	}
-
 	const url = resolveRedisUrl();
 	if (!url) {
 		throw new Error("REDIS_URL is required for BullMQ queues.");
 	}
 
-	connection = new IORedis(url, {
-		maxRetriesPerRequest: null,
-		enableReadyCheck: false,
+	return getRedis({
+		globalKey: QUEUE_REDIS_GLOBAL_KEY,
+		redisOptions: {
+			enableReadyCheck: false,
+			maxRetriesPerRequest: null,
+		},
+		url,
 	});
-
-	return connection;
 };
 
 export const closeQueueConnection = async () => {
-	await connection?.quit();
-	connection = undefined;
+	await closeRedis({
+		globalKey: QUEUE_REDIS_GLOBAL_KEY,
+		url: resolveRedisUrl(),
+	});
 };
+
+export type QueueRedisConnection = RedisClient;

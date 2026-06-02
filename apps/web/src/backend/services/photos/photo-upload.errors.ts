@@ -13,7 +13,11 @@ export class PhotoModerationUnavailableError extends BackendError {
 
 export class PhotoUploadStorageError extends BackendError {
 	constructor() {
-		super("Image upload failed. Please try again.", 502, "PHOTO_UPLOAD_STORAGE");
+		super(
+			"Image upload failed. Please try again.",
+			502,
+			"PHOTO_UPLOAD_STORAGE"
+		);
 		this.name = "PhotoUploadStorageError";
 	}
 }

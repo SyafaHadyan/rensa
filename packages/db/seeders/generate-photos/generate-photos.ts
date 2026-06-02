@@ -3,7 +3,7 @@ import { randomInt, randomUUID } from "node:crypto";
 import { copyFile, mkdir, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { v2 as cloudinary } from "cloudinary";
+import { cloudinary, validateCloudinaryUrl } from "@rensa/cloudinary";
 import { inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -127,31 +127,6 @@ const assertCloudinaryConfig = () => {
 			`Missing Cloudinary env vars: ${missingEnvVars.join(", ")}`
 		);
 	}
-
-	cloudinary.config({
-		cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-		api_key: process.env.CLOUDINARY_API_KEY,
-		api_secret: process.env.CLOUDINARY_API_SECRET,
-		secure: true,
-	});
-};
-
-const validateCloudinaryUrl = (url: string): boolean => {
-	const parsedUrl = new URL(url);
-	const allowedDomains = ["res.cloudinary.com", "cloudinary.com"];
-	const isValidDomain = allowedDomains.some(
-		(domain) =>
-			parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`)
-	);
-
-	return (
-		parsedUrl.protocol === "https:" &&
-		isValidDomain &&
-		Boolean(
-			process.env.CLOUDINARY_CLOUD_NAME &&
-				url.includes(`/${process.env.CLOUDINARY_CLOUD_NAME}/`)
-		)
-	);
 };
 
 const toCloudinaryPublicId = (fileName: string) =>

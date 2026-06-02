@@ -1,4 +1,5 @@
 import { PhotoRepository } from "@rensa/db/queries/photo.repository";
+import { enqueuePhotoProcessingJob } from "@rensa/queue";
 import {
 	UnauthorizedError,
 	ValidationError,
@@ -46,6 +47,7 @@ export interface UploadedPhotoResult {
 		width: number;
 	};
 	photoId: string;
+	processingStatus: "pending" | "ready" | "failed";
 	style: string | null;
 	tags: string[];
 	title: string;
@@ -81,64 +83,44 @@ export class PhotoUploadService {
 			inputBytes: payload.file.size,
 		});
 
-		const compressionStartedAt = performance.now();
-		const [compressedBuffer, moderationBuffer] = await Promise.all([
-			this.imageProcessing.createUploadImage(buffer),
-			this.imageProcessing.createModerationImage(buffer),
-		]);
-		logUploadStage(params.uploadId, "compress_image", compressionStartedAt, {
-			inputBytes: buffer.length,
-			moderationBytes: moderationBuffer.length,
-			outputBytes: compressedBuffer.length,
-		});
-
-		const moderationStartedAt = performance.now();
-		await this.moderation.assertAllowedImage({
-			buffer: moderationBuffer,
-			filename: payload.file.name,
-		});
-		logUploadStage(params.uploadId, "moderate_image", moderationStartedAt);
-
 		const cloudinaryStartedAt = performance.now();
-		const uploadRes = await this.storage.uploadPhoto({
-			buffer: compressedBuffer,
+		const uploadRes = await this.storage.uploadStagedPhoto({
+			buffer,
 			userId: params.sessionUserId,
 		});
-		logUploadStage(params.uploadId, "cloudinary_upload", cloudinaryStartedAt, {
-			uploadBytes: compressedBuffer.length,
+		logUploadStage(params.uploadId, "cloudinary_stage", cloudinaryStartedAt, {
+			uploadBytes: buffer.length,
 		});
 
-		const {
-			bytes,
-			created_at: createdAt,
-			format,
-			height,
-			secure_url: secureUrl,
-			width,
-		} = uploadRes;
+		const { public_id: sourcePublicId, secure_url: sourceUrl } = uploadRes;
 
 		let photo;
 		try {
-			photo = await this.photoRepository.createUploadedPhoto({
+			photo = await this.photoRepository.createPendingUploadedPhoto({
 				camera: payload.camera,
 				category: payload.category,
 				color: payload.color,
 				description: payload.description,
 				exif: payload.exif,
-				format,
-				height,
-				size: bytes,
+				sourcePublicId,
+				sourceUrl,
 				style: payload.style,
 				title: payload.title,
-				uploadedAt: new Date(createdAt),
-				url: secureUrl,
 				userId: params.sessionUserId,
-				width,
 			});
 		} catch (error) {
 			console.error("Failed to persist uploaded photo:", error);
+			await this.storage.destroyPhoto(sourcePublicId);
 			throw new PhotoPersistenceError();
 		}
+
+		await enqueuePhotoProcessingJob({
+			photoId: photo.photoId,
+			originalFilename: payload.file.name,
+			sourcePublicId,
+			sourceUrl,
+			userId: params.sessionUserId,
+		});
 
 		return {
 			photoId: photo.photoId,
@@ -154,13 +136,14 @@ export class PhotoUploadService {
 			updatedAt: photo.updatedAt?.toISOString(),
 			tags: payload.tags,
 			metadata: {
-				width,
-				height,
-				format,
-				size: bytes,
 				exif: payload.exif,
-				uploadedAt: createdAt,
+				format: "",
+				height: 0,
+				size: payload.file.size,
+				uploadedAt: new Date().toISOString(),
+				width: 0,
 			},
+			processingStatus: "pending",
 		};
 	}
 

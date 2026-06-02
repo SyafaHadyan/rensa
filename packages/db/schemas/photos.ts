@@ -23,6 +23,11 @@ export const photos = pgTable(
 		style: text("style"),
 		color: text("color"),
 		camera: text("camera"),
+		processingStatus: text("processing_status").notNull().default("ready"),
+		processingError: text("processing_error"),
+		sourcePublicId: text("source_public_id"),
+		publicId: text("public_id"),
+		processedAt: timestamp("processed_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 	},
@@ -96,6 +101,9 @@ export interface ListPhotosResult {
 }
 
 export interface PhotoRepositoryInterface {
+	createPendingUploadedPhoto(
+		payload: CreatePendingUploadedPhotoDto
+	): Promise<UploadedPhotoDto>;
 	createUploadedPhoto(
 		payload: CreateUploadedPhotoDto
 	): Promise<UploadedPhotoDto>;
@@ -103,6 +111,7 @@ export interface PhotoRepositoryInterface {
 	exists(id: string): Promise<boolean>;
 	getById(id: string): Promise<PhotoResponseDto | null>;
 	getOwnerId(id: string): Promise<string | null>;
+	getUploadStatus(id: string): Promise<PhotoUploadStatusDto | null>;
 	list(query: ListPhotosQueryDto): Promise<ListPhotosResult>;
 	listBookmarkedByUser(
 		userId: string,
@@ -115,6 +124,11 @@ export interface PhotoRepositoryInterface {
 		page: number,
 		limit: number
 	): Promise<ListPhotosResult>;
+	markProcessingFailed(id: string, error: string): Promise<void>;
+	markProcessingReady(
+		id: string,
+		payload: MarkPhotoProcessingReadyDto
+	): Promise<void>;
 }
 
 export interface CreateUploadedPhotoDto {
@@ -131,6 +145,29 @@ export interface CreateUploadedPhotoDto {
 	uploadedAt?: Date;
 	url: string;
 	userId: string;
+	width?: number;
+}
+
+export interface CreatePendingUploadedPhotoDto {
+	camera: string;
+	category: string;
+	color: string;
+	description: string;
+	exif?: Record<string, unknown>;
+	sourcePublicId: string;
+	sourceUrl: string;
+	style: string;
+	title: string;
+	userId: string;
+}
+
+export interface MarkPhotoProcessingReadyDto {
+	format?: string;
+	height?: number;
+	publicId?: string;
+	size?: number;
+	uploadedAt?: Date;
+	url: string;
 	width?: number;
 }
 
@@ -152,4 +189,20 @@ export interface UploadedPhotoDto {
 	url: string;
 	userId: string | null;
 	width?: number;
+}
+
+export interface PhotoUploadStatusDto {
+	metadata?: {
+		exif?: Record<string, unknown>;
+		format?: string;
+		height?: number;
+		size?: number;
+		uploadedAt?: Date | null;
+		width?: number;
+	};
+	photoId: string;
+	processingError: string | null;
+	processingStatus: string;
+	url?: string;
+	userId: string | null;
 }

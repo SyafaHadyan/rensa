@@ -12,8 +12,8 @@
     "test": "vitest run --project unit packages/queue"
   },
   "dependencies": {
-    "bullmq": "^5.66.1",
-    "ioredis": "^5.10.1"
+    "@rensa/cache": "workspace:*",
+    "bullmq": "^5.66.1"
   },
   "devDependencies": {
     "typescript": "catalog:",

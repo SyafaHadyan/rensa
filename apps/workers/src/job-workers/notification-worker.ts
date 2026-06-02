@@ -1,6 +1,6 @@
 import type { CreatePhotoNotificationPayload } from "@rensa/queue";
 import jwt from "jsonwebtoken";
-import { env } from "./env";
+import { env } from "../env";
 
 export const dispatchNotificationJob = async (
 	payload: CreatePhotoNotificationPayload

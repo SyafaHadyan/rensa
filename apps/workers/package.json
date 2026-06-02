@@ -14,11 +14,11 @@
     "@bull-board/api": "^6.15.0",
     "@bull-board/elysia": "^6.15.0",
     "@bull-board/ui": "^6.15.0",
+    "@rensa/cloudinary": "workspace:*",
     "@rensa/db": "workspace:*",
     "@rensa/email": "workspace:*",
     "@rensa/queue": "workspace:*",
     "bullmq": "^5.66.1",
-    "cloudinary": "^2.7.0",
     "elysia": "^1.4.19",
     "jsonwebtoken": "^9.0.2",
     "sharp": "^0.34.4"

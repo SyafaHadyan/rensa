@@ -29,6 +29,13 @@
       "when": 1779020000000,
       "tag": "0003_cursor_pagination_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780322400000,
+      "tag": "0004_photo_processing_status",
+      "breakpoints": true
     }
   ]
 }

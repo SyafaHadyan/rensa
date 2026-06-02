@@ -6,14 +6,14 @@ This repository is a pnpm/Turbo monorepo containing the web app and supporting s
 
 ## Workspace
 
-| Path | Package | Purpose |
-| --- | --- | --- |
-| `apps/web` | `@rensa/web` | Next.js application, API routes, auth, upload pipeline, database schema, Swagger docs |
-| `apps/notifications` | `@rensa/notifications` | Elysia/Bun notification service with PostgreSQL, Redis, and WebSocket support |
-| `apps/exif` | `@rensa/exif` | Express service for JPEG EXIF extraction through `exiftool-vendored` |
-| `apps/ai` | `@rensa/ai` | FastAPI NSFW image classifier service |
-| `packages/*` | shared packages | Workspace packages reserved for shared code/config |
-| `docs` | product docs | PRD, ERD, API contracts, and ADRs |
+| Path                 | Package                | Purpose                                                                               |
+| -------------------- | ---------------------- | ------------------------------------------------------------------------------------- |
+| `apps/web`           | `@rensa/web`           | Next.js application, API routes, auth, upload pipeline, database schema, Swagger docs |
+| `apps/notifications` | `@rensa/notifications` | Elysia/Bun notification service with PostgreSQL, Redis, and WebSocket support         |
+| `apps/exif`          | `@rensa/exif`          | Express service for JPEG EXIF extraction through `exiftool-vendored`                  |
+| `apps/ai`            | `@rensa/ai`            | FastAPI NSFW image classifier service                                                 |
+| `packages/*`         | shared packages        | Workspace packages reserved for shared code/config                                    |
+| `docs`               | product docs           | PRD, ERD, API contracts, and ADRs                                                     |
 
 ## Prerequisites
 
@@ -50,7 +50,6 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=replace-with-a-secret
 
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
 
 EXPRESS_BASE_URL=http://localhost:3003
 ELYSIA_BASE_URL=http://localhost:3002
@@ -108,12 +107,12 @@ pnpm dev:all
 
 Default local ports:
 
-| Service | URL |
-| --- | --- |
-| Web | `http://localhost:3000` |
+| Service       | URL                            |
+| ------------- | ------------------------------ |
+| Web           | `http://localhost:3000`        |
 | AI classifier | `http://localhost:3001/health` |
 | Notifications | `http://localhost:3002/health` |
-| EXIF reader | `http://localhost:3003/health` |
+| EXIF reader   | `http://localhost:3003/health` |
 
 The root `pnpm dev` command runs Docker Compose. The current `docker-compose-development.yaml` still references the older pre-monorepo paths (`./rensa-frontend`, `./rensa-elysia`, `./rensa-fastapi`, `./rensa-express`), so update that file before relying on the Compose workflow from this repository layout.
 

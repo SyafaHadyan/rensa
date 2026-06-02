@@ -1,9 +1,9 @@
 import { Readable } from "node:stream";
+import { cloudinary, type UploadApiResponse } from "@rensa/cloudinary";
 import { PhotoRepository } from "@rensa/db/queries/photo.repository";
 import type { ProcessUploadPayload } from "@rensa/queue";
-import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
 import sharp from "sharp";
-import { env } from "./env";
+import { env } from "../env";
 
 export class PermanentPhotoProcessingError extends Error {}
 
@@ -53,7 +53,7 @@ const assertAllowedImage = async (buffer: Buffer, filename: string) => {
 		buffer.byteOffset + buffer.byteLength
 	) as ArrayBuffer;
 	formData.set("file", new Blob([body]), filename);
-	const response = await fetch(`${env.aiBaseUrl}/moderate`, {
+	const response = await fetch(`${env.aiBaseUrl}/nsfw/predict`, {
 		body: formData,
 		method: "POST",
 	});
@@ -65,8 +65,8 @@ const assertAllowedImage = async (buffer: Buffer, filename: string) => {
 		throw new Error(`Moderation service failed with ${response.status}`);
 	}
 
-	const result = (await response.json()) as { allowed?: boolean };
-	if (result.allowed === false) {
+	const result = (await response.json()) as { label?: string };
+	if (result.label?.toUpperCase() === "NSFW") {
 		throw new PermanentPhotoProcessingError("Image failed moderation.");
 	}
 };

@@ -1,6 +1,6 @@
+import { EMAIL_JOB_NAMES, enqueueEmailJob } from "@rensa/queue";
 import { forgotPasswordLimiter } from "@rensa/rate-limit";
 import { type NextRequest, NextResponse } from "next/server";
-import { sendPasswordResetEmail } from "@/frontend/services/email.service";
 /*
   POST /api/auth/forgot-password
   Send password reset email endpoint
@@ -34,10 +34,10 @@ export async function POST(req: NextRequest) {
 
 		try {
 			if (email) {
-				await sendPasswordResetEmail(email);
+				await enqueueEmailJob(EMAIL_JOB_NAMES.sendPasswordReset, { email });
 			}
 		} catch (err) {
-			console.error("Error sending password reset email:", err);
+			console.error("Error queueing password reset email:", err);
 		}
 		return NextResponse.json(
 			{

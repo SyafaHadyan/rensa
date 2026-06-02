@@ -5,8 +5,8 @@ import type {
 	BookmarkStatusDto,
 	PhotoRepositoryInterface,
 } from "@rensa/db/schema";
+import { enqueueNotificationJob } from "@rensa/queue";
 import { NotFoundError } from "@/backend/common/backend.error";
-import { notificationService } from "@/backend/services/notifications/service";
 
 export class BookmarkService {
 	readonly bookmarkRepository: BookmarkRepositoryInterface;
@@ -81,7 +81,7 @@ export class BookmarkService {
 				recipientId,
 				type: "photo-bookmarked",
 			});
-			await notificationService.create({
+			await enqueueNotificationJob({
 				actorId,
 				photoId,
 				recipientId,
