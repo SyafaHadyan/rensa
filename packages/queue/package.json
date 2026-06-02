@@ -1,0 +1,22 @@
+{
+  "name": "@rensa/queue",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared BullMQ queues and producers for Rensa",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --project unit packages/queue"
+  },
+  "dependencies": {
+    "bullmq": "^5.66.1",
+    "ioredis": "^5.10.1"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "^4.1.8"
+  }
+}

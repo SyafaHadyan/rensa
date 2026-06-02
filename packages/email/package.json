@@ -1,0 +1,26 @@
+{
+  "name": "@rensa/email",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared transactional email senders for Rensa",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --project unit packages/email"
+  },
+  "dependencies": {
+    "@react-email/components": "^1.0.4",
+    "jsonwebtoken": "^9.0.2",
+    "react": "^19.2.1",
+    "resend": "^6.7.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/react": "^19",
+    "typescript": "catalog:",
+    "vitest": "^4.1.8"
+  }
+}
