@@ -9,7 +9,8 @@ This repository is a pnpm/Turbo monorepo containing the web app and supporting s
 | Path                 | Package                | Purpose                                                                               |
 | -------------------- | ---------------------- | ------------------------------------------------------------------------------------- |
 | `apps/web`           | `@rensa/web`           | Next.js application, API routes, auth, upload pipeline, database schema, Swagger docs |
-| `apps/notifications` | `@rensa/notifications` | Elysia/Bun notification service with PostgreSQL, Redis, and WebSocket support         |
+| `apps/notifications` | `@rensa/notifications` | Elysia/Bun notification API and WebSocket service                                    |
+| `apps/workers`       | `@rensa/workers`       | Bun/BullMQ workers for notifications, email, and photo processing                    |
 | `apps/exif`          | `@rensa/exif`          | Express service for JPEG EXIF extraction through `exiftool-vendored`                  |
 | `apps/ai`            | `@rensa/ai`            | FastAPI NSFW image classifier service                                                 |
 | `packages/*`         | shared packages        | Workspace packages reserved for shared code/config                                    |
@@ -19,7 +20,7 @@ This repository is a pnpm/Turbo monorepo containing the web app and supporting s
 
 - Node.js compatible with the app dependencies
 - pnpm `10.33.2`
-- Bun for `apps/notifications`
+- Bun for `apps/notifications` and `apps/workers`
 - Python with a virtual environment for `apps/ai`
 - PostgreSQL
 - Redis
@@ -52,8 +53,13 @@ NEXTAUTH_SECRET=replace-with-a-secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 EXPRESS_BASE_URL=http://localhost:3003
-ELYSIA_BASE_URL=http://localhost:3002
+ELYSIA_BASE_URL=http://localhost:3002/api
 FAST_API_BASE_URL=http://localhost:3001
+
+NEXT_PUBLIC_ELYSIA_WS_URL=ws://localhost:3002/api/ws
+NEXT_PUBLIC_EXPLORE_SOURCE=database
+
+REDIS_URL=redis://localhost:6379
 
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
@@ -69,6 +75,11 @@ UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 ```
 
+The web app uses `REDIS_URL` when it enqueues background work through
+`@rensa/queue`, including notification jobs. Without Redis, user actions such as
+bookmarking or commenting can succeed while the notification enqueue step only
+logs an error.
+
 `apps/notifications` uses:
 
 ```env
@@ -77,7 +88,27 @@ NEXTAUTH_SECRET=replace-with-the-web-secret
 REDIS_URL=redis://localhost:6379
 CORS_ORIGIN=http://localhost:3000
 PORT=3002
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
+```
+
+`NEXTAUTH_SECRET` must match between `apps/web`, `apps/workers`, and
+`apps/notifications`; workers sign short-lived tokens with this secret and the
+notification service verifies them.
+
+`apps/workers` uses:
+
+```env
+PORT=3010
+NEXTAUTH_SECRET=replace-with-shared-secret
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+REDIS_URL=redis://localhost:6379
+
+ELYSIA_BASE_URL=http://localhost:3002/api
+FAST_API_BASE_URL=http://localhost:3001/api
+
+BULL_BOARD_USERNAME=admin
+BULL_BOARD_PASSWORD=replace-with-strong-password
 ```
 
 `apps/exif` uses:
@@ -95,6 +126,7 @@ Run individual services from the repo root:
 ```bash
 pnpm dev:web
 pnpm dev:notifications
+pnpm dev:workers
 pnpm dev:exif
 pnpm dev:ai
 ```
@@ -113,24 +145,35 @@ Default local ports:
 | AI classifier | `http://localhost:3001/health` |
 | Notifications | `http://localhost:3002/health` |
 | EXIF reader   | `http://localhost:3003/health` |
+| Workers       | `http://localhost:3010/health` |
 
-The root `pnpm dev` command runs Docker Compose. The current `docker-compose-development.yaml` still references the older pre-monorepo paths (`./rensa-frontend`, `./rensa-elysia`, `./rensa-fastapi`, `./rensa-express`), so update that file before relying on the Compose workflow from this repository layout.
+Notification workflow in local development requires all of these to be running:
+
+- Redis at `redis://localhost:6379`
+- `pnpm dev:web`
+- `pnpm dev:notifications`
+- `pnpm dev:workers`
+
+The web app enqueues notification jobs, the workers app consumes those jobs, and
+the workers app posts to `apps/notifications` at `/api/notifications`.
 
 ## Database
 
-The web app owns the main application schema:
+The shared database schema and migrations live in `packages/db`:
 
 ```bash
-pnpm --filter @rensa/web db:generate
-pnpm --filter @rensa/web db:migrate
+pnpm --filter @rensa/db db:generate
+pnpm --filter @rensa/db db:migrate
 ```
 
-The notification service owns its notification schema:
+For local schema synchronization during development, you can also use:
 
 ```bash
-pnpm --filter @rensa/notifications db:generate
-pnpm --filter @rensa/notifications db:migrate
+pnpm --filter @rensa/db db:push
 ```
+
+The notification tables and enum are part of the shared `@rensa/db` migration
+set, so there is no separate notification-service migration command.
 
 ## Naming Conventions
 

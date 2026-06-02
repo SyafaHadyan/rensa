@@ -23,6 +23,7 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
 const MAX_NOTIFICATIONS = 10;
 const RECONNECT_BASE_DELAY_MS = 500;
 const RECONNECT_MAX_DELAY_MS = 10_000;
+const WS_URL = process.env.WS_URL ?? "ws://localhost:3002/api/ws";
 
 const fetchNotifications = async (
 	recipientId: string,
@@ -53,7 +54,7 @@ export function NotificationProvider({
 	children: React.ReactNode;
 }) {
 	const wsRef = useRef<WebSocket | null>(null);
-	const { user, accessToken } = useAuthStore();
+	const { user } = useAuthStore();
 	const queryClient = useQueryClient();
 	const reconnectAttempts = useRef(0);
 	const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -86,12 +87,33 @@ export function NotificationProvider({
 		initialData: [],
 	});
 
-	const connectWebSocket = useCallback(() => {
-		if (!accessToken) {
+	const connectWebSocket = useCallback(async () => {
+		if (!user?.id) {
 			return;
 		}
 
-		const ws = new WebSocket(`wss://rensa.site/api/ws?token=${accessToken}`);
+		if (!WS_URL) {
+			console.error("WS_URL is not configured");
+			return;
+		}
+
+		let token: string | undefined;
+		try {
+			const tokenResponse = await api.get<{ token?: string }>(
+				"/notifications/ws-token"
+			);
+			token = tokenResponse.data.token;
+		} catch (error) {
+			console.error("Failed to create notification websocket token", error);
+			return;
+		}
+
+		if (!token) {
+			console.error("Notification websocket token response was empty");
+			return;
+		}
+
+		const ws = new WebSocket(`${WS_URL}?token=${encodeURIComponent(token)}`);
 		wsRef.current = ws;
 
 		ws.onopen = () => {
@@ -150,10 +172,10 @@ export function NotificationProvider({
 				console.error("Invalid WS message:", err);
 			}
 		};
-	}, [accessToken, queryClient, user?.id, playNotification]);
+	}, [queryClient, user?.id, playNotification]);
 
 	useEffect(() => {
-		if (!(user?.id && accessToken)) {
+		if (!user?.id) {
 			return;
 		}
 		shouldReconnectRef.current = true;
@@ -168,7 +190,7 @@ export function NotificationProvider({
 				clearTimeout(reconnectTimeout.current);
 			}
 		};
-	}, [user?.id, accessToken, connectWebSocket]);
+	}, [user?.id, connectWebSocket]);
 
 	const clearNotifications = useCallback(async () => {
 		if (!user?.id) {
