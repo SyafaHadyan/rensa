@@ -1,7 +1,10 @@
 import { Readable } from "node:stream";
-import type { UploadApiOptions, UploadApiResponse } from "cloudinary";
+import cloudinary, {
+	type UploadApiOptions,
+	type UploadApiResponse,
+	validateCloudinaryUrl,
+} from "@rensa/cloudinary";
 import { ValidationError } from "@/backend/common/backend.error";
-import cloudinary, { validateCloudinaryUrl } from "@/lib/cloudinary";
 import { withTimeout } from "@/lib/timeout";
 import { PhotoUploadStorageError } from "./photo-upload.errors";
 
@@ -37,6 +40,37 @@ export class PhotoStorageService {
 		}
 
 		return uploadRes;
+	}
+
+	async uploadStagedPhoto(params: {
+		buffer: Buffer;
+		userId: string;
+	}): Promise<UploadApiResponse> {
+		let uploadRes: UploadApiResponse;
+		try {
+			uploadRes = await this.uploadBuffer(params.buffer, {
+				folder: `staged_uploads/${params.userId}`,
+				image_metadata: true,
+				resource_type: "image",
+				timeout: CLOUDINARY_UPLOAD_TIMEOUT_MS,
+			});
+		} catch (error) {
+			console.error("Cloudinary staged upload failed:", error);
+			throw new PhotoUploadStorageError();
+		}
+
+		if (!validateCloudinaryUrl(uploadRes.secure_url)) {
+			await this.destroyInvalidUpload(uploadRes.public_id);
+			throw new ValidationError(
+				"Invalid or suspicious image URL detected. Upload rejected for security reasons."
+			);
+		}
+
+		return uploadRes;
+	}
+
+	async destroyPhoto(publicId: string): Promise<void> {
+		await this.destroyInvalidUpload(publicId);
 	}
 
 	private uploadBuffer(

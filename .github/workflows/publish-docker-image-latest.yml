@@ -29,3 +29,9 @@ jobs:
     with:
       tag: latest
     secrets: inherit
+
+  build-workers:
+    uses: ./.github/workflows/publish-docker-image-workers.yml
+    with:
+      tag: latest
+    secrets: inherit

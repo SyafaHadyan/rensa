@@ -4,6 +4,7 @@ import type {
 	CreateContactDto,
 	ListContactsQueryDto,
 } from "@rensa/db/schema";
+import { EMAIL_JOB_NAMES, enqueueEmailJob } from "@rensa/queue";
 import { contactFormLimiter } from "@rensa/rate-limit";
 import {
 	TooManyRequestsError,
@@ -13,13 +14,7 @@ import type {
 	ContactListResult,
 	ContactSubmitResult,
 } from "@/backend/types/service.types";
-import ContactAdminEmail from "@/frontend/components/emailTemplates/ContactAdminEmail";
-import ContactConfirmationEmail from "@/frontend/components/emailTemplates/ContactConfirmationEmail";
-import getResend from "@/lib/resend";
-import { withTimeout } from "@/lib/timeout";
 import { sanitizeInput } from "@/lib/validation";
-
-const CONTACT_EMAIL_TIMEOUT_MS = 10_000;
 
 export class ContactService {
 	readonly contactRepository: ContactRepositoryInterface;
@@ -51,7 +46,8 @@ export class ContactService {
 			userAgent: context.userAgent,
 		});
 
-		await this.sendContactEmails(contact).catch(() => {
+		await this.enqueueContactEmails(contact).catch((error) => {
+			console.error("Failed to queue contact emails:", error);
 			return;
 		});
 
@@ -78,42 +74,17 @@ export class ContactService {
 		};
 	}
 
-	private async sendContactEmails(contact: {
+	private async enqueueContactEmails(contact: {
+		contactId: string;
 		email: string;
 		message: string;
 		name: string;
 		subject: string;
 	}): Promise<void> {
-		const resend = await getResend();
-		await withTimeout(
-			resend.emails.send({
-				from: process.env.CONTACT_NOTIFICATION_EMAIL || "",
-				to: process.env.ADMIN_EMAIL || "",
-				subject: contact.subject,
-				react: ContactAdminEmail({
-					senderEmail: contact.email,
-					senderName: contact.name,
-					subject: contact.subject,
-					message: contact.message,
-				}),
-			}),
-			CONTACT_EMAIL_TIMEOUT_MS,
-			"Contact admin email timed out"
-		);
-
-		await withTimeout(
-			resend.emails.send({
-				from: process.env.NO_REPLY_EMAIL || "",
-				to: contact.email,
-				subject: `New Contact Form Submission: ${contact.subject}`,
-				react: ContactConfirmationEmail({
-					name: contact.name,
-					subject: contact.subject,
-				}),
-			}),
-			CONTACT_EMAIL_TIMEOUT_MS,
-			"Contact confirmation email timed out"
-		);
+		await Promise.all([
+			enqueueEmailJob(EMAIL_JOB_NAMES.sendContactAdmin, contact),
+			enqueueEmailJob(EMAIL_JOB_NAMES.sendContactConfirmation, contact),
+		]);
 	}
 }
 

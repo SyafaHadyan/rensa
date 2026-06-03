@@ -22,7 +22,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "cloudinary": "^2.7.0",
+    "@rensa/cloudinary": "workspace:*",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.20.0",

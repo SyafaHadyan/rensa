@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { useLoading } from "@/frontend/features/common/hooks/use-loading";
 import { useExifDetection } from "@/frontend/features/upload/hooks/use-exif-detection";
 import { useFileUpload } from "@/frontend/features/upload/hooks/use-file-upload";
-import { uploadFormData } from "@/frontend/services/upload.service";
+import {
+	saveOptimisticUpload,
+	uploadFormData,
+} from "@/frontend/services/upload.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
 
 interface UploadFormState {
@@ -131,6 +134,7 @@ export function useUploadPageController() {
 		setLoading(true);
 		try {
 			const uploadedPhoto = await uploadFormData(formData);
+			saveOptimisticUpload(uploadedPhoto);
 			router.push(`/photo/${uploadedPhoto.photoId}`);
 		} catch (uploadError) {
 			console.error("Upload failed:", uploadError);

@@ -1,12 +1,14 @@
+import type { RedisOptions } from "ioredis";
 import Redis from "ioredis";
 
 type RedisLogger = Pick<Console, "error" | "log" | "warn">;
 
-interface RedisConnectionOptions {
+export interface RedisConnectionOptions {
 	defaultUrl?: string;
 	globalKey?: string;
 	logger?: RedisLogger;
 	logLifecycle?: boolean;
+	redisOptions?: RedisOptions;
 	url?: string;
 }
 
@@ -64,6 +66,7 @@ export function getRedis(options: RedisConnectionOptions = {}) {
 			retryStrategy(times) {
 				return Math.min(times * 50, 2000);
 			},
+			...options.redisOptions,
 		}),
 		isConnected: false,
 	};
@@ -108,6 +111,23 @@ export function redisConnected(options: RedisConnectionOptions = {}) {
 
 	const key = options.globalKey ?? url;
 	return getRedisClients().get(key)?.isConnected ?? false;
+}
+
+export async function closeRedis(options: RedisConnectionOptions = {}) {
+	const url = resolveRedisUrl(options);
+	if (!url) {
+		return;
+	}
+
+	const key = options.globalKey ?? url;
+	const clients = getRedisClients();
+	const managed = clients.get(key);
+	if (!managed) {
+		return;
+	}
+
+	await managed.client.quit();
+	clients.delete(key);
 }
 
 export type RedisClient = Redis;

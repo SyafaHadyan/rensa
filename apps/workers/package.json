@@ -1,0 +1,33 @@
+{
+  "name": "@rensa/workers",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --root ../.. --project unit apps/workers"
+  },
+  "dependencies": {
+    "@bull-board/api": "^6.15.0",
+    "@bull-board/elysia": "^6.15.0",
+    "@bull-board/ui": "^6.15.0",
+    "@rensa/cloudinary": "workspace:*",
+    "@rensa/db": "workspace:*",
+    "@rensa/email": "workspace:*",
+    "@rensa/queue": "workspace:*",
+    "bullmq": "^5.66.1",
+    "elysia": "^1.4.19",
+    "jsonwebtoken": "^9.0.2",
+    "sharp": "^0.34.4"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bun-types": "latest",
+    "typescript": "catalog:",
+    "vitest": "^4.1.8"
+  }
+}

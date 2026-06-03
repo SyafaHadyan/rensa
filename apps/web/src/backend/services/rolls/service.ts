@@ -7,12 +7,12 @@ import type {
 	RollRepositoryInterface,
 	RollUpdateDto,
 } from "@rensa/db/schema";
+import { enqueueNotificationJob } from "@rensa/queue";
 import {
 	ForbiddenError,
 	NotFoundError,
 	UnauthorizedError,
 } from "@/backend/common/backend.error";
-import { notificationService } from "@/backend/services/notifications/service";
 import type { PaginatedPhotoListResult } from "@/backend/types/service.types";
 
 export const DEFAULT_ROLL_NAME = "All Photos";
@@ -224,7 +224,7 @@ export class RollService {
 		}
 
 		try {
-			await notificationService.create({
+			await enqueueNotificationJob({
 				actorId,
 				photoId,
 				recipientId,

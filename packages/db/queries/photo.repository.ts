@@ -12,11 +12,14 @@ import {
 } from "drizzle-orm";
 import { bookmarks } from "../schemas/bookmarks";
 import type {
+	CreatePendingUploadedPhotoDto,
 	CreateUploadedPhotoDto,
 	ListPhotosQueryDto,
 	ListPhotosResult,
+	MarkPhotoProcessingReadyDto,
 	PhotoRepositoryInterface,
 	PhotoResponseDto,
+	PhotoUploadStatusDto,
 	UploadedPhotoDto,
 } from "../schemas/photos";
 import { photoMetadata, photos } from "../schemas/photos";
@@ -48,6 +51,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 				category: payload.category,
 				color: payload.color,
 				description: payload.description,
+				processingStatus: "ready",
 				style: payload.style,
 				title: payload.title,
 				url: payload.url,
@@ -98,6 +102,41 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 			size: payload.size,
 			uploadedAt: payload.uploadedAt,
 			width: payload.width,
+		};
+	}
+
+	async createPendingUploadedPhoto(
+		payload: CreatePendingUploadedPhotoDto
+	): Promise<UploadedPhotoDto> {
+		const [photo] = await db
+			.insert(photos)
+			.values({
+				camera: payload.camera,
+				category: payload.category,
+				color: payload.color,
+				description: payload.description,
+				processingStatus: "pending",
+				sourcePublicId: payload.sourcePublicId,
+				style: payload.style,
+				title: payload.title,
+				url: payload.sourceUrl,
+				userId: payload.userId,
+			})
+			.returning();
+		if (!photo) {
+			throw new Error("Failed to persist pending photo");
+		}
+
+		if (payload.exif !== undefined) {
+			await db.insert(photoMetadata).values({
+				exif: payload.exif,
+				photoMetadataId: photo.photoId,
+			});
+		}
+
+		return {
+			...photo,
+			exif: payload.exif,
 		};
 	}
 
@@ -222,7 +261,12 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		const photoRows = await db
 			.select()
 			.from(photos)
-			.where(inArray(photos.photoId, photoIds));
+			.where(
+				and(
+					inArray(photos.photoId, photoIds),
+					eq(photos.processingStatus, "ready")
+				)
+			);
 
 		const orderByPhotoId = new Map(photoIds.map((id, index) => [id, index]));
 		photoRows.sort(
@@ -305,7 +349,12 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 			: undefined;
 		const whereClause = and(
 			...(
-				[filterWhereClause, ownerWhereClause, cursorWhereClause] as const
+				[
+					eq(photos.processingStatus, "ready"),
+					filterWhereClause,
+					ownerWhereClause,
+					cursorWhereClause,
+				] as const
 			).filter(Boolean)
 		);
 		let photoRows: PhotoRow[] = [];
@@ -369,7 +418,7 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		const [row] = await db
 			.select()
 			.from(photos)
-			.where(eq(photos.photoId, id))
+			.where(and(eq(photos.photoId, id), eq(photos.processingStatus, "ready")))
 			.limit(1);
 		if (!row) {
 			return null;
@@ -399,6 +448,41 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		return row?.userId ?? null;
 	}
 
+	async getUploadStatus(id: string): Promise<PhotoUploadStatusDto | null> {
+		const [row] = await db
+			.select()
+			.from(photos)
+			.where(eq(photos.photoId, id))
+			.limit(1);
+		if (!row) {
+			return null;
+		}
+
+		const [metadata] = await db
+			.select()
+			.from(photoMetadata)
+			.where(eq(photoMetadata.photoMetadataId, id))
+			.limit(1);
+
+		return {
+			metadata: metadata
+				? {
+						exif: metadata.exif ?? undefined,
+						format: metadata.format ?? undefined,
+						height: metadata.height ?? undefined,
+						size: metadata.size ?? undefined,
+						uploadedAt: metadata.uploadedAt,
+						width: metadata.width ?? undefined,
+					}
+				: undefined,
+			photoId: row.photoId,
+			processingError: row.processingError,
+			processingStatus: row.processingStatus,
+			url: row.processingStatus === "ready" ? row.url : undefined,
+			userId: row.userId,
+		};
+	}
+
 	async deleteById(id: string): Promise<void> {
 		await db.delete(photos).where(eq(photos.photoId, id));
 	}
@@ -410,6 +494,56 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 			.where(eq(photos.photoId, id))
 			.limit(1);
 		return Boolean(row);
+	}
+
+	async markProcessingReady(
+		id: string,
+		payload: MarkPhotoProcessingReadyDto
+	): Promise<void> {
+		await db
+			.update(photos)
+			.set({
+				processedAt: new Date(),
+				processingError: null,
+				processingStatus: "ready",
+				publicId: payload.publicId,
+				updatedAt: new Date(),
+				url: payload.url,
+			})
+			.where(eq(photos.photoId, id));
+
+		await db
+			.insert(photoMetadata)
+			.values({
+				format: payload.format,
+				height: payload.height,
+				photoMetadataId: id,
+				size: payload.size,
+				uploadedAt: payload.uploadedAt,
+				width: payload.width,
+			})
+			.onConflictDoUpdate({
+				target: photoMetadata.photoMetadataId,
+				set: {
+					format: payload.format,
+					height: payload.height,
+					size: payload.size,
+					uploadedAt: payload.uploadedAt,
+					width: payload.width,
+				},
+			});
+	}
+
+	async markProcessingFailed(id: string, error: string): Promise<void> {
+		await db
+			.update(photos)
+			.set({
+				processedAt: new Date(),
+				processingError: error,
+				processingStatus: "failed",
+				updatedAt: new Date(),
+			})
+			.where(eq(photos.photoId, id));
 	}
 
 	async listByIds(
@@ -425,7 +559,10 @@ export class PhotoRepository implements PhotoRepositoryInterface {
 		}
 
 		const from = (page - 1) * limit;
-		const whereClause = inArray(photos.photoId, ids);
+		const whereClause = and(
+			inArray(photos.photoId, ids),
+			eq(photos.processingStatus, "ready")
+		);
 
 		const photoRows = await db
 			.select()

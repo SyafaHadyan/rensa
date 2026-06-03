@@ -1,29 +1,33 @@
+import type { UploadApiOptions, UploadApiResponse } from "cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 
-cloudinary.config({
-	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-	api_key: process.env.CLOUDINARY_API_KEY,
-	api_secret: process.env.CLOUDINARY_API_SECRET,
-	secure: true,
-});
+export type { UploadApiOptions, UploadApiResponse };
 
-/**
- * 🔒 SECURITY: Validate Cloudinary URL integrity
- * Ensures the URL is from a trusted Cloudinary domain and uses HTTPS
- */
+export const configureCloudinary = () => {
+	cloudinary.config({
+		api_key: process.env.CLOUDINARY_API_KEY,
+		api_secret: process.env.CLOUDINARY_API_SECRET,
+		cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+		secure: true,
+	});
+
+	return cloudinary;
+};
+
+configureCloudinary();
+
+export { cloudinary };
+
 export function validateCloudinaryUrl(url: string): boolean {
 	try {
 		const parsedUrl = new URL(url);
 
-		// ✅ Must use HTTPS
 		if (parsedUrl.protocol !== "https:") {
-			console.error("❌ URL validation failed: Not HTTPS");
+			console.error("Cloudinary URL validation failed: not HTTPS");
 			return false;
 		}
 
-		// ✅ Must be from Cloudinary domain
 		const allowedDomains = ["res.cloudinary.com", "cloudinary.com"];
-
 		const isValidDomain = allowedDomains.some(
 			(domain) =>
 				parsedUrl.hostname === domain ||
@@ -31,20 +35,19 @@ export function validateCloudinaryUrl(url: string): boolean {
 		);
 
 		if (!isValidDomain) {
-			console.error("❌ URL validation failed: Not from Cloudinary domain");
+			console.error("Cloudinary URL validation failed: untrusted domain");
 			return false;
 		}
 
-		// ✅ Must contain the cloud name to prevent cross-account attacks
 		const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 		if (cloudName && !url.includes(`/${cloudName}/`)) {
-			console.error("❌ URL validation failed: Wrong cloud name");
+			console.error("Cloudinary URL validation failed: wrong cloud name");
 			return false;
 		}
 
 		return true;
 	} catch (error) {
-		console.error("❌ URL validation failed: Invalid URL format", error);
+		console.error("Cloudinary URL validation failed: invalid URL", error);
 		return false;
 	}
 }

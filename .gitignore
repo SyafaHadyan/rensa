@@ -15,6 +15,8 @@ build/
 .env
 .env.*
 .envs/
+!.env.example
+!**/.env.example
 
 # Python
 __pycache__/
