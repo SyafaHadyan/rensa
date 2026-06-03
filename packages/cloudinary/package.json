@@ -1,0 +1,20 @@
+{
+  "name": "@rensa/cloudinary",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared Cloudinary client and utilities",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cloudinary": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "catalog:"
+  }
+}

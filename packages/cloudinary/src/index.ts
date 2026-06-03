@@ -1,5 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 
+export type { UploadApiOptions, UploadApiResponse } from "cloudinary";
+
 cloudinary.config({
 	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
 	api_key: process.env.CLOUDINARY_API_KEY,
@@ -7,49 +9,44 @@ cloudinary.config({
 	secure: true,
 });
 
-/**
- * 🔒 SECURITY: Validate Cloudinary URL integrity
- * Ensures the URL is from a trusted Cloudinary domain and uses HTTPS
- */
-export function validateCloudinaryUrl(url: string): boolean {
+const allowedCloudinaryDomains = ["res.cloudinary.com", "cloudinary.com"];
+const publicIdPattern = /^[A-Za-z0-9_\-/]+$/;
+const versionPathPattern = /^v\d+$/;
+
+export const validateCloudinaryUrl = (url: string): boolean => {
 	try {
 		const parsedUrl = new URL(url);
 
-		// ✅ Must use HTTPS
 		if (parsedUrl.protocol !== "https:") {
-			console.error("❌ URL validation failed: Not HTTPS");
+			console.error("URL validation failed: Not HTTPS");
 			return false;
 		}
 
-		// ✅ Must be from Cloudinary domain
-		const allowedDomains = ["res.cloudinary.com", "cloudinary.com"];
-
-		const isValidDomain = allowedDomains.some(
+		const isValidDomain = allowedCloudinaryDomains.some(
 			(domain) =>
 				parsedUrl.hostname === domain ||
 				parsedUrl.hostname.endsWith(`.${domain}`)
 		);
 
 		if (!isValidDomain) {
-			console.error("❌ URL validation failed: Not from Cloudinary domain");
+			console.error("URL validation failed: Not from Cloudinary domain");
 			return false;
 		}
 
-		// ✅ Must contain the cloud name to prevent cross-account attacks
 		const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 		if (cloudName && !url.includes(`/${cloudName}/`)) {
-			console.error("❌ URL validation failed: Wrong cloud name");
+			console.error("URL validation failed: Wrong cloud name");
 			return false;
 		}
 
 		return true;
 	} catch (error) {
-		console.error("❌ URL validation failed: Invalid URL format", error);
+		console.error("URL validation failed: Invalid URL format", error);
 		return false;
 	}
-}
+};
 
-export function getCloudinaryPublicIdFromUrl(url: string): string | null {
+export const getCloudinaryPublicIdFromUrl = (url: string): string | null => {
 	try {
 		if (!validateCloudinaryUrl(url)) {
 			return null;
@@ -66,7 +63,9 @@ export function getCloudinaryPublicIdFromUrl(url: string): string | null {
 		}
 
 		const uploadPath = parts.slice(uploadIndex + 1);
-		const versionIndex = uploadPath.findIndex((part) => /^v\d+$/.test(part));
+		const versionIndex = uploadPath.findIndex((part) =>
+			versionPathPattern.test(part)
+		);
 		const publicIdParts =
 			versionIndex === -1 ? uploadPath : uploadPath.slice(versionIndex + 1);
 		if (publicIdParts.length === 0) {
@@ -83,11 +82,11 @@ export function getCloudinaryPublicIdFromUrl(url: string): string | null {
 			extensionIndex === -1 ? lastPart : lastPart.slice(0, extensionIndex);
 
 		const publicId = publicIdParts.join("/");
-		return /^[A-Za-z0-9_\-/]+$/.test(publicId) ? publicId : null;
+		return publicIdPattern.test(publicId) ? publicId : null;
 	} catch (error) {
 		console.error("Failed to parse Cloudinary public ID:", error);
 		return null;
 	}
-}
+};
 
 export default cloudinary;

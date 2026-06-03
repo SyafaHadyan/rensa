@@ -1,7 +1,10 @@
 import { Readable } from "node:stream";
-import type { UploadApiOptions, UploadApiResponse } from "cloudinary";
+import cloudinary, {
+	type UploadApiOptions,
+	type UploadApiResponse,
+	validateCloudinaryUrl,
+} from "@rensa/cloudinary";
 import { ValidationError } from "@/backend/common/backend.error";
-import cloudinary, { validateCloudinaryUrl } from "@/lib/cloudinary";
 import { withTimeout } from "@/lib/timeout";
 import { PhotoUploadStorageError } from "./photo-upload.errors";
 
