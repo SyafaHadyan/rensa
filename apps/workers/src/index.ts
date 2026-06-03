@@ -15,7 +15,7 @@ import {
 
 const queues = getRensaQueues();
 const serverAdapter = createBullBoardAdapter(queues);
-const workers = createWorkers(queues);
+const workers = createWorkers();
 registerWorkerFailureLogging(workers);
 
 const app = new Elysia()

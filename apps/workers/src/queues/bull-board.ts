@@ -34,8 +34,22 @@ export const isBullBoardAuthorized = (request: Request) => {
 		return false;
 	}
 
-	const [username, password] = atob(header.slice("Basic ".length)).split(":");
-	return (
-		username === env.bullBoardUsername && password === env.bullBoardPassword
-	);
+	try {
+		const decodedCredentials = atob(header.slice("Basic ".length));
+		const separatorIndex = decodedCredentials.indexOf(":");
+
+		if (separatorIndex === -1) {
+			return false;
+		}
+
+		const username = decodedCredentials.slice(0, separatorIndex);
+		const password = decodedCredentials.slice(separatorIndex + 1);
+
+		return (
+			username === env.bullBoardUsername &&
+			password === env.bullBoardPassword
+		);
+	} catch {
+		return false;
+	}
 };

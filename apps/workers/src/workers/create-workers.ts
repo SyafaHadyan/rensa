@@ -1,14 +1,10 @@
-import {
-	getQueueConnection,
-	QUEUE_NAMES,
-	type RensaQueues,
-} from "@rensa/queue";
+import { getQueueConnection, QUEUE_NAMES } from "@rensa/queue";
 import { Worker } from "bullmq";
 import { dispatchEmailJob } from "../job-workers/email-worker";
 import { dispatchNotificationJob } from "../job-workers/notification-worker";
 import { processPhotoUpload } from "../job-workers/photo-worker";
 
-export const createWorkers = (_queues: RensaQueues) => {
+export const createWorkers = () => {
 	const connection = getQueueConnection();
 
 	return [

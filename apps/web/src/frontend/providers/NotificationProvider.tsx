@@ -23,8 +23,7 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
 const MAX_NOTIFICATIONS = 10;
 const RECONNECT_BASE_DELAY_MS = 500;
 const RECONNECT_MAX_DELAY_MS = 10_000;
-const WS_URL =
-	process.env.NEXT_PUBLIC_ELYSIA_WS_URL ?? "ws://localhost:3002/api/ws";
+const WS_URL = process.env.NEXT_PUBLIC_ELYSIA_WS_URL;
 
 const fetchNotifications = async (
 	recipientId: string,

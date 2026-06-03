@@ -137,11 +137,11 @@ export class PhotoUploadService {
 			tags: payload.tags,
 			metadata: {
 				exif: payload.exif,
-				format: "",
-				height: 0,
-				size: payload.file.size,
-				uploadedAt: new Date().toISOString(),
-				width: 0,
+				format: uploadRes.format ?? "",
+				height: uploadRes.height ?? 0,
+				size: uploadRes.bytes ?? payload.file.size,
+				uploadedAt: uploadRes.created_at ?? new Date().toISOString(),
+				width: uploadRes.width ?? 0,
 			},
 			processingStatus: "pending",
 		};
