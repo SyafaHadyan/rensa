@@ -6,6 +6,7 @@ RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/cache/package.json packages/cache/package.json
+COPY packages/cloudinary/package.json packages/cloudinary/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/db/package.json packages/db/package.json
 COPY packages/email/package.json packages/email/package.json
