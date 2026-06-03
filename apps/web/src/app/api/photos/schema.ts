@@ -1,4 +1,9 @@
 import type { OpenApiFragment } from "@/backend/shared/openapi/types";
+import {
+	PHOTO_DESCRIPTION_MAX_LENGTH,
+	PHOTO_TAG_MAX_LENGTH,
+	PHOTO_TITLE_MAX_LENGTH,
+} from "@/shared/configs/content-limits.config";
 
 export const photosOpenApiFragment: OpenApiFragment = {
 	tags: [{ name: "photos" }],
@@ -64,12 +69,18 @@ export const photosOpenApiFragment: OpenApiFragment = {
 				required: ["file", "title"],
 				properties: {
 					file: { type: "string", format: "binary" },
-					title: { type: "string" },
-					description: { type: "string" },
+					title: { type: "string", maxLength: PHOTO_TITLE_MAX_LENGTH },
+					description: {
+						type: "string",
+						maxLength: PHOTO_DESCRIPTION_MAX_LENGTH,
+					},
 					category: { type: "string" },
 					style: { type: "string" },
 					color: { type: "string" },
-					tags: { type: "string", description: "JSON string array" },
+					tags: {
+						type: "string",
+						description: `JSON string array, max ${PHOTO_TAG_MAX_LENGTH} chars per tag`,
+					},
 					exif: { type: "string", description: "JSON string object" },
 				},
 			},

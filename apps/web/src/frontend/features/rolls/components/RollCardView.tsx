@@ -25,35 +25,20 @@ const RollCardView: React.FC<RollCardViewProps> = ({
 	onEdit,
 }) => {
 	const previews = imageUrls.slice(0, 4);
-	let previewGridCols = "";
-	if (previews.length <= 1) {
-		previewGridCols = "grid-cols-1";
-	} else if (previews.length === 2) {
-		previewGridCols = "grid-cols-1 grid-rows-2";
-	} else {
-		previewGridCols = "grid-rows-2 grid-cols-2";
-	}
+	const previewGridCols =
+		previews.length <= 1 ? "grid-cols-1" : "grid-cols-2 grid-rows-2";
 
 	return (
 		<Link className="group" href={`/roll/${id}`}>
-			<div className="relative h-full w-42.5 cursor-pointer overflow-hidden rounded-2xl border border-gray-300 bg-white p-3 shadow-md transition-transform duration-200 hover:scale-[1.02] md:w-66.25">
-				<div className={cn("grid gap-2.5", previewGridCols)}>
+			<div className="relative h-64 w-full min-w-0 cursor-pointer overflow-hidden rounded-2xl border border-gray-300 bg-white p-3 shadow-md transition-transform duration-200 hover:scale-[1.02] md:h-86 md:w-66.25">
+				<div className={cn("grid aspect-square gap-2.5", previewGridCols)}>
 					{previews.length < 1 && (
-						<div className="flex aspect-square max-h-37.5 w-full items-center justify-center rounded-lg bg-gray-200 md:max-h-50">
+						<div className="flex h-full w-full items-center justify-center rounded-lg bg-gray-200">
 							<span className="text-gray-500">No image</span>
 						</div>
 					)}
-					{previews.map((url, idx) => {
-						const count = previews.length;
-						const baseClass = "relative w-full aspect-square";
-						let sizeClass = "";
-						if (count === 1) {
-							sizeClass = "max-h-[150px] md:max-h-[200px]";
-						} else if (count === 2 || count === 3 || count === 4) {
-							sizeClass = "max-h-[40px] md:max-h-[90px]";
-						}
-						const spanClass = count === 3 && idx === 2 ? "col-span-2" : "";
-						const photoClass = `${baseClass} ${sizeClass} ${spanClass}`;
+					{previews.map((url) => {
+						const photoClass = "relative h-full min-h-0 w-full";
 
 						return (
 							<div className={photoClass} key={url}>
@@ -68,7 +53,7 @@ const RollCardView: React.FC<RollCardViewProps> = ({
 					})}
 				</div>
 
-				<Heading className="mt-2 font-forum text-black" size="s">
+				<Heading className="mt-2 truncate font-forum text-black" size="s">
 					{name}
 				</Heading>
 

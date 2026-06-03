@@ -10,6 +10,12 @@ import {
 	uploadFormData,
 } from "@/frontend/services/upload.service";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
+import {
+	PHOTO_DESCRIPTION_MAX_LENGTH,
+	PHOTO_TAG_MAX_COUNT,
+	PHOTO_TAG_MAX_LENGTH,
+	PHOTO_TITLE_MAX_LENGTH,
+} from "@/shared/configs/content-limits.config";
 
 interface UploadFormState {
 	category: string;
@@ -58,20 +64,35 @@ export function useUploadPageController() {
 	}, [detectAndApplyExif, fileUpload.uploadedFile, setExifSettings]);
 
 	const handleChange = (field: string, value: string | string[]) => {
-		setForm((prev) => ({ ...prev, [field]: value }));
+		const nextValue =
+			field === "title" && typeof value === "string"
+				? value.slice(0, PHOTO_TITLE_MAX_LENGTH)
+				: field === "description" && typeof value === "string"
+					? value.slice(0, PHOTO_DESCRIPTION_MAX_LENGTH)
+					: value;
+		setForm((prev) => ({ ...prev, [field]: nextValue }));
 		setError("");
 	};
 
 	const handleTagsChange = (value: string | string[]) => {
 		if (typeof value === "string") {
-			const normalizedTag = value.trim();
+			const normalizedTag = value.trim().slice(0, PHOTO_TAG_MAX_LENGTH);
 			if (!normalizedTag || form.tags.includes(normalizedTag)) {
 				return;
 			}
-			setForm((prev) => ({ ...prev, tags: [...prev.tags, normalizedTag] }));
+			setForm((prev) => ({
+				...prev,
+				tags: [...prev.tags, normalizedTag].slice(0, PHOTO_TAG_MAX_COUNT),
+			}));
 			return;
 		}
-		setForm((prev) => ({ ...prev, tags: [...value] }));
+		setForm((prev) => ({
+			...prev,
+			tags: value
+				.map((tag) => tag.trim().slice(0, PHOTO_TAG_MAX_LENGTH))
+				.filter(Boolean)
+				.slice(0, PHOTO_TAG_MAX_COUNT),
+		}));
 	};
 
 	const handleCancel = () => {

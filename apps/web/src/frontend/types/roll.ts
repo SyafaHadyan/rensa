@@ -1,5 +1,6 @@
 export interface Roll {
 	createdAt?: string;
+	imagePreviewUrls?: string[];
 	imageUrl?: string;
 	name: string;
 	photos?: string[];
@@ -9,6 +10,7 @@ export interface Roll {
 }
 
 export interface ApiRoll {
+	imagePreviewUrls?: string[];
 	imageUrl?: string;
 	name: string;
 	rollId?: string;

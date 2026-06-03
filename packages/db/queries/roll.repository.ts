@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { photos } from "../schemas/photos";
 import type {
 	RollCreateDto,
 	RollRepositoryInterface,
@@ -46,9 +47,47 @@ export class RollRepository implements RollRepositoryInterface {
 		return photoIdsByRollId;
 	}
 
+	private async getPhotoPreviewUrlsByRollIds(
+		rollIds: string[]
+	): Promise<Map<string, string[]>> {
+		const previewUrlsByRollId = new Map<string, string[]>();
+		for (const rollId of rollIds) {
+			previewUrlsByRollId.set(rollId, []);
+		}
+		if (rollIds.length === 0) {
+			return previewUrlsByRollId;
+		}
+
+		const rows = await db
+			.select({
+				rollId: rollPhotos.rollId,
+				url: photos.url,
+			})
+			.from(rollPhotos)
+			.innerJoin(photos, eq(rollPhotos.photoId, photos.photoId))
+			.where(inArray(rollPhotos.rollId, rollIds))
+			.orderBy(desc(photos.createdAt));
+
+		for (const row of rows) {
+			if (!(row.rollId && row.url)) {
+				continue;
+			}
+
+			const existing = previewUrlsByRollId.get(row.rollId) ?? [];
+			if (existing.length >= 4) {
+				continue;
+			}
+			existing.push(row.url);
+			previewUrlsByRollId.set(row.rollId, existing);
+		}
+
+		return previewUrlsByRollId;
+	}
+
 	private mapToRollResponseDto(
 		roll: RollRow,
-		photoIds: string[]
+		photoIds: string[],
+		imagePreviewUrls: string[] = []
 	): RollResponseDto {
 		return {
 			rollId: roll.rollId,
@@ -56,6 +95,7 @@ export class RollRepository implements RollRepositoryInterface {
 			name: roll.name,
 			description: roll.description ?? "",
 			imageUrl: roll.imageUrl ?? DEFAULT_ROLL_IMAGE,
+			imagePreviewUrls,
 			photos: photoIds,
 			createdAt: toIso(roll.createdAt),
 			updatedAt: toIso(roll.updatedAt),
@@ -90,7 +130,14 @@ export class RollRepository implements RollRepositoryInterface {
 		}
 
 		const photoIdsByRollId = await this.getPhotoIdsByRollIds([rollId]);
-		return this.mapToRollResponseDto(row, photoIdsByRollId.get(rollId) ?? []);
+		const previewUrlsByRollId = await this.getPhotoPreviewUrlsByRollIds([
+			rollId,
+		]);
+		return this.mapToRollResponseDto(
+			row,
+			photoIdsByRollId.get(rollId) ?? [],
+			previewUrlsByRollId.get(rollId) ?? []
+		);
 	}
 
 	async getDefaultByUserId(userId: string): Promise<RollResponseDto | null> {
@@ -104,9 +151,13 @@ export class RollRepository implements RollRepositoryInterface {
 		}
 
 		const photoIdsByRollId = await this.getPhotoIdsByRollIds([row.rollId]);
+		const previewUrlsByRollId = await this.getPhotoPreviewUrlsByRollIds([
+			row.rollId,
+		]);
 		return this.mapToRollResponseDto(
 			row,
-			photoIdsByRollId.get(row.rollId) ?? []
+			photoIdsByRollId.get(row.rollId) ?? [],
+			previewUrlsByRollId.get(row.rollId) ?? []
 		);
 	}
 
@@ -165,8 +216,14 @@ export class RollRepository implements RollRepositoryInterface {
 
 		const rollIds = rollRows.map((roll) => roll.rollId);
 		const photoIdsByRollId = await this.getPhotoIdsByRollIds(rollIds);
+		const previewUrlsByRollId =
+			await this.getPhotoPreviewUrlsByRollIds(rollIds);
 		return rollRows.map((roll) =>
-			this.mapToRollResponseDto(roll, photoIdsByRollId.get(roll.rollId) ?? [])
+			this.mapToRollResponseDto(
+				roll,
+				photoIdsByRollId.get(roll.rollId) ?? [],
+				previewUrlsByRollId.get(roll.rollId) ?? []
+			)
 		);
 	}
 
@@ -231,9 +288,13 @@ export class RollRepository implements RollRepositoryInterface {
 		}
 
 		const photoIdsByRollId = await this.getPhotoIdsByRollIds([rollId]);
+		const previewUrlsByRollId = await this.getPhotoPreviewUrlsByRollIds([
+			rollId,
+		]);
 		return this.mapToRollResponseDto(
 			updated,
-			photoIdsByRollId.get(rollId) ?? []
+			photoIdsByRollId.get(rollId) ?? [],
+			previewUrlsByRollId.get(rollId) ?? []
 		);
 	}
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ROLL_NAME_MAX_LENGTH } from "@/shared/configs/content-limits.config";
 import { paginationQueryDto, uuidDto } from "./common.dto";
 
 export const rollResponseDto = z
@@ -16,7 +17,7 @@ export const rollResponseDto = z
 
 export const rollCreateDto = z
 	.object({
-		name: z.string().min(1),
+		name: z.string().trim().min(1).max(ROLL_NAME_MAX_LENGTH),
 		description: z.string().optional(),
 		imageUrl: z.string().optional(),
 	})
@@ -28,7 +29,7 @@ export const rollCreateDto = z
 
 export const rollUpdateDto = z
 	.object({
-		name: z.string().min(1).optional(),
+		name: z.string().trim().min(1).max(ROLL_NAME_MAX_LENGTH).optional(),
 		description: z.string().optional(),
 		imageUrl: z.string().optional(),
 	})

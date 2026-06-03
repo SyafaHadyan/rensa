@@ -12,6 +12,7 @@ const normalizeRoll = (roll: ApiRoll): Roll | null => {
 		rollId: roll.rollId,
 		name: roll.name,
 		imageUrl: roll.imageUrl ?? "/images/default-roll.jpg",
+		imagePreviewUrls: roll.imagePreviewUrls ?? [],
 	};
 };
 
