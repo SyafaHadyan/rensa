@@ -12,13 +12,12 @@ import type React from "react";
 
 const baseUrl = "https://rensa.site";
 
-const Shell = ({
-	children,
-	preview,
-}: {
+interface EmailTemplateProps {
 	children: React.ReactNode;
 	preview: string;
-}) => (
+}
+
+export const EmailTemplate = ({ children, preview }: EmailTemplateProps) => (
 	<Html>
 		<Head />
 		<Preview>{preview}</Preview>
@@ -42,6 +41,14 @@ const Shell = ({
 		</Body>
 	</Html>
 );
+
+const Shell = ({
+	children,
+	preview,
+}: {
+	children: React.ReactNode;
+	preview: string;
+}) => <EmailTemplate preview={preview}>{children}</EmailTemplate>;
 
 export const EmailVerificationTemplate = ({
 	verificationLink,

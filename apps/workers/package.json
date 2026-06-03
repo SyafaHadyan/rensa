@@ -8,7 +8,7 @@
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --project unit apps/workers"
+    "test": "vitest run --root ../.. --project unit apps/workers"
   },
   "dependencies": {
     "@bull-board/api": "^6.15.0",

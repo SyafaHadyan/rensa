@@ -1,0 +1,128 @@
+services:
+  rensa-web:
+    image: exelalfanso/rensa-web:latest
+    restart: always
+    container_name: rensa-web
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    networks:
+      - rensa-net
+    depends_on:
+      rensa-notification:
+        condition: service_healthy
+      rensa-ai:
+        condition: service_healthy
+      rensa-exif:
+        condition: service_healthy
+      rensa-workers:
+        condition: service_healthy
+
+  rensa-ai:
+    image: exelalfanso/rensa-ai:latest
+    restart: always
+    container_name: rensa-ai
+    ports:
+      - "3001:3001"
+    networks:
+      - rensa-net
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import socket; s=socket.socket(); s.connect(('localhost',3001)); s.close()"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  rensa-notification:
+    image: labmgm/rensa-notification:latest
+    restart: always
+    container_name: rensa-notification
+    ports:
+      - "3002:3002"
+    env_file:
+      - .env
+    networks:
+      - rensa-net
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rensa-exif:
+    image: exelalfanso/rensa-exif:latest
+    restart: always
+    container_name: rensa-exif
+    ports:
+      - "3003:3003"
+    networks:
+      - rensa-net
+    depends_on:
+      rensa-redis:
+        condition: service_healthy
+    environment:
+      PORT: 3003
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://localhost:3003/health').then(()=>process.exit(0)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rensa-workers:
+    image: exelalfanso/rensa-workers:latest
+    restart: always
+    container_name: rensa-workers
+    ports:
+      - "3010:3010"
+    env_file:
+      - .env
+    networks:
+      - rensa-net
+    depends_on:
+      rensa-redis:
+        condition: service_healthy
+      rensa-notification:
+        condition: service_healthy
+      rensa-ai:
+        condition: service_healthy
+    environment:
+      PORT: 3010
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://localhost:3010/health').then(()=>process.exit(0)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rensa-redis:
+    image: redis:7-alpine
+    restart: always
+    container_name: rensa-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - rensa-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+networks:
+  rensa-net:
+    driver: bridge
+
+volumes:
+  redis-data:
