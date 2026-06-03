@@ -1,7 +1,3 @@
-import cloudinary, {
-	getCloudinaryPublicIdFromUrl,
-	validateCloudinaryUrl,
-} from "@rensa/cloudinary";
 import { UserRepository } from "@rensa/db/queries/user.repository";
 import type { UserProfileDto, UserRepositoryInterface } from "@rensa/db/schema";
 import sharp from "sharp";
@@ -12,6 +8,10 @@ import {
 	ValidationError,
 } from "@/backend/common/backend.error";
 import { updateProfileDto } from "@/backend/dtos/profile.dto";
+import cloudinary, {
+	getCloudinaryPublicIdFromUrl,
+	validateCloudinaryUrl,
+} from "@/lib/cloudinary";
 import { withTimeout } from "@/lib/timeout";
 import {
 	isAcceptedProfileAvatarFile,
