@@ -6,6 +6,12 @@ import {
 } from "@/backend/common/backend.error";
 import { sanitizeInput } from "@/lib/validation";
 import {
+	PHOTO_DESCRIPTION_MAX_LENGTH,
+	PHOTO_TAG_MAX_COUNT,
+	PHOTO_TAG_MAX_LENGTH,
+	PHOTO_TITLE_MAX_LENGTH,
+} from "@/shared/configs/content-limits.config";
+import {
 	isAcceptedPhotoUploadFile,
 	PHOTO_UPLOAD_MAX_INPUT_SIZE_BYTES,
 	PHOTO_UPLOAD_MAX_INPUT_SIZE_MB,
@@ -163,11 +169,15 @@ export class PhotoUploadService {
 		if (!title || title.trim().length === 0) {
 			throw new ValidationError("Title is required");
 		}
-		if (title.length > 200) {
-			throw new ValidationError("Title must be 200 characters or less");
+		if (title.length > PHOTO_TITLE_MAX_LENGTH) {
+			throw new ValidationError(
+				`Title must be ${PHOTO_TITLE_MAX_LENGTH} characters or less`
+			);
 		}
-		if (description.length > 5000) {
-			throw new ValidationError("Description must be 5000 characters or less");
+		if (description.length > PHOTO_DESCRIPTION_MAX_LENGTH) {
+			throw new ValidationError(
+				`Description must be ${PHOTO_DESCRIPTION_MAX_LENGTH} characters or less`
+			);
 		}
 		if (category && category.length > 100) {
 			throw new ValidationError("Category must be 100 characters or less");
@@ -220,15 +230,20 @@ export class PhotoUploadService {
 						return null;
 					}
 					const sanitized = sanitizeInput(tag);
-					if (sanitized.length === 0 || sanitized.length > 50) {
+					if (
+						sanitized.length === 0 ||
+						sanitized.length > PHOTO_TAG_MAX_LENGTH
+					) {
 						return null;
 					}
 					return sanitized;
 				})
 				.filter((tag: string | null): tag is string => tag !== null);
 
-			if (tags.length > 20) {
-				throw new ValidationError("Maximum 20 tags allowed");
+			if (tags.length > PHOTO_TAG_MAX_COUNT) {
+				throw new ValidationError(
+					`Maximum ${PHOTO_TAG_MAX_COUNT} tags allowed`
+				);
 			}
 
 			return tags;

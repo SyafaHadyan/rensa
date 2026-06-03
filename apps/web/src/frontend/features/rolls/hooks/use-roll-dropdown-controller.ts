@@ -5,6 +5,7 @@ import { useOutsideClick } from "@/frontend/features/common/hooks/use-outside-cl
 import { useToast } from "@/frontend/providers/ToastProvider";
 import { useAuthStore } from "@/frontend/stores/useAuthStore";
 import { useRollsStore } from "@/frontend/stores/useRollsStore";
+import { ROLL_NAME_MAX_LENGTH } from "@/shared/configs/content-limits.config";
 
 interface UseRollDropdownControllerParams {
 	closeAll?: () => void;
@@ -128,11 +129,12 @@ export function useRollDropdownController<TButtonElement extends HTMLElement>({
 	};
 
 	const handleCreateRoll = async () => {
-		if (!newRollName.trim()) {
+		const trimmedName = newRollName.trim();
+		if (!trimmedName) {
 			return;
 		}
 		try {
-			await createRoll({ name: newRollName });
+			await createRoll({ name: trimmedName.slice(0, ROLL_NAME_MAX_LENGTH) });
 			showToast("Roll created successfully", "success");
 		} catch {
 			showToast("Failed to create roll", "error");

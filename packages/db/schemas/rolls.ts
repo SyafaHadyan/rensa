@@ -63,6 +63,7 @@ export interface ListRollPhotosQueryDto {
 export interface RollResponseDto extends Passthrough {
 	createdAt?: string;
 	description: string;
+	imagePreviewUrls: string[];
 	imageUrl: string;
 	name: string;
 	photos: string[];

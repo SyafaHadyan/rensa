@@ -4,6 +4,11 @@ import InputDropdown from "@/frontend/components/inputfields/InputDropdown";
 import TagsInputField from "@/frontend/components/inputfields/TagsInputField";
 import TextAreaInput from "@/frontend/components/inputfields/TextAreaInput";
 import type { NormalizedMetadata } from "@/frontend/features/upload/utils/metadata-normalizer";
+import {
+	PHOTO_DESCRIPTION_MAX_LENGTH,
+	PHOTO_TAG_MAX_LENGTH,
+	PHOTO_TITLE_MAX_LENGTH,
+} from "@/shared/configs/content-limits.config";
 import CameraSettingsFormContainer from "../containers/CameraSettingsFormContainer";
 
 interface UploadFormViewProps {
@@ -46,17 +51,20 @@ const UploadFormView: React.FC<UploadFormViewProps> = ({
 	>
 		<BaseInputField
 			label="Title"
+			maxLength={PHOTO_TITLE_MAX_LENGTH}
 			onChange={(event) => onTitleChange(event.target.value)}
 			placeholder="Title"
 		/>
 		<TextAreaInput
 			label="Description"
+			maxLength={PHOTO_DESCRIPTION_MAX_LENGTH}
 			onChange={(event) => onDescriptionChange(event.target.value)}
 			placeholder="Add a description"
 		/>
 		<TagsInputField
 			handleTags={handleTags}
 			label="Tags"
+			maxTagLength={PHOTO_TAG_MAX_LENGTH}
 			placeholder="Enter Tags"
 			tags={tags}
 		/>

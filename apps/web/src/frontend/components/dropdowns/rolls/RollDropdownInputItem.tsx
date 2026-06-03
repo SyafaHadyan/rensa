@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import { rollDropdownItemVariants } from "@/frontend/components/animations/dropdownAnimations";
+import { ROLL_NAME_MAX_LENGTH } from "@/shared/configs/content-limits.config";
 
 interface RollDropdownItemProps {
 	handleCreateRoll: () => void;
@@ -33,6 +34,7 @@ const RollDropdownInputItem: React.FC<RollDropdownItemProps> = ({
 			</div>
 			<input
 				className="w-38 rounded-xl font-figtree font-semibold text-[13px] outline-none md:text-[18px]"
+				maxLength={ROLL_NAME_MAX_LENGTH}
 				onChange={(e) => setNewRollName(e.target.value)}
 				onKeyDown={(e) => {
 					if (e.key === "Enter") {

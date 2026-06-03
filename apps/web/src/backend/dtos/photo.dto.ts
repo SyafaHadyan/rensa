@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+	PHOTO_DESCRIPTION_MAX_LENGTH,
+	PHOTO_TITLE_MAX_LENGTH,
+} from "@/shared/configs/content-limits.config";
 import { paginationQueryDto, uuidDto } from "./common.dto";
 
 const populatedPhotoUserDto = z
@@ -29,8 +33,8 @@ export const photoResponseDto = z
 export const createPhotoDto = z.object({
 	userId: uuidDto,
 	url: z.string().url(),
-	title: z.string().min(1),
-	description: z.string().optional(),
+	title: z.string().trim().min(1).max(PHOTO_TITLE_MAX_LENGTH),
+	description: z.string().max(PHOTO_DESCRIPTION_MAX_LENGTH).optional(),
 	category: z.string().optional(),
 	style: z.string().optional(),
 	color: z.string().optional(),

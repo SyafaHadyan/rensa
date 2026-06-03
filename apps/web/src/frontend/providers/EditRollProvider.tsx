@@ -6,6 +6,7 @@ import Button from "@/frontend/components/buttons/Button";
 import PrimaryButton from "@/frontend/components/buttons/PrimaryButton";
 import TertiaryButton from "@/frontend/components/buttons/TertiaryButton";
 import { api } from "@/lib/axios-client";
+import { ROLL_NAME_MAX_LENGTH } from "@/shared/configs/content-limits.config";
 import { cn } from "@/utils/cn";
 import { useToast } from "./ToastProvider";
 
@@ -101,12 +102,18 @@ export const EditRollProvider = ({
 			console.error("Failed to delete roll:", err);
 		}
 	};
-	const saveChanges = async (rollId: string, name: string) => {
+	const saveChanges = async (rollId: string, rollName: string) => {
+		const trimmedName = rollName.trim();
+		if (!trimmedName) {
+			showToast("Roll name is required", "error");
+			return;
+		}
+
 		try {
-			await api.patch(`/rolls/${rollId}`, { name });
+			await api.patch(`/rolls/${rollId}`, { name: trimmedName });
 
 			if (onRollUpdate) {
-				onRollUpdate({ rollId, name, type: "default" });
+				onRollUpdate({ rollId, name: trimmedName, type: "default" });
 			}
 
 			closeEditor();
@@ -160,9 +167,13 @@ export const EditRollProvider = ({
 								<label className="font-medium text-sm">Roll Name</label>
 								<input
 									className="mt-1 mb-3 w-full rounded-lg border px-3 py-2"
+									maxLength={ROLL_NAME_MAX_LENGTH}
 									onChange={(e) => setName(e.target.value)}
 									value={name}
 								/>
+								<p className="text-gray-500 text-xs">
+									{name.length}/{ROLL_NAME_MAX_LENGTH}
+								</p>
 								<div
 									className={cn(
 										"mt-5 flex gap-2",
@@ -182,8 +193,8 @@ export const EditRollProvider = ({
 											Cancel
 										</TertiaryButton>
 										<PrimaryButton
+											disabled={!name.trim()}
 											onClick={() => {
-												closeEditor();
 												saveChanges(roll.rollId, name);
 											}}
 										>
