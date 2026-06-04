@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import PendingUploadPhotoView from "@/frontend/features/photos/components/PendingUploadPhotoView";
 import PhotoPageContainer from "@/frontend/features/photos/containers/PhotoPageContainer";
 
 export async function generateMetadata({
@@ -35,5 +37,13 @@ export default async function PhotoPage({
 }) {
 	const { id } = await params;
 
-	return <PhotoPageContainer photoId={id} />;
+	return (
+		<Suspense
+			fallback={
+				<PendingUploadPhotoView photo={null} photoId={id} status="pending" />
+			}
+		>
+			<PhotoPageContainer photoId={id} />
+		</Suspense>
+	);
 }

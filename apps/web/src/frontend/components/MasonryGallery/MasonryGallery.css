@@ -5,4 +5,5 @@
 		calc(var(--masonry-column-count, 1) * var(--masonry-column-width, 256px))
 	);
 	max-width: 100%;
+	margin-inline: auto;
 }

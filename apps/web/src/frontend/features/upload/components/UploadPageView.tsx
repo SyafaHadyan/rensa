@@ -20,6 +20,7 @@ interface UploadPageViewProps {
 	formProps: UploadFormContainerProps;
 	hasFile: boolean;
 	isDetecting: boolean;
+	isSubmitting: boolean;
 	onBack: () => void;
 	onCancel: () => void;
 	onUpload: () => void;
@@ -29,6 +30,7 @@ interface UploadPageViewProps {
 const UploadPageView: React.FC<UploadPageViewProps> = ({
 	hasFile,
 	isDetecting,
+	isSubmitting,
 	onBack,
 	onCancel,
 	onUpload,
@@ -42,6 +44,7 @@ const UploadPageView: React.FC<UploadPageViewProps> = ({
 		<UploadSectionHeader
 			hasFile={hasFile}
 			isDetecting={isDetecting}
+			isSubmitting={isSubmitting}
 			onBack={onBack}
 			onCancel={onCancel}
 			onUpload={onUpload}

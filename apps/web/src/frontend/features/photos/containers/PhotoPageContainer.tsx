@@ -28,7 +28,7 @@ const PhotoPageContainer: React.FC<PhotoPageContainerProps> = ({ photoId }) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const [optimisticPhoto, setOptimisticPhoto] = useState<UploadedPhoto | null>(
-		null
+		() => getOptimisticUpload(photoId)
 	);
 	const {
 		data: photo,
@@ -40,13 +40,10 @@ const PhotoPageContainer: React.FC<PhotoPageContainerProps> = ({ photoId }) => {
 		staleTime: 1000 * 60 * 5,
 		gcTime: 1000 * 60 * 30,
 	});
-	const shouldPollUploadStatus =
-		Boolean(optimisticPhoto) || (isError && !photo);
 	const { data: uploadStatus, isError: isUploadStatusError } =
 		useQuery<PhotoUploadStatus>({
 			queryKey: ["photo-upload-status", photoId],
 			queryFn: () => fetchPhotoUploadStatus(photoId),
-			enabled: shouldPollUploadStatus,
 			refetchInterval: (query) =>
 				query.state.data?.processingStatus === "pending" ? 2500 : false,
 			retry: false,

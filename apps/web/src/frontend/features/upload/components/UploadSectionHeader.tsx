@@ -6,6 +6,7 @@ import TertiaryButton from "@/frontend/components/buttons/TertiaryButton";
 interface UploadSectionHeaderProps {
 	hasFile: boolean;
 	isDetecting: boolean;
+	isSubmitting: boolean;
 	onBack: () => void;
 	onCancel: () => void;
 	onUpload: () => void;
@@ -14,6 +15,7 @@ interface UploadSectionHeaderProps {
 const UploadSectionHeader: React.FC<UploadSectionHeaderProps> = ({
 	hasFile,
 	isDetecting,
+	isSubmitting,
 	onBack,
 	onCancel,
 	onUpload,
@@ -24,8 +26,12 @@ const UploadSectionHeader: React.FC<UploadSectionHeaderProps> = ({
 				<TertiaryButton onClick={onCancel} type="button">
 					Cancel
 				</TertiaryButton>
-				<PrimaryButton disabled={isDetecting} onClick={onUpload} type="button">
-					Upload
+				<PrimaryButton
+					disabled={isDetecting || isSubmitting}
+					onClick={onUpload}
+					type="button"
+				>
+					{isSubmitting ? "Preparing..." : "Upload"}
 				</PrimaryButton>
 			</header>
 		);

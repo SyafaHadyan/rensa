@@ -9,8 +9,8 @@ This repository is a pnpm/Turbo monorepo containing the web app and supporting s
 | Path                 | Package                | Purpose                                                                               |
 | -------------------- | ---------------------- | ------------------------------------------------------------------------------------- |
 | `apps/web`           | `@rensa/web`           | Next.js application, API routes, auth, upload pipeline, database schema, Swagger docs |
-| `apps/notifications` | `@rensa/notifications` | Elysia/Bun notification API and WebSocket service                                    |
-| `apps/workers`       | `@rensa/workers`       | Bun/BullMQ workers for notifications, email, and photo processing                    |
+| `apps/notifications` | `@rensa/notifications` | Elysia/Bun notification API and WebSocket service                                     |
+| `apps/workers`       | `@rensa/workers`       | Bun/BullMQ workers for notifications, email, and photo processing                     |
 | `apps/exif`          | `@rensa/exif`          | Express service for JPEG EXIF extraction through `exiftool-vendored`                  |
 | `apps/ai`            | `@rensa/ai`            | FastAPI NSFW image classifier service                                                 |
 | `packages/*`         | shared packages        | Workspace packages reserved for shared code/config                                    |

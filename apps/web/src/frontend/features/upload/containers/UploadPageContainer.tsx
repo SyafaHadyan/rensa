@@ -15,6 +15,7 @@ const UploadPageContainer: React.FC = () => {
 		handleCancel,
 		onUpload,
 		onBack,
+		isSubmitting,
 	} = useUploadPageController();
 
 	return (
@@ -44,6 +45,7 @@ const UploadPageContainer: React.FC = () => {
 			}}
 			hasFile={Boolean(fileUpload.uploadedFile)}
 			isDetecting={exifDetection.isDetecting}
+			isSubmitting={isSubmitting}
 			onBack={onBack}
 			onCancel={handleCancel}
 			onUpload={onUpload}

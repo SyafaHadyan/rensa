@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useLoading } from "@/frontend/features/common/hooks/use-loading";
 import { useExifDetection } from "@/frontend/features/upload/hooks/use-exif-detection";
 import { useFileUpload } from "@/frontend/features/upload/hooks/use-file-upload";
 import {
@@ -39,8 +38,8 @@ export function useUploadPageController() {
 	const fileUpload = useFileUpload();
 	const router = useRouter();
 	const user = useAuthStore((state) => state.user);
-	const { setLoading } = useLoading();
 	const [error, setError] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [form, setForm] = useState<UploadFormState>(createInitialFormState());
 	const lastDetectedFileKeyRef = useRef<string | null>(null);
 
@@ -124,6 +123,9 @@ export function useUploadPageController() {
 
 	const handleUpload = async () => {
 		setError("");
+		if (isSubmitting) {
+			return;
+		}
 		if (!user?.id) {
 			setError("You must be logged in to upload.");
 			return;
@@ -152,16 +154,15 @@ export function useUploadPageController() {
 		formData.append("tags", JSON.stringify(tagsWithBrand));
 		formData.append("exif", JSON.stringify(exifForUpload));
 
-		setLoading(true);
 		try {
+			setIsSubmitting(true);
 			const uploadedPhoto = await uploadFormData(formData);
 			saveOptimisticUpload(uploadedPhoto);
 			router.push(`/photo/${uploadedPhoto.photoId}`);
 		} catch (uploadError) {
 			console.error("Upload failed:", uploadError);
 			setError("Upload failed. Please try again.");
-		} finally {
-			setLoading(false);
+			setIsSubmitting(false);
 		}
 	};
 
@@ -173,6 +174,7 @@ export function useUploadPageController() {
 		error,
 		fileUpload,
 		form,
+		isSubmitting,
 		exifDetection,
 		handleChange,
 		handleTagsChange,
