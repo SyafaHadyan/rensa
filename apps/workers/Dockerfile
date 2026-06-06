@@ -14,24 +14,8 @@ COPY packages/queue/package.json packages/queue/package.json
 FROM base AS deps
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
-FROM deps AS build
-ENV NODE_ENV=production
-
-COPY apps/workers apps/workers
-COPY packages/cache packages/cache
-COPY packages/cloudinary packages/cloudinary
-COPY packages/db packages/db
-COPY packages/email packages/email
-COPY packages/queue packages/queue
-
-WORKDIR /repo/apps/workers
-
-RUN bun build \
-  --compile \
-  --target=bun-linux-x64-baseline \
-  --outfile server \
-  --external sharp \
-  src/index.ts
+FROM base AS prod-deps
+RUN pnpm install --filter @rensa/workers... --prod --frozen-lockfile
 
 FROM deps AS dev
 WORKDIR /repo
@@ -48,18 +32,28 @@ COPY packages/queue packages/queue
 EXPOSE 3010
 CMD ["bun", "run", "--cwd", "apps/workers", "src/index.ts"]
 
-FROM node:20-bookworm-slim AS prod
-
-WORKDIR /app
+FROM prod-deps AS prod
+WORKDIR /repo
 
 ENV NODE_ENV=production
 
-RUN mkdir -p /tmp/sharp-install && \
-    (cd /tmp/sharp-install && npm install sharp) && \
-    cp -a /tmp/sharp-install/node_modules/. /node_modules/ && \
-    rm -rf /tmp/sharp-install
+# Replace the standard Bun binary with the baseline variant (no AVX2 required)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl unzip ca-certificates && \
+    curl -fsSL https://github.com/oven-sh/bun/releases/download/bun-v1.3.5/bun-linux-x64-baseline.zip \
+      -o /tmp/bun-baseline.zip && \
+    unzip /tmp/bun-baseline.zip -d /tmp/bun-baseline && \
+    mv /tmp/bun-baseline/bun-linux-x64-baseline/bun /usr/local/bin/bun && \
+    chmod +x /usr/local/bin/bun && \
+    apt-get purge -y --auto-remove curl unzip && \
+    rm -rf /tmp/bun-baseline.zip /tmp/bun-baseline /var/lib/apt/lists/*
 
-COPY --from=build /repo/apps/workers/server ./server
+COPY apps/workers apps/workers
+COPY packages/cache packages/cache
+COPY packages/cloudinary packages/cloudinary
+COPY packages/db packages/db
+COPY packages/email packages/email
+COPY packages/queue packages/queue
 
 EXPOSE 3010
-CMD ["./server"]
+CMD ["bun", "run", "--cwd", "apps/workers", "src/index.ts"]
