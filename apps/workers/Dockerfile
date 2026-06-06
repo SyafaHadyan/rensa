@@ -26,12 +26,11 @@ COPY packages/queue packages/queue
 
 WORKDIR /repo/apps/workers
 
-RUN npm install -g pnpm@10.33.2 bun@1.3.5 sharp@0.34.5
-
 RUN bun build \
   --compile \
   --target=bun-linux-x64-baseline \
   --outfile server \
+  --external sharp \
   src/index.ts
 
 FROM deps AS dev
@@ -54,6 +53,8 @@ FROM node:20-bookworm-slim AS prod
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+RUN npm install --os=linux --cpu=x64 --libc=glibc sharp
 
 COPY --from=build /repo/apps/workers/server ./server
 
