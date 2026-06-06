@@ -14,8 +14,23 @@ COPY packages/queue/package.json packages/queue/package.json
 FROM base AS deps
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
-FROM base AS prod-deps
-RUN pnpm install --filter @rensa/workers... --prod --frozen-lockfile --ignore-scripts
+FROM deps AS build
+ENV NODE_ENV=production
+
+COPY apps/workers apps/workers
+COPY packages/cache packages/cache
+COPY packages/cloudinary packages/cloudinary
+COPY packages/db packages/db
+COPY packages/email packages/email
+COPY packages/queue packages/queue
+
+WORKDIR /repo/apps/workers
+
+RUN bun build \
+  --compile \
+  --target=bun-linux-x64-baseline \
+  --outfile server \
+  src/index.ts
 
 FROM deps AS dev
 WORKDIR /repo
@@ -32,17 +47,13 @@ COPY packages/queue packages/queue
 EXPOSE 3010
 CMD ["bun", "run", "--cwd", "apps/workers", "src/index.ts"]
 
-FROM prod-deps AS prod
-WORKDIR /repo
+FROM node:20-bookworm-slim AS prod
+
+WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY apps/workers apps/workers
-COPY packages/cache packages/cache
-COPY packages/cloudinary packages/cloudinary
-COPY packages/db packages/db
-COPY packages/email packages/email
-COPY packages/queue packages/queue
+COPY --from=build /repo/apps/workers/server ./server
 
 EXPOSE 3010
-CMD ["bun", "run", "--cwd", "apps/workers", "src/index.ts"]
+CMD ["./server"]
