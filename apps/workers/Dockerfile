@@ -54,7 +54,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN npm install --prefix / sharp
+RUN mkdir -p /tmp/sharp-install && \
+    (cd /tmp/sharp-install && npm install sharp) && \
+    cp -a /tmp/sharp-install/node_modules/. /node_modules/ && \
+    rm -rf /tmp/sharp-install
 
 COPY --from=build /repo/apps/workers/server ./server
 
