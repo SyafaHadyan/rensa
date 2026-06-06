@@ -54,7 +54,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN npm install --os=linux --cpu=x64 --libc=glibc sharp
+RUN npm install --prefix / sharp
 
 COPY --from=build /repo/apps/workers/server ./server
 
