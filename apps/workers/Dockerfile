@@ -37,6 +37,17 @@ WORKDIR /repo
 
 ENV NODE_ENV=production
 
+# Replace the standard Bun binary with the baseline variant (no AVX2 required)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl unzip ca-certificates && \
+    curl -fsSL https://github.com/oven-sh/bun/releases/download/bun-v1.3.5/bun-linux-x64-baseline.zip \
+      -o /tmp/bun-baseline.zip && \
+    unzip /tmp/bun-baseline.zip -d /tmp/bun-baseline && \
+    mv /tmp/bun-baseline/bun-linux-x64-baseline/bun /usr/local/bin/bun && \
+    chmod +x /usr/local/bin/bun && \
+    apt-get purge -y --auto-remove curl unzip && \
+    rm -rf /tmp/bun-baseline.zip /tmp/bun-baseline /var/lib/apt/lists/*
+
 COPY apps/workers apps/workers
 COPY packages/cache packages/cache
 COPY packages/cloudinary packages/cloudinary
