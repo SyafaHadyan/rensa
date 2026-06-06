@@ -15,7 +15,7 @@ FROM base AS deps
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 FROM base AS prod-deps
-RUN pnpm install --filter @rensa/workers... --prod --frozen-lockfile
+RUN pnpm install --filter @rensa/workers... --prod --frozen-lockfile --ignore-scripts
 
 FROM deps AS dev
 WORKDIR /repo
