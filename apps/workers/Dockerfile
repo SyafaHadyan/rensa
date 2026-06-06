@@ -1,7 +1,7 @@
 FROM node:20-bookworm-slim AS base
 WORKDIR /repo
 
-RUN npm install -g pnpm@10.33.2 bun@1.3.5
+RUN npm install -g pnpm@10.33.2 bun@1.3.5 sharp@0.34.5
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/workers/package.json apps/workers/package.json
