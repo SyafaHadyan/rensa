@@ -11,7 +11,7 @@ COPY packages/db/package.json packages/db/package.json
 COPY packages/email/package.json packages/email/package.json
 COPY packages/queue/package.json packages/queue/package.json
 
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --filter @rensa/workers... --prod --frozen-lockfile --ignore-scripts
 
 FROM deps AS build
 WORKDIR /repo
@@ -30,6 +30,7 @@ WORKDIR /repo/apps/workers
 RUN bun build \
   --compile \
   --target=bun-linux-x64-baseline \
+  --external sharp \
   --outfile server \
   src/index.ts
 
@@ -54,6 +55,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=build /repo/apps/workers/server ./server
+COPY --from=deps /repo/node_modules ./node_modules
 
 EXPOSE 3010
 CMD ["./server"]

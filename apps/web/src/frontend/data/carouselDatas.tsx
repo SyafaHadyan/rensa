@@ -2,7 +2,7 @@
 export const carouselData = [
 	{
 		id: "slide1",
-		src: "/images/carousel/slide1.JPG",
+		src: "/images/carousel/slide1.webp",
 		title: "Bloom in Time",
 		specs: [
 			{ label: "Film Simulation", value: "Astia" },
@@ -14,7 +14,7 @@ export const carouselData = [
 	},
 	{
 		id: "slide2",
-		src: "/images/carousel/slide2.JPG",
+		src: "/images/carousel/slide2.webp",
 		title: "Sunset Reverie",
 		specs: [
 			{ label: "Creative Style", value: "Portrait" },
@@ -26,7 +26,7 @@ export const carouselData = [
 	},
 	{
 		id: "slide3",
-		src: "/images/carousel/slide3.JPG",
+		src: "/images/carousel/slide3.webp",
 		title: "Crimson Echo",
 		specs: [
 			{ label: "Picture Style", value: "Faithful" },
@@ -38,7 +38,7 @@ export const carouselData = [
 	},
 	{
 		id: "slide4",
-		src: "/images/carousel/slide4.JPG",
+		src: "/images/carousel/slide4.webp",
 		title: "Golden Frame",
 		specs: [
 			{ label: "Picture Control", value: "Neutral" },

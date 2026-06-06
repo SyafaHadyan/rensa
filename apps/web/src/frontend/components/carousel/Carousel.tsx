@@ -34,7 +34,7 @@ export default function Carousel() {
 								fill
 								priority={index === 0}
 								quality={20}
-								sizes="100vw"
+								sizes="(min-width: 1280px) 40vw, calc(100vw - 5rem)"
 								src={slide.src}
 							/>
 						</div>

@@ -80,7 +80,10 @@ export default function HomeClient() {
 				<Carousel />
 			</section>
 
-			<section aria-labelledby="home-story-title" className="h-[50vh] pt-30">
+			<section
+				aria-labelledby="home-story-title"
+				className="relative h-[50vh] pt-30"
+			>
 				<section
 					aria-label="Photo story showcase"
 					className="relative z-0 h-[400vh] bg-white text-center text-black"
@@ -101,6 +104,8 @@ export default function HomeClient() {
 									alt="photo"
 									className="h-full w-full object-cover"
 									fill
+									loading={index === 0 || index === 2 ? "eager" : "lazy"}
+									priority={index === 0 || index === 2}
 									quality={20}
 									sizes="(max-width: 1024px) 40vw, 32vw"
 									src={card.src}
